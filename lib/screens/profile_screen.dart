@@ -87,6 +87,7 @@ class ProfileScreen extends StatelessWidget {
                 return Column(children: [
                   if (i > 0) Divider(height: 1, color: borderColor),
                   GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () => state.setCurrentScreen(item.$4),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
