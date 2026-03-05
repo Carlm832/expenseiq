@@ -21,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(seconds: 5),
     );
 
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _controller.forward();
 
     // Navigate to the next screen after the animation
-    Future.delayed(const Duration(milliseconds: 1000), () {
+    Future.delayed(const Duration(seconds: 5), () {
       if (!mounted) return;
       final state = context.read<AppState>();
       if (state.isLoggedIn) {
