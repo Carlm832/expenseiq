@@ -16,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
+  final _budgetCtrl = TextEditingController();
   bool _showPassword = false;
   Map<String, String> _errors = {};
 
@@ -38,14 +39,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_passwordCtrl.text != _confirmCtrl.text) {
       errors['confirmPassword'] = 'Passwords do not match';
     }
+    final budgetVal = double.tryParse(_budgetCtrl.text.trim()) ?? 0;
+    if (budgetVal <= 0) {
+      errors['budget'] = 'Please set a valid monthly budget';
+    }
+
     setState(() => _errors = errors);
     return errors.isEmpty;
   }
 
   void _handleRegister(AppState state) {
     if (!_validate(state)) return;
-    state.addRegisteredUser(_nameCtrl.text.trim(), _emailCtrl.text.trim(), _passwordCtrl.text);
+    state.addRegisteredUser(
+        _nameCtrl.text.trim(), _emailCtrl.text.trim(), _passwordCtrl.text);
     state.register(_nameCtrl.text.trim(), _emailCtrl.text.trim());
+    state.setOverallBudget(double.tryParse(_budgetCtrl.text.trim()) ?? 0.0);
   }
 
   @override
@@ -56,7 +64,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final bgColor = isDark ? AppColors.darkBackground : AppColors.background;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
-    final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
     return Scaffold(
@@ -70,9 +79,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
-                  onPressed: () => context.read<AppState>().setCurrentScreen('login'),
+                  onPressed: () =>
+                      context.read<AppState>().setCurrentScreen('login'),
                   icon: Icon(Icons.arrow_back, size: 16, color: mutedColor),
-                  label: Text('Back to Sign In', style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
+                  label: Text('Back to Sign In',
+                      style:
+                          GoogleFonts.inter(fontSize: 13, color: mutedColor)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -88,48 +100,104 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     Row(children: [
                       Container(
-                        width: 40, height: 40,
-                        decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
-                        child: const Icon(Icons.person_add, color: Colors.white, size: 20),
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(12)),
+                        child: const Icon(Icons.person_add,
+                            color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 12),
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('Create Account', style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w600, color: fgColor)),
-                        Text('Start tracking your expenses', style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
-                      ]),
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Create Account',
+                                style: GoogleFonts.dmSans(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    color: fgColor)),
+                            Text('Start tracking your expenses',
+                                style: GoogleFonts.inter(
+                                    fontSize: 11, color: mutedColor)),
+                          ]),
                     ]),
                     const SizedBox(height: 24),
-                    _buildField('Full Name', _nameCtrl, 'John Doe', Icons.person_outline, false, mutedColor, fgColor, _errors['name']),
+                    _buildField(
+                        'Full Name',
+                        _nameCtrl,
+                        'John Doe',
+                        Icons.person_outline,
+                        false,
+                        mutedColor,
+                        fgColor,
+                        _errors['name']),
                     const SizedBox(height: 16),
-                    _buildField('Email', _emailCtrl, 'you@example.com', Icons.mail_outline, false, mutedColor, fgColor, _errors['email'], type: TextInputType.emailAddress),
+                    _buildField(
+                        'Email',
+                        _emailCtrl,
+                        'you@example.com',
+                        Icons.mail_outline,
+                        false,
+                        mutedColor,
+                        fgColor,
+                        _errors['email'],
+                        type: TextInputType.emailAddress),
                     const SizedBox(height: 16),
-                    Text('Password', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
+                    Text('Password',
+                        style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: fgColor)),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _passwordCtrl,
                       obscureText: !_showPassword,
                       decoration: InputDecoration(
                         hintText: 'At least 6 characters',
-                        prefixIcon: Icon(Icons.lock_outline, size: 18, color: mutedColor),
+                        prefixIcon: Icon(Icons.lock_outline,
+                            size: 18, color: mutedColor),
                         suffixIcon: IconButton(
-                          icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility, size: 18, color: mutedColor),
-                          onPressed: () => setState(() => _showPassword = !_showPassword),
+                          icon: Icon(
+                              _showPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 18,
+                              color: mutedColor),
+                          onPressed: () =>
+                              setState(() => _showPassword = !_showPassword),
                         ),
                         errorText: _errors['password'],
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text('Confirm Password', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
+                    Text('Confirm Password',
+                        style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: fgColor)),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _confirmCtrl,
                       obscureText: !_showPassword,
                       decoration: InputDecoration(
                         hintText: 'Re-enter your password',
-                        prefixIcon: Icon(Icons.lock_outline, size: 18, color: mutedColor),
+                        prefixIcon: Icon(Icons.lock_outline,
+                            size: 18, color: mutedColor),
                         errorText: _errors['confirmPassword'],
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    _buildField(
+                        'Monthly Budget',
+                        _budgetCtrl,
+                        'e.g. 5000',
+                        Icons.account_balance_wallet_outlined,
+                        false,
+                        mutedColor,
+                        fgColor,
+                        _errors['budget'],
+                        type: TextInputType.number),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
@@ -137,7 +205,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onPressed: () => _handleRegister(state),
                         icon: const Icon(Icons.person_add, size: 18),
                         label: const Text('Create Account'),
-                        style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                        style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14)),
                       ),
                     ),
                   ],
@@ -147,10 +216,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Already have an account? ', style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
+                  Text('Already have an account? ',
+                      style:
+                          GoogleFonts.inter(fontSize: 13, color: mutedColor)),
                   GestureDetector(
-                    onTap: () => context.read<AppState>().setCurrentScreen('login'),
-                    child: Text('Sign in', style: GoogleFonts.inter(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600)),
+                    onTap: () =>
+                        context.read<AppState>().setCurrentScreen('login'),
+                    child: Text('Sign in',
+                        style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -162,9 +238,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController ctrl, String hint, IconData icon, bool obscure, Color muted, Color fg, String? error, {TextInputType? type}) {
+  Widget _buildField(String label, TextEditingController ctrl, String hint,
+      IconData icon, bool obscure, Color muted, Color fg, String? error,
+      {TextInputType? type}) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: fg)),
+      Text(label,
+          style: GoogleFonts.inter(
+              fontSize: 13, fontWeight: FontWeight.w500, color: fg)),
       const SizedBox(height: 6),
       TextField(
         controller: ctrl,

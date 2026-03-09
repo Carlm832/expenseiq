@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_state.dart';
 import 'theme.dart';
 import 'screens/login_screen.dart';
@@ -9,12 +8,6 @@ import 'screens/main_scaffold.dart';
 import 'screens/add_expense_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/appearance_screen.dart';
-import 'screens/budget_screen.dart';
-import 'screens/help_screen.dart';
-import 'screens/privacy_screen.dart';
-import 'screens/payment_methods_screen.dart';
-import 'screens/edit_profile_screen.dart';
 import 'screens/splash_screen.dart';
 
 void main() {
@@ -58,9 +51,6 @@ class AppRouter extends StatelessWidget {
       if (screen == 'register') return const RegisterScreen();
       return const LoginScreen();
     }
-
-    // Main screens with bottom nav
-    const mainScreens = ['dashboard', 'scan', 'ocr', 'history', 'analytics', 'profile'];
 
     Widget child;
     switch (screen) {

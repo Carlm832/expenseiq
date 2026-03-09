@@ -17,10 +17,13 @@ class AppState extends ChangeNotifier {
   List<Expense> _expenses = List.from(kRecentExpenses);
 
   // Notifications
-  List<AppNotification> _notifications = List.from(kDefaultNotifications);
+  final List<AppNotification> _notifications = List.from(kDefaultNotifications);
 
   // Budgets
-  List<Budget> _budgets = List.from(kDefaultBudgets);
+  double _overallBudget = 0.0;
+  bool _hasSeenBudgetWarningThisMonth = false;
+  String _selectedMonth =
+      DateTime.now().toString().substring(0, 7); // YYYY-MM format
 
   // Theme
   bool _isDarkMode = false;
@@ -37,7 +40,9 @@ class AppState extends ChangeNotifier {
   String get currentScreen => _screenHistory.last;
   List<Expense> get expenses => _expenses;
   List<AppNotification> get notifications => _notifications;
-  List<Budget> get budgets => _budgets;
+  double get overallBudget => _overallBudget;
+  String get selectedMonth => _selectedMonth;
+  bool get hasSeenBudgetWarningThisMonth => _hasSeenBudgetWarningThisMonth;
   bool get isDarkMode => _isDarkMode;
   Expense? get selectedExpense => _selectedExpense;
   bool get showExpenseDetail => _showExpenseDetail;
@@ -61,23 +66,29 @@ class AppState extends ChangeNotifier {
       _expenses = decoded.map((e) => Expense.fromJson(e)).toList();
     }
 
-    final budgetsJson = prefs.getString('budgets');
-    if (budgetsJson != null) {
-      final List<dynamic> decoded = jsonDecode(budgetsJson);
-      _budgets = decoded.map((b) => Budget.fromJson(b)).toList();
-    }
+    _overallBudget = prefs.getDouble('overallBudget') ?? 0.0;
+    _hasSeenBudgetWarningThisMonth =
+        prefs.getBool('budgetWarning_${DateTime.now().month}') ?? false;
 
     notifyListeners();
   }
 
   Future<void> _saveExpenses() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('expenses', jsonEncode(_expenses.map((e) => e.toJson()).toList()));
+    prefs.setString(
+        'expenses', jsonEncode(_expenses.map((e) => e.toJson()).toList()));
   }
 
-  Future<void> _saveBudgets() async {
+  Future<void> _saveBudget() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('budgets', jsonEncode(_budgets.map((b) => b.toJson()).toList()));
+    prefs.setDouble('overallBudget', _overallBudget);
+  }
+
+  Future<void> _markWarningSeen() async {
+    _hasSeenBudgetWarningThisMonth = true;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('budgetWarning_${DateTime.now().month}', true);
+    notifyListeners();
   }
 
   void setCurrentScreen(String screen) {
@@ -128,13 +139,15 @@ class AppState extends ChangeNotifier {
   void setUserEmail(String email) {
     _userEmail = email;
     notifyListeners();
-    SharedPreferences.getInstance().then((p) => p.setString('userEmail', email));
+    SharedPreferences.getInstance()
+        .then((p) => p.setString('userEmail', email));
   }
 
   void setProfileImage(String img) {
     _profileImage = img;
     notifyListeners();
-    SharedPreferences.getInstance().then((p) => p.setString('profileImage', img));
+    SharedPreferences.getInstance()
+        .then((p) => p.setString('profileImage', img));
   }
 
   void addExpense(Expense expense) {
@@ -162,20 +175,49 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setBudget(String category, double limit) {
-    final idx = _budgets.indexWhere((b) => b.category == category);
-    if (idx >= 0) {
-      _budgets[idx].limit = limit;
-    } else {
-      _budgets = [..._budgets, Budget(category: category, limit: limit)];
-    }
-    _saveBudgets();
+  void setOverallBudget(double limit) {
+    _overallBudget = limit;
+    _saveBudget();
+    _checkBudgetWarning();
     notifyListeners();
+  }
+
+  void setSelectedMonth(String yearMonth) {
+    _selectedMonth = yearMonth;
+    notifyListeners();
+  }
+
+  void _checkBudgetWarning() {
+    if (_overallBudget <= 0 || _hasSeenBudgetWarningThisMonth) return;
+
+    final currentMonthExpenses = _expenses.where(
+        (e) => e.date.startsWith(DateTime.now().toString().substring(0, 7)));
+
+    final spentThisMonth =
+        currentMonthExpenses.fold(0.0, (s, e) => s + e.amount);
+
+    if (spentThisMonth >= _overallBudget * 0.9) {
+      _hasSeenBudgetWarningThisMonth = true;
+      _markWarningSeen();
+      _notifications.insert(
+          0,
+          AppNotification(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            title: 'Budget Warning',
+            message:
+                'You have spent ${((spentThisMonth / _overallBudget) * 100).toStringAsFixed(0)}% of your monthly budget.',
+            time: 'Just now',
+            read: false,
+            type: 'warning',
+          ));
+      notifyListeners();
+    }
   }
 
   void toggleDarkMode() {
     _isDarkMode = !_isDarkMode;
-    SharedPreferences.getInstance().then((p) => p.setBool('isDarkMode', _isDarkMode));
+    SharedPreferences.getInstance()
+        .then((p) => p.setBool('isDarkMode', _isDarkMode));
     notifyListeners();
   }
 
@@ -193,12 +235,17 @@ class AppState extends ChangeNotifier {
   List<Map<String, String>> _registeredUsers = [];
 
   void addRegisteredUser(String name, String email, String password) {
-    _registeredUsers = [..._registeredUsers, {'name': name, 'email': email, 'password': password}];
+    _registeredUsers = [
+      ..._registeredUsers,
+      {'name': name, 'email': email, 'password': password}
+    ];
   }
 
   bool validateLogin(String email, String password) {
     return _registeredUsers.any(
-      (u) => u['email']!.toLowerCase() == email.toLowerCase() && u['password'] == password,
+      (u) =>
+          u['email']!.toLowerCase() == email.toLowerCase() &&
+          u['password'] == password,
     );
   }
 
@@ -211,6 +258,7 @@ class AppState extends ChangeNotifier {
   }
 
   bool isEmailRegistered(String email) {
-    return _registeredUsers.any((u) => u['email']!.toLowerCase() == email.toLowerCase());
+    return _registeredUsers
+        .any((u) => u['email']!.toLowerCase() == email.toLowerCase());
   }
 }

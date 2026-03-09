@@ -111,7 +111,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           decoration: BoxDecoration(
-                            color: _sortBy == entry.key ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+                            color: _sortBy == entry.key ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(entry.value, style: GoogleFonts.inter(fontSize: 12, color: _sortBy == entry.key ? AppColors.primary : fgColor, fontWeight: _sortBy == entry.key ? FontWeight.w500 : FontWeight.normal)),
@@ -137,7 +137,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             Expanded(
               child: expenses.isEmpty
                 ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.search_off, size: 40, color: mutedColor.withOpacity(0.5)),
+                    Icon(Icons.search_off, size: 40, color: mutedColor.withValues(alpha: 0.5)),
                     const SizedBox(height: 8),
                     Text('No transactions found', style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
                   ]))
@@ -207,7 +207,7 @@ class _HistoryItem extends StatelessWidget {
       child: Row(children: [
         Container(
           width: 40, height: 40,
-          decoration: BoxDecoration(color: catColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(color: catColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
           child: Icon(_categoryIcon(expense.icon), size: 18, color: catColor),
         ),
         const SizedBox(width: 12),

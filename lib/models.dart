@@ -1,5 +1,3 @@
-
-
 class Expense {
   final String id;
   final String merchant;
@@ -73,18 +71,6 @@ class AppNotification {
       );
 }
 
-class Budget {
-  final String category;
-  double limit;
-
-  Budget({required this.category, required this.limit});
-
-  Map<String, dynamic> toJson() => {'category': category, 'limit': limit};
-
-  factory Budget.fromJson(Map<String, dynamic> json) =>
-      Budget(category: json['category'], limit: (json['limit'] as num).toDouble());
-}
-
 class Category {
   final String name;
   final String icon;
@@ -103,39 +89,141 @@ const List<Category> kCategories = [
 ];
 
 const List<Expense> kDefaultExpenses = [
-  Expense(id: '1', merchant: 'Whole Foods Market', date: '2026-02-10', amount: 67.43, category: 'Food & Dining', icon: 'utensils'),
+  Expense(
+      id: '1',
+      merchant: 'Whole Foods Market',
+      date: '2026-02-10',
+      amount: 67.43,
+      category: 'Food & Dining',
+      icon: 'utensils'),
 ];
 
 final List<Expense> kRecentExpenses = [
-  Expense(id: '1', merchant: 'Whole Foods Market', date: '2026-02-10', amount: 67.43, category: 'Food & Dining', icon: 'utensils'),
-  Expense(id: '2', merchant: 'Uber Ride', date: '2026-02-09', amount: 24.50, category: 'Transport', icon: 'car'),
-  Expense(id: '3', merchant: 'Amazon', date: '2026-02-08', amount: 129.99, category: 'Shopping', icon: 'shopping-bag'),
-  Expense(id: '4', merchant: 'Netflix', date: '2026-02-07', amount: 15.99, category: 'Entertainment', icon: 'film'),
-  Expense(id: '5', merchant: 'Electric Bill', date: '2026-02-06', amount: 89.00, category: 'Utilities', icon: 'zap'),
-  Expense(id: '6', merchant: 'Starbucks', date: '2026-02-05', amount: 6.75, category: 'Food & Dining', icon: 'utensils'),
-  Expense(id: '7', merchant: 'Gas Station', date: '2026-02-04', amount: 45.20, category: 'Transport', icon: 'car'),
-  Expense(id: '8', merchant: 'Target', date: '2026-02-03', amount: 82.30, category: 'Shopping', icon: 'shopping-bag'),
-  Expense(id: '9', merchant: 'Apartment Rent', date: '2026-02-01', amount: 1200.00, category: 'Rent', icon: 'home'),
-  Expense(id: '10', merchant: 'Chipotle', date: '2026-01-31', amount: 12.85, category: 'Food & Dining', icon: 'utensils'),
-  Expense(id: '11', merchant: 'Lyft', date: '2026-01-30', amount: 18.75, category: 'Transport', icon: 'car'),
-  Expense(id: '12', merchant: 'H&M', date: '2026-01-29', amount: 54.99, category: 'Shopping', icon: 'shopping-bag'),
+  const Expense(
+      id: '1',
+      merchant: 'Whole Foods Market',
+      date: '2026-02-10',
+      amount: 67.43,
+      category: 'Food & Dining',
+      icon: 'utensils'),
+  const Expense(
+      id: '2',
+      merchant: 'Uber Ride',
+      date: '2026-02-09',
+      amount: 24.50,
+      category: 'Transport',
+      icon: 'car'),
+  const Expense(
+      id: '3',
+      merchant: 'Amazon',
+      date: '2026-02-08',
+      amount: 129.99,
+      category: 'Shopping',
+      icon: 'shopping-bag'),
+  const Expense(
+      id: '4',
+      merchant: 'Netflix',
+      date: '2026-02-07',
+      amount: 15.99,
+      category: 'Entertainment',
+      icon: 'film'),
+  const Expense(
+      id: '5',
+      merchant: 'Electric Bill',
+      date: '2026-02-06',
+      amount: 89.00,
+      category: 'Utilities',
+      icon: 'zap'),
+  const Expense(
+      id: '6',
+      merchant: 'Starbucks',
+      date: '2026-02-05',
+      amount: 6.75,
+      category: 'Food & Dining',
+      icon: 'utensils'),
+  const Expense(
+      id: '7',
+      merchant: 'Gas Station',
+      date: '2026-02-04',
+      amount: 45.20,
+      category: 'Transport',
+      icon: 'car'),
+  const Expense(
+      id: '8',
+      merchant: 'Target',
+      date: '2026-02-03',
+      amount: 82.30,
+      category: 'Shopping',
+      icon: 'shopping-bag'),
+  const Expense(
+      id: '9',
+      merchant: 'Apartment Rent',
+      date: '2026-02-01',
+      amount: 1200.00,
+      category: 'Rent',
+      icon: 'home'),
+  const Expense(
+      id: '10',
+      merchant: 'Chipotle',
+      date: '2026-01-31',
+      amount: 12.85,
+      category: 'Food & Dining',
+      icon: 'utensils'),
+  const Expense(
+      id: '11',
+      merchant: 'Lyft',
+      date: '2026-01-30',
+      amount: 18.75,
+      category: 'Transport',
+      icon: 'car'),
+  const Expense(
+      id: '12',
+      merchant: 'H&M',
+      date: '2026-01-29',
+      amount: 54.99,
+      category: 'Shopping',
+      icon: 'shopping-bag'),
 ];
 
 final List<AppNotification> kDefaultNotifications = [
-  AppNotification(id: 'n1', title: 'Budget Alert', message: "You've used 85% of your Food & Dining budget this month.", time: '2 hours ago', read: false, type: 'warning'),
-  AppNotification(id: 'n2', title: 'Weekly Summary', message: 'Your total spending last week was ₺615. That\'s 8% less than the previous week.', time: '1 day ago', read: false, type: 'info'),
-  AppNotification(id: 'n3', title: 'Expense Saved', message: 'Your receipt from Whole Foods Market (₺67.43) was saved successfully.', time: '2 days ago', read: true, type: 'success'),
-  AppNotification(id: 'n4', title: 'Savings Tip', message: 'Try setting a weekly spending limit to stay on track with your goals.', time: '3 days ago', read: true, type: 'info'),
-  AppNotification(id: 'n5', title: 'Shopping Alert', message: 'Your Shopping category spending is 23% higher than last month.', time: '4 days ago', read: false, type: 'warning'),
-];
-
-final List<Budget> kDefaultBudgets = [
-  Budget(category: 'Food & Dining', limit: 500),
-  Budget(category: 'Transport', limit: 350),
-  Budget(category: 'Shopping', limit: 400),
-  Budget(category: 'Rent', limit: 1300),
-  Budget(category: 'Entertainment', limit: 150),
-  Budget(category: 'Utilities', limit: 200),
+  AppNotification(
+      id: 'n1',
+      title: 'Budget Alert',
+      message: "You've used 85% of your Food & Dining budget this month.",
+      time: '2 hours ago',
+      read: false,
+      type: 'warning'),
+  AppNotification(
+      id: 'n2',
+      title: 'Weekly Summary',
+      message:
+          'Your total spending last week was ₺615. That\'s 8% less than the previous week.',
+      time: '1 day ago',
+      read: false,
+      type: 'info'),
+  AppNotification(
+      id: 'n3',
+      title: 'Expense Saved',
+      message:
+          'Your receipt from Whole Foods Market (₺67.43) was saved successfully.',
+      time: '2 days ago',
+      read: true,
+      type: 'success'),
+  AppNotification(
+      id: 'n4',
+      title: 'Savings Tip',
+      message:
+          'Try setting a weekly spending limit to stay on track with your goals.',
+      time: '3 days ago',
+      read: true,
+      type: 'info'),
+  AppNotification(
+      id: 'n5',
+      title: 'Shopping Alert',
+      message: 'Your Shopping category spending is 23% higher than last month.',
+      time: '4 days ago',
+      read: false,
+      type: 'warning'),
 ];
 
 String formatCurrency(double amount) {
@@ -144,6 +232,19 @@ String formatCurrency(double amount) {
 
 String formatDate(String dateStr) {
   final date = DateTime.parse(dateStr);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
   return '${months[date.month - 1]} ${date.day}';
 }

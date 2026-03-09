@@ -60,15 +60,15 @@ class NotificationsScreen extends StatelessWidget {
                 onTap: () => state.markNotificationRead(n.id),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: n.read ? cardColor : AppColors.primary.withOpacity(0.03),
+                    color: n.read ? cardColor : AppColors.primary.withValues(alpha: 0.03),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: n.read ? borderColor : AppColors.primary.withOpacity(0.2)),
+                    border: Border.all(color: n.read ? borderColor : AppColors.primary.withValues(alpha: 0.2)),
                   ),
                   padding: const EdgeInsets.all(12),
                   child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Container(
                       width: 36, height: 36,
-                      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                       child: Icon(icon, size: 18, color: color),
                     ),
                     const SizedBox(width: 12),

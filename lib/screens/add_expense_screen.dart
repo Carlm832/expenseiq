@@ -109,7 +109,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Container(
                     width: 64, height: 64,
-                    decoration: BoxDecoration(color: AppColors.secondary.withOpacity(0.1), borderRadius: BorderRadius.circular(18)),
+                    decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(18)),
                     child: const Icon(Icons.check, size: 32, color: AppColors.secondary),
                   ),
                   const SizedBox(height: 16),
