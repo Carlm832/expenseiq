@@ -16,39 +16,40 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   String _search = '';
   String _selectedCategory = 'All';
-  String _sortBy = 'date-desc';
-  bool _showSortMenu = false;
+  final String _sortBy = 'date-desc';
 
-  Map<String, String> _getSortLabels(String lang) => {
-    'date-desc': Translations.t('sort_newest', lang),
-    'date-asc': Translations.t('sort_oldest', lang),
-    'amount-desc': Translations.t('sort_highest', lang),
-    'amount-asc': Translations.t('sort_lowest', lang),
-  };
+
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final lang = state.language;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBackground : AppColors.background;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
-    final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-    final mutedBg = isDark ? AppColors.darkMuted : AppColors.muted;
 
     var expenses = state.expenses.where((e) {
-      final matchSearch = e.merchant.toLowerCase().contains(_search.toLowerCase());
-      final matchCat = _selectedCategory == 'All' || e.category == _selectedCategory;
+      final matchSearch =
+          e.merchant.toLowerCase().contains(_search.toLowerCase());
+      final matchCat =
+          _selectedCategory == 'All' || e.category == _selectedCategory;
       return matchSearch && matchCat;
     }).toList();
 
     expenses.sort((a, b) {
       switch (_sortBy) {
-        case 'date-asc': return DateTime.parse(a.date).compareTo(DateTime.parse(b.date));
-        case 'amount-desc': return b.amount.compareTo(a.amount);
-        case 'amount-asc': return a.amount.compareTo(b.amount);
-        default: return DateTime.parse(b.date).compareTo(DateTime.parse(a.date));
+        case 'date-asc':
+          return DateTime.parse(a.date).compareTo(DateTime.parse(b.date));
+        case 'amount-desc':
+          return b.amount.compareTo(a.amount);
+        case 'amount-asc':
+          return a.amount.compareTo(b.amount);
+        default:
+          return DateTime.parse(b.date).compareTo(DateTime.parse(a.date));
       }
     });
 
@@ -63,101 +64,95 @@ class _HistoryScreenState extends State<HistoryScreen> {
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
               child: Column(children: [
                 Row(children: [
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(Translations.t('expense_history', state.language), style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
-                    Text('${expenses.length} ${Translations.t('transactions', state.language).toLowerCase()} ${Translations.t('totaling', state.language)} ${state.formatCurrency(total)}', style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
-                  ])),
+                  Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(Translations.t('expense_history', lang),
+                            style: GoogleFonts.dmSans(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: fgColor)),
+                        Text(
+                            '${expenses.length} ${Translations.t('transactions', lang).toLowerCase()} ${Translations.t('totaling', lang)} ${state.formatCurrency(total)}',
+                            style: GoogleFonts.inter(
+                                fontSize: 12, color: mutedColor)),
+                      ])),
                   OutlinedButton.icon(
                     onPressed: () {},
                     icon: const Icon(Icons.download, size: 14),
                     label: Text('CSV', style: GoogleFonts.inter(fontSize: 12)),
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                    style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12))),
                   ),
                 ]),
                 const SizedBox(height: 12),
                 // Search
                 Container(
                   height: 44,
-                  decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+                  decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: borderColor)),
                   child: Row(children: [
                     const SizedBox(width: 12),
                     Icon(Icons.search, size: 18, color: mutedColor),
                     const SizedBox(width: 8),
-                    Expanded(child: TextField(
+                    Expanded(
+                        child: TextField(
                       onChanged: (v) => setState(() => _search = v),
+                      style: GoogleFonts.inter(fontSize: 14, color: fgColor),
                       decoration: InputDecoration(
-                        hintText: Translations.t('search_history', state.language),
+                        hintText: Translations.t('search_history', lang),
+                        hintStyle:
+                            GoogleFonts.inter(fontSize: 14, color: mutedColor),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
                         isDense: true,
-                        hintStyle: GoogleFonts.inter(fontSize: 13, color: mutedColor),
                       ),
-                      style: GoogleFonts.inter(fontSize: 13),
                     )),
-                    GestureDetector(
-                      onTap: () => setState(() => _showSortMenu = !_showSortMenu),
-                      child: Padding(padding: const EdgeInsets.all(12), child: Icon(Icons.sort, size: 18, color: mutedColor)),
-                    ),
                   ]),
                 ),
-                if (_showSortMenu)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
-                    child: Column(
-                      children: _getSortLabels(state.language).entries.map((entry) => GestureDetector(
-                        onTap: () => setState(() { _sortBy = entry.key; _showSortMenu = false; }),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: _sortBy == entry.key ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(entry.value, style: GoogleFonts.inter(fontSize: 12, color: _sortBy == entry.key ? AppColors.primary : fgColor, fontWeight: _sortBy == entry.key ? FontWeight.w500 : FontWeight.normal)),
-                        ),
-                      )).toList(),
-                    ),
-                  ),
                 const SizedBox(height: 8),
-                // Category filter
-                SizedBox(
-                  height: 36,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
                     children: [
-                      _FilterChip(label: Translations.t('all', state.language), isSelected: _selectedCategory == 'All', onTap: () => setState(() => _selectedCategory = 'All'), mutedBg: mutedBg, mutedColor: mutedColor),
-                      ...kCategories.map((cat) => _FilterChip(label: Translations.t(cat.name, state.language), isSelected: _selectedCategory == cat.name, onTap: () => setState(() => _selectedCategory = cat.name), mutedBg: mutedBg, mutedColor: mutedColor)),
+                      _FilterChip(
+                        label: 'All',
+                        isSelected: _selectedCategory == 'All',
+                        onTap: () => setState(() => _selectedCategory = 'All'),
+                      ),
+                      ...kCategories.map((c) => _FilterChip(
+                            label: c.name,
+                            isSelected: _selectedCategory == c.name,
+                            onTap: () =>
+                                setState(() => _selectedCategory = c.name),
+                          )),
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
               ]),
             ),
+            const SizedBox(height: 8),
             Expanded(
               child: expenses.isEmpty
-                ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.search_off, size: 40, color: mutedColor.withValues(alpha: 0.5)),
-                    const SizedBox(height: 8),
-                    Text(Translations.t('no_history', state.language), style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
-                  ]))
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                    itemCount: expenses.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (_, i) {
-                      final e = expenses[i];
-                      return GestureDetector(
-                        onTap: () {
-                          state.setSelectedExpense(e);
-                          state.setShowExpenseDetail(true);
-                        },
-                        child: _HistoryItem(expense: e, isDark: isDark, fgColor: fgColor, mutedColor: mutedColor, cardColor: cardColor, borderColor: borderColor),
-                      );
-                    },
-                  ),
+                  ? Center(
+                      child: Text(Translations.t('no_transactions', lang),
+                          style: GoogleFonts.inter(color: mutedColor)))
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: expenses.length,
+                      itemBuilder: (ctx, idx) => _HistoryItem(
+                            expense: expenses[idx],
+                            isDark: isDark,
+                            lang: lang,
+                            formatCurrency: (a) => state.formatCurrency(a),
+                          )),
             ),
           ],
         ),
@@ -170,22 +165,21 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
-  final Color mutedBg;
-  final Color mutedColor;
-  const _FilterChip({required this.label, required this.isSelected, required this.onTap, required this.mutedBg, required this.mutedColor});
+
+  const _FilterChip(
+      {required this.label, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : mutedBg,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: isSelected ? Colors.white : mutedColor)),
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        label: Text(label, style: GoogleFonts.inter(fontSize: 12)),
+        selected: isSelected,
+        onSelected: (_) => onTap(),
+        selectedColor: AppColors.primary,
+        labelStyle: TextStyle(
+            color: isSelected ? Colors.white : AppColors.mutedForeground),
       ),
     );
   }
@@ -194,48 +188,78 @@ class _FilterChip extends StatelessWidget {
 class _HistoryItem extends StatelessWidget {
   final Expense expense;
   final bool isDark;
-  final Color fgColor;
-  final Color mutedColor;
-  final Color cardColor;
-  final Color borderColor;
-  const _HistoryItem({required this.expense, required this.isDark, required this.fgColor, required this.mutedColor, required this.cardColor, required this.borderColor});
+  final String lang;
+  final String Function(double) formatCurrency;
+
+  const _HistoryItem(
+      {required this.expense,
+      required this.isDark,
+      required this.lang,
+      required this.formatCurrency});
 
   @override
   Widget build(BuildContext context) {
-    final lang = context.read<AppState>().language;
-    final catColor = _categoryColor(expense.category);
+    final cardColor = isDark ? AppColors.darkCard : AppColors.card;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+
     return Container(
-      decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor)),
       padding: const EdgeInsets.all(12),
       child: Row(children: [
         Container(
-          width: 40, height: 40,
-          decoration: BoxDecoration(color: catColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-          child: Icon(_categoryIcon(expense.icon), size: 18, color: catColor),
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+              color: Color(_getCatColor(expense.category)).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10)),
+          child: Icon(_getCatIcon(expense.icon),
+              size: 18, color: Color(_getCatColor(expense.category))),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(expense.merchant, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
-          Text('${formatDate(expense.date, lang)} · ${Translations.t(expense.category, lang)}', style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(expense.merchant,
+              style: GoogleFonts.inter(
+                  fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
+          Text(formatDate(expense.date, lang),
+              style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
         ])),
-        Text('-${context.read<AppState>().formatCurrency(expense.amount)}', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: fgColor)),
+        Text('-${formatCurrency(expense.amount)}',
+            style: GoogleFonts.inter(
+                fontSize: 13, fontWeight: FontWeight.w600, color: fgColor)),
       ]),
     );
   }
-}
 
-Color _categoryColor(String category) {
-  final cat = kCategories.firstWhere((c) => c.name == category, orElse: () => const Category(name: '', icon: '', color: 0xFF6B7280));
-  return Color(cat.color);
-}
+  int _getCatColor(String category) {
+    return kCategories
+        .firstWhere((c) => c.name == category,
+            orElse: () => const Category(name: '', icon: '', color: 0xFF6B7280))
+        .color;
+  }
 
-IconData _categoryIcon(String icon) {
-  switch (icon) {
-    case 'car': return Icons.directions_car;
-    case 'home': return Icons.home;
-    case 'film': return Icons.movie;
-    case 'zap': return Icons.flash_on;
-    case 'shopping-bag': return Icons.shopping_bag;
-    default: return Icons.restaurant;
+  IconData _getCatIcon(String icon) {
+    switch (icon) {
+      case 'car':
+        return Icons.directions_car;
+      case 'home':
+        return Icons.home;
+      case 'film':
+        return Icons.movie;
+      case 'zap':
+        return Icons.flash_on;
+      case 'shopping-bag':
+        return Icons.shopping_bag;
+      default:
+        return Icons.restaurant;
+    }
   }
 }

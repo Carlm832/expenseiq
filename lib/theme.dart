@@ -4,27 +4,27 @@ import 'package:google_fonts/google_fonts.dart';
 // --- Color constants matching globals.css HSL values ---
 class AppColors {
   // Light theme
-  static const Color background = Color(0xFFF5F8FF);      // HSL 210 40% 98%
-  static const Color foreground = Color(0xFF1F2937);      // HSL 215 25% 15%
+  static const Color background = Color(0xFFF5F8FF); // HSL 210 40% 98%
+  static const Color foreground = Color(0xFF1F2937); // HSL 215 25% 15%
   static const Color card = Color(0xFFFFFFFF);
   static const Color cardForeground = Color(0xFF1F2937);
-  static const Color primary = Color(0xFF4F8EF7);         // HSL 217 91% 60%
+  static const Color primary = Color(0xFF4F8EF7); // HSL 217 91% 60%
   static const Color primaryForeground = Color(0xFFFFFFFF);
-  static const Color secondary = Color(0xFF33C17A);       // HSL 152 69% 47%
+  static const Color secondary = Color(0xFF33C17A); // HSL 152 69% 47%
   static const Color secondaryForeground = Color(0xFFFFFFFF);
-  static const Color muted = Color(0xFFEBF2FF);           // HSL 210 30% 95%
+  static const Color muted = Color(0xFFEBF2FF); // HSL 210 30% 95%
   static const Color mutedForeground = Color(0xFF6B7280); // HSL 215 16% 47%
-  static const Color destructive = Color(0xFFEF4444);     // HSL 0 84% 60%
-  static const Color border = Color(0xFFD9E4F0);          // HSL 214 20% 90%
-  static const Color chartAmber = Color(0xFFF5A623);      // HSL 38 92% 50%
-  static const Color chartPurple = Color(0xFF8B5CF6);     // HSL 262 83% 58%
-  static const Color chartBlue = Color(0xFF0EA5E9);       // HSL 200 80% 50%
+  static const Color destructive = Color(0xFFEF4444); // HSL 0 84% 60%
+  static const Color border = Color(0xFFD9E4F0); // HSL 214 20% 90%
+  static const Color chartAmber = Color(0xFFF5A623); // HSL 38 92% 50%
+  static const Color chartPurple = Color(0xFF8B5CF6); // HSL 262 83% 58%
+  static const Color chartBlue = Color(0xFF0EA5E9); // HSL 200 80% 50%
 
   // Dark theme
-  static const Color darkBackground = Color(0xFF0F172A);  // HSL 222 47% 8%
+  static const Color darkBackground = Color(0xFF0F172A); // HSL 222 47% 8%
   static const Color darkForeground = Color(0xFFE2E8F0);
-  static const Color darkCard = Color(0xFF1A2744);        // HSL 222 47% 11%
-  static const Color darkMuted = Color(0xFF1E3258);       // HSL 223 47% 16%
+  static const Color darkCard = Color(0xFF1A2744); // HSL 222 47% 11%
+  static const Color darkMuted = Color(0xFF1E3258); // HSL 223 47% 16%
   static const Color darkMutedForeground = Color(0xFF94A3B8);
   static const Color darkBorder = Color(0xFF243352);
 

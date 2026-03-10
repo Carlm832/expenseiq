@@ -17,7 +17,6 @@ class ScanScreen extends StatefulWidget {
 class _ScanScreenState extends State<ScanScreen> {
   bool _isScanning = false;
   bool _scanFailed = false;
-  String? _previewPath;
   String _statusMessage = 'Point camera at receipt';
   final _ocrService = OcrService();
 
@@ -37,7 +36,6 @@ class _ScanScreenState extends State<ScanScreen> {
     try {
       final imageFile = await _ocrService.pickImage(source);
       if (imageFile == null) {
-        // User cancelled
         setState(() {
           _isScanning = false;
         });
@@ -45,7 +43,6 @@ class _ScanScreenState extends State<ScanScreen> {
       }
 
       setState(() {
-        _previewPath = imageFile.path;
         _statusMessage = 'Analyzing receipt...';
       });
 
@@ -54,16 +51,13 @@ class _ScanScreenState extends State<ScanScreen> {
       if (!mounted) return;
 
       if (result.success) {
-        // Pass OCR result as screen args to the addExpense screen
-        context.read<AppState>().setCurrentScreen(
-          'addExpense',
-          args: {
-            'merchant': result.merchant,
-            'amount': result.amount?.toStringAsFixed(2),
-            'date': result.date,
-            'fromScan': true,
-          },
-        );
+        context.read<AppState>().setScreenArgs({
+          'merchant': result.merchant,
+          'amount': result.amount?.toStringAsFixed(2),
+          'date': result.date,
+          'fromScan': true,
+        });
+        context.read<AppState>().setCurrentScreen('add_expense');
       } else {
         setState(() {
           _isScanning = false;
@@ -90,6 +84,8 @@ class _ScanScreenState extends State<ScanScreen> {
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
 
+    final lang = context.watch<AppState>().language;
+
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
@@ -98,16 +94,14 @@ class _ScanScreenState extends State<ScanScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Scan Receipt',
+              Text(Translations.t('nav_scan', lang),
                   style: GoogleFonts.dmSans(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: fgColor)),
-              Text('Take a photo or upload a receipt',
+              Text(Translations.t('scan_instructions', lang),
                   style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
               const SizedBox(height: 24),
-
-              // Scan preview box
               Expanded(
                 child: Center(
                   child: Container(
@@ -122,44 +116,40 @@ class _ScanScreenState extends State<ScanScreen> {
                           width: 2),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: _buildPreviewContent(fgColor, mutedColor),
+                    child: _buildPreviewContent(fgColor, mutedColor, lang),
                   ),
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // Buttons
               if (_scanFailed) ...[
                 _ActionButton(
                   icon: Icons.refresh,
-                  label: Translations.t('try_again', context.read<AppState>().language),
+                  label: Translations.t('try_again', lang),
                   onPressed: () => setState(() {
                     _scanFailed = false;
-                    _previewPath = null;
-                    _statusMessage = Translations.t('scan_instructions', context.read<AppState>().language);
+                    _statusMessage = Translations.t('scan_instructions', lang);
                   }),
                   primary: true,
                 ),
                 const SizedBox(height: 12),
                 _ActionButton(
                   icon: Icons.edit,
-                  label: Translations.t('enter_manually', context.read<AppState>().language),
+                  label: Translations.t('enter_manually', lang),
                   onPressed: () =>
-                      context.read<AppState>().setCurrentScreen('addExpense'),
+                      context.read<AppState>().setCurrentScreen('add_expense'),
                   primary: false,
                 ),
               ] else if (!_isScanning) ...[
                 _ActionButton(
                   icon: Icons.camera_alt,
-                  label: Translations.t('take_photo', context.read<AppState>().language),
+                  label: Translations.t('take_photo', lang),
                   onPressed: () => _scan(ImageSource.camera),
                   primary: true,
                 ),
                 const SizedBox(height: 12),
                 _ActionButton(
                   icon: Icons.photo_library,
-                  label: Translations.t('from_gallery', context.read<AppState>().language),
+                  label: Translations.t('from_gallery', lang),
                   onPressed: () => _scan(ImageSource.gallery),
                   primary: false,
                 ),
@@ -171,53 +161,23 @@ class _ScanScreenState extends State<ScanScreen> {
     );
   }
 
-  Widget _buildPreviewContent(Color fgColor, Color mutedColor) {
+  Widget _buildPreviewContent(Color fgColor, Color mutedColor, String lang) {
     if (_isScanning) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (_previewPath != null) ...[
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset(_previewPath!, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox()),
-                  // Dark overlay while processing
-                  Container(color: Colors.black.withValues(alpha: 0.5)),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const CircularProgressIndicator(color: Colors.white),
-                      const SizedBox(height: 16),
-                      Text(_statusMessage,
-                          style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white),
-                          textAlign: TextAlign.center),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ] else ...[
-            const CircularProgressIndicator(),
-            const SizedBox(height: 20),
-            Text(_statusMessage,
-                style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: fgColor),
-                textAlign: TextAlign.center),
-          ],
+          const CircularProgressIndicator(),
+          const SizedBox(height: 20),
+          Text(_statusMessage,
+              style: GoogleFonts.inter(
+                  fontSize: 14, fontWeight: FontWeight.w500, color: fgColor),
+              textAlign: TextAlign.center),
         ],
       );
     }
 
     if (_scanFailed) {
-          final lang = context.read<AppState>().language;
-          return Column(
+      return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
@@ -232,9 +192,7 @@ class _ScanScreenState extends State<ScanScreen> {
           const SizedBox(height: 20),
           Text(Translations.t('scan_failed', lang),
               style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: fgColor),
+                  fontSize: 14, fontWeight: FontWeight.w500, color: fgColor),
               textAlign: TextAlign.center),
           const SizedBox(height: 8),
           Text(Translations.t('scan_failed_msg', lang),
@@ -243,7 +201,6 @@ class _ScanScreenState extends State<ScanScreen> {
       );
     }
 
-    // Default idle state
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -253,35 +210,32 @@ class _ScanScreenState extends State<ScanScreen> {
           decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle),
-          child:
-              const Icon(Icons.document_scanner, size: 36, color: AppColors.primary),
+          child: const Icon(Icons.document_scanner,
+              size: 36, color: AppColors.primary),
         ),
         const SizedBox(height: 20),
-        Text('Point camera at receipt',
+        Text(Translations.t('scan_instructions', lang),
             style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: fgColor),
+                fontSize: 14, fontWeight: FontWeight.w500, color: fgColor),
             textAlign: TextAlign.center),
         const SizedBox(height: 8),
         Text('or choose from gallery',
             style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
-        const SizedBox(height: 24),
-        // Scan guide lines for aesthetics
-        Row(
+        const SizedBox(height: 40),
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _CornerBracket(top: true, left: true),
-            const SizedBox(width: 80),
+            SizedBox(width: 80),
             _CornerBracket(top: true, left: false),
           ],
         ),
         const SizedBox(height: 40),
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _CornerBracket(top: false, left: true),
-            const SizedBox(width: 80),
+            SizedBox(width: 80),
             _CornerBracket(top: false, left: false),
           ],
         ),
@@ -302,10 +256,18 @@ class _CornerBracket extends StatelessWidget {
       height: 20,
       decoration: BoxDecoration(
         border: Border(
-          top: top ? const BorderSide(color: AppColors.primary, width: 2) : BorderSide.none,
-          bottom: !top ? const BorderSide(color: AppColors.primary, width: 2) : BorderSide.none,
-          left: left ? const BorderSide(color: AppColors.primary, width: 2) : BorderSide.none,
-          right: !left ? const BorderSide(color: AppColors.primary, width: 2) : BorderSide.none,
+          top: top
+              ? const BorderSide(color: AppColors.primary, width: 2)
+              : BorderSide.none,
+          bottom: !top
+              ? const BorderSide(color: AppColors.primary, width: 2)
+              : BorderSide.none,
+          left: left
+              ? const BorderSide(color: AppColors.primary, width: 2)
+              : BorderSide.none,
+          right: !left
+              ? const BorderSide(color: AppColors.primary, width: 2)
+              : BorderSide.none,
         ),
       ),
     );
@@ -337,18 +299,19 @@ class _ActionButton extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14)),
         ),
       );
+    } else {
+      return SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: onPressed,
+          icon: Icon(icon, size: 18),
+          label: Text(label),
+          style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12))),
+        ),
+      );
     }
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 18),
-        label: Text(label),
-        style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12))),
-      ),
-    );
   }
 }

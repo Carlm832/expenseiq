@@ -1,0 +1,16 @@
+Analyzing expense_iq_flutter...                                 
+
+   info - Don't invoke 'print' in production code - lib\app_state.dart:171:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\app_state.dart:201:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\app_state.dart:213:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\app_state.dart:233:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\app_state.dart:243:7 - avoid_print
+warning - The declaration '_saveUserData' isn't referenced - lib\app_state.dart:251:16 - unused_element
+warning - The declaration '_checkBudgetWarning' isn't referenced - lib\app_state.dart:437:8 - unused_element
+warning - The value of the local variable 'mainScreens' isn't used - lib\main.dart:59:11 - unused_local_variable
+  error - The method 'formatDate' isn't defined for the type 'AppState' - lib\screens\analytics_screen.dart:544:63 - undefined_method
+warning - The declaration '_getSortLabels' isn't referenced - lib\screens\history_screen.dart:21:23 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\history_screen.dart:225:60 - deprecated_member_use
+warning - The value of the field '_previewPath' isn't used - lib\screens\scan_screen.dart:20:11 - unused_field
+
+12 issues found. (ran in 3.1s)

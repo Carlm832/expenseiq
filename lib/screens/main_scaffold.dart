@@ -131,7 +131,8 @@ class _ScanNavItem extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
 
-  const _ScanNavItem({required this.label, required this.isActive, required this.onTap});
+  const _ScanNavItem(
+      {required this.label, required this.isActive, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

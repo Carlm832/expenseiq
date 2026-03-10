@@ -37,7 +37,8 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
     if (source == null) return;
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    final picked =
+        await ImagePicker().pickImage(source: source, imageQuality: 85);
     if (picked != null) {
       state.setProfileImage(picked.path);
     }
@@ -86,8 +87,18 @@ class ProfileScreen extends StatelessWidget {
         'Set spending limits',
         'budget'
       ),
-      (Icons.help_outline, Translations.t('help_support', lang), 'Get assistance', 'help'),
-      (Icons.settings_outlined, Translations.t('settings', lang), 'App preferences', 'settings'),
+      (
+        Icons.help_outline,
+        Translations.t('help_support', lang),
+        'Get assistance',
+        'help'
+      ),
+      (
+        Icons.settings_outlined,
+        Translations.t('settings', lang),
+        'App preferences',
+        'settings'
+      ),
     ];
 
     final totalSaved =
@@ -107,39 +118,45 @@ class ProfileScreen extends StatelessWidget {
                   border: Border.all(color: borderColor)),
               padding: const EdgeInsets.all(20),
               child: Row(children: [
-              GestureDetector(
-                onTap: () => _pickProfilePhoto(context, state),
-                child: Stack(
-                  children: [
-                    Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16)),
-                    child: state.profileImage.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.file(File(state.profileImage),
-                                fit: BoxFit.cover))
-                        : const Icon(Icons.person,
-                            size: 32, color: AppColors.primary),
-                    ),
-                    Positioned(
-                      right: 0, bottom: 0,
-                      child: Container(
-                        width: 20, height: 20,
+                GestureDetector(
+                  onTap: () => _pickProfilePhoto(context, state),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5),
-                        ),
-                        child: const Icon(Icons.camera_alt, size: 11, color: Colors.white),
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16)),
+                        child: state.profileImage.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: state.profileImage.startsWith('http')
+                                    ? Image.network(state.profileImage,
+                                        fit: BoxFit.cover)
+                                    : Image.file(File(state.profileImage),
+                                        fit: BoxFit.cover))
+                            : const Icon(Icons.person,
+                                size: 32, color: AppColors.primary),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                          child: const Icon(Icons.camera_alt,
+                              size: 11, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
                 const SizedBox(width: 16),
                 Expanded(
                     child: Column(
@@ -166,7 +183,7 @@ class ProfileScreen extends StatelessWidget {
                       ]),
                     ])),
                 GestureDetector(
-                  onTap: () => state.setCurrentScreen('editProfile'),
+                  onTap: () => state.setCurrentScreen('settings'),
                   child: Container(
                     width: 36,
                     height: 36,
@@ -199,7 +216,7 @@ class ProfileScreen extends StatelessWidget {
                   borderColor: borderColor),
               const SizedBox(width: 12),
               _StatCard(
-                  value: context.read<AppState>().formatCurrency(totalSaved.toDouble()),
+                  value: state.formatCurrency(totalSaved.toDouble()),
                   label: Translations.t('saved', lang),
                   fgColor: fgColor,
                   mutedColor: mutedColor,
@@ -271,8 +288,8 @@ class ProfileScreen extends StatelessWidget {
                         color: AppColors.destructive,
                         fontWeight: FontWeight.w500)),
                 style: OutlinedButton.styleFrom(
-                  side:
-                      BorderSide(color: AppColors.destructive.withValues(alpha: 0.4)),
+                  side: BorderSide(
+                      color: AppColors.destructive.withValues(alpha: 0.4)),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
@@ -315,13 +332,13 @@ class _StatCard extends StatelessWidget {
           color: cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: borderColor)),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      child: Column(children: [
         Text(value,
             style: GoogleFonts.dmSans(
-                fontSize: 18,
+                fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: valueColor ?? fgColor)),
-        Text(label, style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
+        Text(label, style: GoogleFonts.inter(fontSize: 10, color: mutedColor)),
       ]),
     ));
   }

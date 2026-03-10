@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../app_state.dart';
-import '../models.dart';
 import '../theme.dart';
+import '../models.dart';
 import '../services/translations.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -17,76 +17,74 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _alertShown = false;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndShowAlert();
-    });
-  }
-
   void _checkAndShowAlert() {
-    if (!mounted) return;
     final state = context.read<AppState>();
-    if (state.hasSeenBudgetWarningThisMonth && !_alertShown) {
-      _alertShown = true;
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(Translations.t('budget_warning', state.language)),
-          content: Text(Translations.t('budget_warning_msg', state.language)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(Translations.t('got_it', state.language)),
-            ),
-          ],
-        ),
-      );
+    if (state.overallBudget > 0 && !_alertShown) {
+      final total = state.expenses
+          .where((e) => e.date.startsWith(state.selectedMonth))
+          .fold(0.0, (s, e) => s + e.amount);
+      if (total >= state.overallBudget * 0.9) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _showBudgetWarning();
+          setState(() => _alertShown = true);
+        });
+      }
     }
   }
 
-  List<(String, String)> _getAvailableMonths(List<Expense> allExpenses) {
-    if (allExpenses.isEmpty) {
-      final now = DateTime.now();
-      return [
-        (
-          now.toString().substring(0, 7),
-          '${_getMonthName(now.month, context.read<AppState>().language)} ${now.year}'
-        )
+  void _showBudgetWarning() {
+    final state = context.read<AppState>();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(Translations.t('budget_alert', state.language)),
+        content: Text(Translations.t('budget_warning_msg', state.language)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(Translations.t('ok', state.language))),
+        ],
+      ),
+    );
+  }
+
+  List<(String, String)> _getAvailableMonths(List<Expense> expenses) {
+    final state = context.read<AppState>();
+    final months = <String>{};
+    for (var e in expenses) {
+      if (e.date.length >= 7) {
+        months.add(e.date.substring(0, 7));
+      }
+    }
+    // Add current month if not present
+    months.add(DateTime.now().toIso8601String().substring(0, 7));
+
+    final sorted = months.toList()..sort((a, b) => b.compareTo(a));
+    return sorted.map((m) {
+      final date = DateTime.parse('$m-01');
+      final monthNames = [
+        Translations.t('m_jan', state.language),
+        Translations.t('m_feb', state.language),
+        Translations.t('m_mar', state.language),
+        Translations.t('m_apr', state.language),
+        Translations.t('m_may', state.language),
+        Translations.t('m_jun', state.language),
+        Translations.t('m_jul', state.language),
+        Translations.t('m_aug', state.language),
+        Translations.t('m_sep', state.language),
+        Translations.t('m_oct', state.language),
+        Translations.t('m_nov', state.language),
+        Translations.t('m_dec', state.language)
       ];
-    }
-
-    final monthsStr =
-        allExpenses.map((e) => e.date.substring(0, 7)).toSet().toList();
-    // Ensure current month is always in the list
-    final currentMonth = DateTime.now().toString().substring(0, 7);
-    if (!monthsStr.contains(currentMonth)) {
-      monthsStr.add(currentMonth);
-    }
-
-    monthsStr.sort((a, b) => b.compareTo(a)); // Descending order
-
-    return monthsStr.map((m) {
-      final parts = m.split('-');
-      final year = parts[0];
-      final month = int.parse(parts[1]);
-      final monthName = _getMonthName(month, context.read<AppState>().language);
-      return (m, '$monthName $year');
+      return (m, "${monthNames[date.month - 1]} ${date.year}");
     }).toList();
   }
 
-  String _getMonthName(int month, String lang) {
-    if (lang == 'Turkish') {
-      const months = [
-        'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'
-      ];
-      return months[month - 1];
-    }
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return months[month - 1];
+  @override
+  void initState() {
+    super.initState();
+    _checkAndShowAlert();
   }
 
   @override
@@ -101,7 +99,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final mutedBg = isDark ? AppColors.darkMuted : AppColors.muted;
 
-    final selectedMonthStr = state.selectedMonth; // format: "YYYY-MM"
+    final lang = state.language;
+    final selectedMonthStr = state.selectedMonth;
     final allExpenses = state.expenses;
     final expenses =
         allExpenses.where((e) => e.date.startsWith(selectedMonthStr)).toList();
@@ -109,10 +108,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final totalSpending = expenses.fold(0.0, (s, e) => s + e.amount);
     final hour = DateTime.now().hour;
     final greeting = hour < 12
-        ? Translations.t('greeting_morning', state.language)
+        ? Translations.t('greeting_morning', lang)
         : hour < 18
-            ? Translations.t('greeting_afternoon', state.language)
-            : Translations.t('greeting_evening', state.language);
+            ? Translations.t('greeting_afternoon', lang)
+            : Translations.t('greeting_evening', lang);
 
     // Category summary
     final Map<String, double> categoryMap = {};
@@ -132,7 +131,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Budget progress
     final overallBudget = state.overallBudget;
     final isCurrentMonth =
-        selectedMonthStr == DateTime.now().toString().substring(0, 7);
+        selectedMonthStr == DateTime.now().toIso8601String().substring(0, 7);
     final budgetPercent = (overallBudget > 0)
         ? (totalSpending / overallBudget).clamp(0.0, 1.0)
         : 0.0;
@@ -141,11 +140,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ? 0.0
         : expenses.map((e) => e.amount).reduce((a, b) => a > b ? a : b);
 
-    // Calculate days passed in month to get a good daily avg
-    int daysPassed = 30;
-    if (isCurrentMonth) {
-      daysPassed = DateTime.now().day;
-    }
+    int daysInMonth =
+        DateTime(DateTime.now().year, DateTime.now().month + 1, 0).day;
+    int daysPassed = isCurrentMonth ? DateTime.now().day : daysInMonth;
     final dailyAvg = totalSpending / (daysPassed > 0 ? daysPassed : 1);
 
     return Scaffold(
@@ -169,7 +166,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   fontSize: 13, color: mutedColor)),
                           Text(
                               state.userName.isEmpty
-                                  ? Translations.t('welcome', state.language)
+                                  ? Translations.t('welcome', lang)
                                   : state.userName,
                               style: GoogleFonts.dmSans(
                                   fontSize: 20,
@@ -211,7 +208,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                   ]),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   // Total spending card
                   Container(
@@ -234,7 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                Text('Total Spending',
+                                Text(Translations.t('total_spending', lang),
                                     style: GoogleFonts.inter(
                                         fontSize: 13,
                                         color: Colors.white
@@ -259,7 +256,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         const Icon(Icons.trending_down,
                                             size: 12, color: Colors.white),
                                         const SizedBox(width: 4),
-                                        Text('${expenses.length} expenses',
+                                        Text(
+                                            '${expenses.length} ${Translations.t('expenses', lang)}',
                                             style: GoogleFonts.inter(
                                                 fontSize: 11,
                                                 color: Colors.white,
@@ -287,10 +285,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 onChanged: (newValue) {
                                   if (newValue != null) {
                                     state.setSelectedMonth(newValue);
-                                    // Reset alert shown flag if we change months
                                     if (newValue ==
                                         DateTime.now()
-                                            .toString()
+                                            .toIso8601String()
                                             .substring(0, 7)) {
                                       _checkAndShowAlert();
                                     }
@@ -332,7 +329,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Row(children: [
                                 Expanded(
-                                    child: Text(Translations.t('overall_monthly_budget', state.language),
+                                    child: Text(
+                                        Translations.t(
+                                            'overall_monthly_budget', lang),
                                         style: GoogleFonts.inter(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w500,
@@ -340,7 +339,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 Container(width: 8),
                                 GestureDetector(
                                   onTap: () => state.setCurrentScreen('budget'),
-                                  child: Text(Translations.t('manage', state.language),
+                                  child: Text(Translations.t('manage', lang),
                                       style: GoogleFonts.inter(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w500,
@@ -362,11 +361,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                               const SizedBox(height: 6),
                               Row(children: [
-                                Text('${state.formatCurrency(totalSpending)} spent',
+                                Text(
+                                    '${state.formatCurrency(totalSpending)} ${Translations.t('spent', lang)}',
                                     style: GoogleFonts.inter(
                                         fontSize: 10, color: mutedColor)),
                                 const Spacer(),
-                                Text('${state.formatCurrency(overallBudget)} limit',
+                                Text(
+                                    '${state.formatCurrency(overallBudget)} ${Translations.t('limit', lang)}',
                                     style: GoogleFonts.inter(
                                         fontSize: 10, color: mutedColor)),
                               ]),
@@ -377,14 +378,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Spending by category
                   Row(children: [
                     Expanded(
-                        child: Text('Spending by Category',
+                        child: Text(
+                            Translations.t('spending_by_category', lang),
                             style: GoogleFonts.dmSans(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: fgColor))),
                     GestureDetector(
                       onTap: () => state.setCurrentScreen('analytics'),
-                      child: Text(Translations.t('see_all', state.language),
+                      child: Text(Translations.t('see_all', lang),
                           style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -398,7 +400,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ? Center(
                             child: Padding(
                                 padding: const EdgeInsets.all(16),
-                                child: Text(Translations.t('no_data', state.language),
+                                child: Text(Translations.t('no_data', lang),
                                     style:
                                         GoogleFonts.inter(color: mutedColor))))
                         : Row(children: [
@@ -451,7 +453,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             )),
                           ]),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
                   // Quick stats
                   Row(children: [
@@ -473,7 +475,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         size: 16, color: AppColors.secondary),
                                   ),
                                   const SizedBox(height: 8),
-                                  Text(Translations.t('highest_expense', state.language),
+                                  Text(Translations.t('highest_expense', lang),
                                       style: GoogleFonts.inter(
                                           fontSize: 11, color: mutedColor)),
                                   Text(state.formatCurrency(maxExpense),
@@ -501,7 +503,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         size: 16, color: AppColors.primary),
                                   ),
                                   const SizedBox(height: 8),
-                                  Text(Translations.t('daily_average', state.language),
+                                  Text(Translations.t('daily_average', lang),
                                       style: GoogleFonts.inter(
                                           fontSize: 11, color: mutedColor)),
                                   Text(state.formatCurrency(dailyAvg),
@@ -511,19 +513,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           color: fgColor)),
                                 ]))),
                   ]),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
-                  // Recent expenses
+                  // Recent expenses section
                   Row(children: [
                     Expanded(
-                        child: Text(Translations.t('recent_expenses', state.language),
+                        child: Text(Translations.t('recent_expenses', lang),
                             style: GoogleFonts.dmSans(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: fgColor))),
                     GestureDetector(
                       onTap: () => state.setCurrentScreen('history'),
-                      child: Text(Translations.t('view_all', state.language),
+                      child: Text(Translations.t('see_all', lang),
                           style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -531,18 +533,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ]),
                   const SizedBox(height: 8),
-                  ...expenses.take(5).map((e) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _ExpenseItem(
-                            expense: e,
-                            isDark: isDark,
-                            onTap: () {
-                              state.setSelectedExpense(e);
-                              state.setShowExpenseDetail(true);
-                              _showExpenseDetail(context, e, isDark, state.language);
-                            }),
-                      )),
+                  if (expenses.isEmpty)
+                    Center(
+                        child: Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Text(Translations.t('no_data', lang),
+                                style: GoogleFonts.inter(color: mutedColor))))
+                  else
+                    ...expenses.take(5).map((e) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _ExpenseItem(
+                              expense: e,
+                              isDark: isDark,
+                              onTap: () => _showExpenseDetail(context, e)),
+                        )),
                 ],
+              ),
+            ),
+
+            // Bottom action
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 24,
+              child: FloatingActionButton.extended(
+                onPressed: () => state.setCurrentScreen('add_expense'),
+                backgroundColor: AppColors.primary,
+                elevation: 4,
+                label: Text(Translations.t('add_expense', lang),
+                    style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+                icon: const Icon(Icons.add_rounded, color: Colors.white),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100)),
               ),
             ),
           ],
@@ -551,36 +576,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _showExpenseDetail(BuildContext context, Expense e, bool isDark, String lang) {
-    final cardColor = isDark ? AppColors.darkCard : AppColors.card;
+  void _showExpenseDetail(BuildContext context, Expense e) {
+    final state = context.read<AppState>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final mutedColor =
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final cardColor = isDark ? AppColors.darkCard : AppColors.card;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final lang = state.language;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: cardColor,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => Padding(
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border: Border.all(color: borderColor)),
         padding: const EdgeInsets.all(24),
         child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                  child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                          color:
-                              AppColors.mutedForeground.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(2)))),
-              const SizedBox(height: 20),
-              Text(Translations.t('expense_detail', lang),
-                  style: GoogleFonts.dmSans(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: fgColor)),
+              Row(children: [
+                Text(Translations.t('expense_details', lang),
+                    style: GoogleFonts.dmSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: fgColor)),
+                const Spacer(),
+                IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: Icon(Icons.close, size: 20, color: mutedColor)),
+              ]),
               const SizedBox(height: 16),
               _DetailRow(
                   label: Translations.t('merchant', lang),
@@ -599,7 +628,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mutedColor: mutedColor),
               _DetailRow(
                   label: Translations.t('amount', lang),
-                  value: context.read<AppState>().formatCurrency(e.amount),
+                  value: state.formatCurrency(e.amount),
                   fgColor: fgColor,
                   mutedColor: mutedColor,
                   isAmount: true),
@@ -608,8 +637,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                     child: OutlinedButton.icon(
                   onPressed: () {
-                    context.read<AppState>().deleteExpense(e.id);
-                    Navigator.pop(context);
+                    state.deleteExpense(e.id);
+                    Navigator.pop(ctx);
                   },
                   icon: const Icon(Icons.delete_outline,
                       size: 16, color: AppColors.destructive),
@@ -623,7 +652,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                     child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(ctx),
                   child: const Text('Close'),
                 )),
               ]),
@@ -640,6 +669,7 @@ class _DetailRow extends StatelessWidget {
   final Color fgColor;
   final Color mutedColor;
   final bool isAmount;
+
   const _DetailRow(
       {required this.label,
       required this.value,
@@ -667,6 +697,7 @@ class _DetailRow extends StatelessWidget {
 class _AppCard extends StatelessWidget {
   final Widget child;
   final bool isDark;
+
   const _AppCard({required this.child, required this.isDark});
 
   @override
@@ -690,6 +721,7 @@ class _ExpenseItem extends StatelessWidget {
   final Expense expense;
   final bool isDark;
   final VoidCallback onTap;
+
   const _ExpenseItem(
       {required this.expense, required this.isDark, required this.onTap});
 
@@ -740,7 +772,8 @@ class _ExpenseItem extends StatelessWidget {
           Flexible(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text('-${context.read<AppState>().formatCurrency(expense.amount)}',
+              Text(
+                  '-${context.read<AppState>().formatCurrency(expense.amount)}',
                   style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

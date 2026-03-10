@@ -21,7 +21,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   // Calendar tab state
   String _activeTab = 'overview'; // 'overview' or 'calendar'
-  DateTime _calendarMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime _calendarMonth =
+      DateTime(DateTime.now().year, DateTime.now().month, 1);
   DateTime? _selectedDay;
 
   Future<void> _selectCustomRange() async {
@@ -56,7 +57,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         _timeRange = 'custom';
       });
     } else if (_timeRange == 'custom' && _customRange == null) {
-      // Revert if cancelled and no previous custom range
       setState(() => _timeRange = 'month');
     }
   }
@@ -68,10 +68,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       if (_timeRange == 'week') {
         return now.difference(d).inDays < 7;
       } else if (_timeRange == 'custom' && _customRange != null) {
-        return d.isAfter(_customRange!.start.subtract(const Duration(days: 1))) &&
-               d.isBefore(_customRange!.end.add(const Duration(days: 1)));
-      } else { // 'month' or default
-        // Get last 6 months logic from existing chart, but let's filter actual data to last 6 mos
+        return d.isAfter(
+                _customRange!.start.subtract(const Duration(days: 1))) &&
+            d.isBefore(_customRange!.end.add(const Duration(days: 1)));
+      } else {
+        // 'month' or default: show last 6 months in chart, but filter actual data to current month for stats?
+        // Let's stick to the 6 month logic for the overview stats if range is 'month'
         final sixMonthsAgo = DateTime(now.year, now.month - 5, 1);
         return d.isAfter(sixMonthsAgo);
       }
@@ -90,6 +92,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final mutedBg = isDark ? AppColors.darkMuted : AppColors.muted;
 
+    final lang = state.language;
     final expenses = _getFilteredExpenses(state.expenses);
     final totalSpending = expenses.fold(0.0, (s, e) => s + e.amount);
 
@@ -115,51 +118,56 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         final d = DateTime.parse(e.date);
         dayTotals[d.weekday] = (dayTotals[d.weekday] ?? 0) + e.amount;
       }
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      final days = [
+        Translations.t('day_mon', lang).substring(0, 3),
+        Translations.t('day_tue', lang).substring(0, 3),
+        Translations.t('day_wed', lang).substring(0, 3),
+        Translations.t('day_thu', lang).substring(0, 3),
+        Translations.t('day_fri', lang).substring(0, 3),
+        Translations.t('day_sat', lang).substring(0, 3),
+        Translations.t('day_sun', lang).substring(0, 3),
+      ];
       chartData = List.generate(7, (i) => (days[i], dayTotals[i + 1] ?? 0.0));
     } else if (_timeRange == 'custom' && _customRange != null) {
-        // Group by day if range is < 14 days, else group by month
-        final duration = _customRange!.end.difference(_customRange!.start).inDays;
-        if (duration <= 14) {
-            final Map<String, double> dayTotals = {};
-            for (final e in expenses) {
-                final d = DateTime.parse(e.date);
-                final label = DateFormat('MM/dd').format(d);
-                dayTotals[label] = (dayTotals[label] ?? 0) + e.amount;
-            }
-            // Generate all days in range to ensure continuous axis
-            for (int i = 0; i <= duration; i++) {
-                final d = _customRange!.start.add(Duration(days: i));
-                final label = DateFormat('MM/dd').format(d);
-                chartData.add((label, dayTotals[label] ?? 0.0));
-            }
-        } else {
-             // Group by month
-             final Map<String, double> monthTotals = {};
-             for (final e in expenses) {
-                 final d = DateTime.parse(e.date);
-                 final label = DateFormat('MMM yyyy').format(d);
-                 monthTotals[label] = (monthTotals[label] ?? 0) + e.amount;
-             }
-             chartData = monthTotals.entries.map((e) => (e.key, e.value)).toList();
+      final duration = _customRange!.end.difference(_customRange!.start).inDays;
+      if (duration <= 14) {
+        final Map<String, double> dayTotals = {};
+        for (final e in expenses) {
+          final d = DateTime.parse(e.date);
+          final label = DateFormat('MM/dd').format(d);
+          dayTotals[label] = (dayTotals[label] ?? 0) + e.amount;
         }
+        for (int i = 0; i <= duration; i++) {
+          final d = _customRange!.start.add(Duration(days: i));
+          final label = DateFormat('MM/dd').format(d);
+          chartData.add((label, dayTotals[label] ?? 0.0));
+        }
+      } else {
+        final Map<String, double> monthTotals = {};
+        for (final e in expenses) {
+          final d = DateTime.parse(e.date);
+          final label = DateFormat('MMM yyyy').format(d);
+          monthTotals[label] = (monthTotals[label] ?? 0) + e.amount;
+        }
+        chartData = monthTotals.entries.map((e) => (e.key, e.value)).toList();
+      }
     } else {
       final monthNames = [
-          Translations.t('m_jan', state.language),
-          Translations.t('m_feb', state.language),
-          Translations.t('m_mar', state.language),
-          Translations.t('m_apr', state.language),
-          Translations.t('m_may', state.language),
-          Translations.t('m_jun', state.language),
-          Translations.t('m_jul', state.language),
-          Translations.t('m_aug', state.language),
-          Translations.t('m_sep', state.language),
-          Translations.t('m_oct', state.language),
-          Translations.t('m_nov', state.language),
-          Translations.t('m_dec', state.language)
+        Translations.t('m_jan', lang),
+        Translations.t('m_feb', lang),
+        Translations.t('m_mar', lang),
+        Translations.t('m_apr', lang),
+        Translations.t('m_may', lang),
+        Translations.t('m_jun', lang),
+        Translations.t('m_jul', lang),
+        Translations.t('m_aug', lang),
+        Translations.t('m_sep', lang),
+        Translations.t('m_oct', lang),
+        Translations.t('m_nov', lang),
+        Translations.t('m_dec', lang)
       ];
       final Map<int, double> monthTotals = {};
-      for (final e in expenses) {
+      for (final e in state.expenses) {
         final d = DateTime.parse(e.date);
         monthTotals[d.month - 1] = (monthTotals[d.month - 1] ?? 0) + e.amount;
       }
@@ -173,27 +181,26 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final maxExpense = expenses.isEmpty
         ? null
         : expenses.reduce((a, b) => a.amount > b.amount ? a : b);
-    
-    // Most active day (day of week with most expenses over this period)
+
     int mostActiveDayIdx = -1;
     if (expenses.isNotEmpty) {
       final Map<int, int> countPerDay = {};
-      for(var e in expenses) {
+      for (var e in expenses) {
         final d = DateTime.parse(e.date);
         countPerDay[d.weekday] = (countPerDay[d.weekday] ?? 0) + 1;
       }
-      mostActiveDayIdx = countPerDay.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+      mostActiveDayIdx =
+          countPerDay.entries.reduce((a, b) => a.value > b.value ? a : b).key;
     }
     final daysArr = [
-      Translations.t('day_mon', state.language),
-      Translations.t('day_tue', state.language),
-      Translations.t('day_wed', state.language),
-      Translations.t('day_thu', state.language),
-      Translations.t('day_fri', state.language),
-      Translations.t('day_sat', state.language),
-      Translations.t('day_sun', state.language),
+      Translations.t('day_mon', lang),
+      Translations.t('day_tue', lang),
+      Translations.t('day_wed', lang),
+      Translations.t('day_thu', lang),
+      Translations.t('day_fri', lang),
+      Translations.t('day_sat', lang),
+      Translations.t('day_sun', lang),
     ];
-
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -202,12 +209,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 100),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(Translations.t('analytics_title', state.language),
+            Text(Translations.t('analytics_title', lang),
                 style: GoogleFonts.dmSans(
                     fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
-            Text(Translations.t('analytics_subtitle', state.language),
+            Text(Translations.t('analytics_subtitle', lang),
                 style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Master tab: Overview | Calendar
             Container(
@@ -217,14 +224,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   color: mutedBg, borderRadius: BorderRadius.circular(12)),
               child: Row(children: [
                 _TimeTab(
-                    label: Translations.t('overview', state.language),
+                    label: Translations.t('overview', lang),
                     isSelected: _activeTab == 'overview',
                     onTap: () => setState(() => _activeTab = 'overview'),
                     cardColor: cardColor,
                     fgColor: fgColor,
                     mutedColor: mutedColor),
                 _TimeTab(
-                    label: Translations.t('calendar', state.language),
+                    label: Translations.t('calendar', lang),
                     isSelected: _activeTab == 'calendar',
                     onTap: () => setState(() => _activeTab = 'calendar'),
                     cardColor: cardColor,
@@ -250,13 +257,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   setState(() => _selectedDay = day);
                   final dayExpenses = state.expenses.where((e) {
                     final d = DateTime.parse(e.date);
-                    return d.year == day.year && d.month == day.month && d.day == day.day;
+                    return d.year == day.year &&
+                        d.month == day.month &&
+                        d.day == day.day;
                   }).toList();
                   if (dayExpenses.isEmpty) return;
                   showModalBottomSheet(
                     context: context,
                     shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(20))),
                     builder: (_) => _DayDetailSheet(
                       day: day,
                       expenses: dayExpenses,
@@ -270,303 +280,317 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 },
               ),
             ] else ...[
-
-            Container(
-              height: 40,
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                  color: mutedBg, borderRadius: BorderRadius.circular(12)),
-              child: Row(children: [
-                _TimeTab(
-                    label: Translations.t('week', state.language),
-                    isSelected: _timeRange == 'week',
-                    onTap: () => setState(() => _timeRange = 'week'),
-                    cardColor: cardColor,
-                    fgColor: fgColor,
-                    mutedColor: mutedColor),
-                _TimeTab(
-                    label: Translations.t('month', state.language),
-                    isSelected: _timeRange == 'month',
-                    onTap: () => setState(() => _timeRange = 'month'),
-                    cardColor: cardColor,
-                    fgColor: fgColor,
-                    mutedColor: mutedColor),
-                _TimeTab(
-                    label: Translations.t('custom', state.language),
-                    isSelected: _timeRange == 'custom',
-                    onTap: _selectCustomRange,
-                    cardColor: cardColor,
-                    fgColor: fgColor,
-                    mutedColor: mutedColor),
-              ]),
-            ),
-            if (_timeRange == 'custom' && _customRange != null) ...[
+              Container(
+                height: 40,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                    color: mutedBg, borderRadius: BorderRadius.circular(12)),
+                child: Row(children: [
+                  _TimeTab(
+                      label: Translations.t('week', lang),
+                      isSelected: _timeRange == 'week',
+                      onTap: () => setState(() => _timeRange = 'week'),
+                      cardColor: cardColor,
+                      fgColor: fgColor,
+                      mutedColor: mutedColor),
+                  _TimeTab(
+                      label: Translations.t('month', lang),
+                      isSelected: _timeRange == 'month',
+                      onTap: () => setState(() => _timeRange = 'month'),
+                      cardColor: cardColor,
+                      fgColor: fgColor,
+                      mutedColor: mutedColor),
+                  _TimeTab(
+                      label: Translations.t('custom', lang),
+                      isSelected: _timeRange == 'custom',
+                      onTap: _selectCustomRange,
+                      cardColor: cardColor,
+                      fgColor: fgColor,
+                      mutedColor: mutedColor),
+                ]),
+              ),
+              if (_timeRange == 'custom' && _customRange != null) ...[
                 const SizedBox(height: 8),
                 Center(
                     child: Text(
-                        '${DateFormat.yMMMd().format(_customRange!.start)} - ${DateFormat.yMMMd().format(_customRange!.end)}',
-                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500),
-                    )
-                ),
-            ],
-            const SizedBox(height: 16),
+                  '${DateFormat.yMMMd().format(_customRange!.start)} - ${DateFormat.yMMMd().format(_customRange!.end)}',
+                  style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w500),
+                )),
+              ],
+              const SizedBox(height: 16),
 
-            // Stats row
-            Row(children: [
-              _StatCard(
-                  label: Translations.t('total', state.language),
-                  value: state.formatCurrency(totalSpending),
-                  isDark: isDark,
-                  fgColor: fgColor,
-                  mutedColor: mutedColor,
-                  borderColor: borderColor,
-                  cardColor: cardColor),
-              const SizedBox(width: 8),
-              _StatCard(
-                  label: Translations.t('avg_item', state.language),
-                  value: expenses.isEmpty ? '${state.currencySymbol}0' : state.formatCurrency(totalSpending / expenses.length),
-                  isDark: isDark,
-                  fgColor: fgColor,
-                  mutedColor: mutedColor,
-                  borderColor: borderColor,
-                  cardColor: cardColor),
-              const SizedBox(width: 8),
-              _StatCard(
-                  label: Translations.t('count', state.language),
-                  value: '${expenses.length}',
-                  isDark: isDark,
-                  fgColor: fgColor,
-                  mutedColor: mutedColor,
-                  borderColor: borderColor,
-                  cardColor: cardColor,
-                  isGreen: true),
-            ]),
-            const SizedBox(height: 16),
+              // Stats row
+              Row(children: [
+                _StatCard(
+                    label: Translations.t('total', lang),
+                    value: state.formatCurrency(totalSpending),
+                    isDark: isDark,
+                    fgColor: fgColor,
+                    mutedColor: mutedColor,
+                    borderColor: borderColor,
+                    cardColor: cardColor),
+                const SizedBox(width: 8),
+                _StatCard(
+                    label: Translations.t('avg_item', lang),
+                    value: expenses.isEmpty
+                        ? '${state.currencySymbol}0'
+                        : state.formatCurrency(totalSpending / expenses.length),
+                    isDark: isDark,
+                    fgColor: fgColor,
+                    mutedColor: mutedColor,
+                    borderColor: borderColor,
+                    cardColor: cardColor),
+                const SizedBox(width: 8),
+                _StatCard(
+                    label: Translations.t('count', lang),
+                    value: '${expenses.length}',
+                    isDark: isDark,
+                    fgColor: fgColor,
+                    mutedColor: mutedColor,
+                    borderColor: borderColor,
+                    cardColor: cardColor,
+                    isGreen: true),
+              ]),
+              const SizedBox(height: 16),
 
-            // Bar chart
-            Container(
-              decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: borderColor)),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [
-                      Expanded(
-                          child: Text(Translations.t('spending_trend', state.language),
-                              style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: fgColor))),
-                      Icon(Icons.calendar_today, size: 12, color: mutedColor),
-                      const SizedBox(width: 4),
-                      Text(
-                          _timeRange == 'week' 
-                            ? Translations.t('week', state.language) 
-                            : _timeRange == 'custom' 
-                                ? Translations.t('custom_range', state.language)
-                                : Translations.t('last_six_months', state.language),
-                          style: GoogleFonts.inter(
-                              fontSize: 11, color: mutedColor)),
-                    ]),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 180,
-                      child: BarChart(BarChartData(
-                        gridData: const FlGridData(show: false),
-                        borderData: FlBorderData(show: false),
-                        titlesData: FlTitlesData(
-                          leftTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
-                          topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
-                          bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 28,
-                            getTitlesWidget: (v, m) {
-                              final idx = v.toInt();
-                              if (idx < 0 || idx >= chartData.length) {
-                                return const SizedBox();
-                              }
-                              // Hide some labels if there are too many (e.g. custom range)
-                              if (chartData.length > 7 && idx % ((chartData.length ~/ 5) + 1) != 0) {
+              // Bar chart
+              Container(
+                decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: borderColor)),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        Expanded(
+                            child: Text(Translations.t('spending_trend', lang),
+                                style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: fgColor))),
+                        Icon(Icons.calendar_today, size: 12, color: mutedColor),
+                        const SizedBox(width: 4),
+                        Text(
+                            _timeRange == 'week'
+                                ? Translations.t('week', lang)
+                                : _timeRange == 'custom'
+                                    ? Translations.t('custom_range', lang)
+                                    : Translations.t('last_six_months', lang),
+                            style: GoogleFonts.inter(
+                                fontSize: 11, color: mutedColor)),
+                      ]),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 180,
+                        child: BarChart(BarChartData(
+                          gridData: const FlGridData(show: false),
+                          borderData: FlBorderData(show: false),
+                          titlesData: FlTitlesData(
+                            leftTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false)),
+                            rightTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false)),
+                            topTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false)),
+                            bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 28,
+                              getTitlesWidget: (v, m) {
+                                final idx = v.toInt();
+                                if (idx < 0 || idx >= chartData.length) {
                                   return const SizedBox();
-                              }
+                                }
+                                if (chartData.length > 7 &&
+                                    idx % ((chartData.length ~/ 5) + 1) != 0) {
+                                  return const SizedBox();
+                                }
 
-                              return Text(chartData[idx].$1,
-                                  style: GoogleFonts.inter(
-                                      fontSize: 10, color: mutedColor));
-                            },
-                          )),
-                        ),
-                        barGroups: List.generate(
-                            chartData.length,
-                            (i) => BarChartGroupData(
-                                  x: i,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: chartData[i].$2,
-                                      color: AppColors.primary,
-                                      width: chartData.length > 7 ? 8 : 20,
-                                      borderRadius: const BorderRadius.vertical(
-                                          top: Radius.circular(4)),
-                                    )
-                                  ],
-                                )),
-                      )),
-                    ),
-                  ]),
-            ),
-            const SizedBox(height: 16),
+                                return Text(chartData[idx].$1,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 10, color: mutedColor));
+                              },
+                            )),
+                          ),
+                          barGroups: List.generate(
+                              chartData.length,
+                              (i) => BarChartGroupData(
+                                    x: i,
+                                    barRods: [
+                                      BarChartRodData(
+                                        toY: chartData[i].$2,
+                                        color: AppColors.primary,
+                                        width: chartData.length > 7 ? 8 : 20,
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                                top: Radius.circular(4)),
+                                      )
+                                    ],
+                                  )),
+                        )),
+                      ),
+                    ]),
+              ),
+              const SizedBox(height: 16),
 
-            // Pie chart category breakdown
-            Container(
-              decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: borderColor)),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(Translations.t('category_breakdown', state.language),
-                        style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: fgColor)),
-                    const SizedBox(height: 16),
-                    categorySummary.isEmpty
-                        ? Center(
-                            child: Padding(
+              // Pie chart category breakdown
+              Container(
+                decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: borderColor)),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(Translations.t('category_breakdown', lang),
+                          style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: fgColor)),
+                      const SizedBox(height: 16),
+                      categorySummary.isEmpty
+                          ? Center(
+                              child: Padding(
                               padding: const EdgeInsets.all(16.0),
-                              child: Text(Translations.t('no_data', state.language),
+                              child: Text(Translations.t('no_data', lang),
                                   style: GoogleFonts.inter(color: mutedColor)),
                             ))
-                        : Row(children: [
-                            SizedBox(
-                              width: 150,
-                              height: 150,
-                              child: PieChart(PieChartData(
-                                sections: categorySummary
-                                    .map((c) => PieChartSectionData(
-                                          value: c.value,
-                                          color: c.color,
-                                          radius: 45,
-                                          showTitle: false,
-                                        ))
-                                    .toList(),
-                                centerSpaceRadius: 30,
-                                sectionsSpace: 2,
+                          : Row(children: [
+                              SizedBox(
+                                width: 140,
+                                height: 140,
+                                child: PieChart(PieChartData(
+                                  sections: categorySummary
+                                      .map((c) => PieChartSectionData(
+                                            value: c.value,
+                                            color: c.color,
+                                            radius: 40,
+                                            showTitle: false,
+                                          ))
+                                      .toList(),
+                                  centerSpaceRadius: 25,
+                                  sectionsSpace: 2,
+                                )),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                  child: Column(
+                                children: categorySummary.map((cat) {
+                                  final pct = totalSpending > 0
+                                      ? ((cat.value / totalSpending) * 100)
+                                          .toStringAsFixed(0)
+                                      : '0';
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(children: [
+                                      Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                              color: cat.color,
+                                              shape: BoxShape.circle)),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                          child: Text(
+                                              Translations.t(cat.name, lang),
+                                              overflow: TextOverflow.ellipsis,
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 11,
+                                                  color: mutedColor))),
+                                      const SizedBox(width: 4),
+                                      Text('$pct%',
+                                          style: GoogleFonts.inter(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                              color: fgColor)),
+                                    ]),
+                                  );
+                                }).toList(),
                               )),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                                child: Column(
-                              children: categorySummary.map((cat) {
-                                final pct = totalSpending > 0
-                                    ? ((cat.value / totalSpending) * 100)
-                                        .toStringAsFixed(0)
-                                    : '0';
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(children: [
-                                    Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                            color: cat.color,
-                                            shape: BoxShape.circle)),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                        child: Text(cat.name,
-                                            style: GoogleFonts.inter(
-                                                fontSize: 11,
-                                                color: mutedColor))),
-                                    Text('$pct%',
-                                        style: GoogleFonts.inter(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                            color: fgColor)),
-                                  ]),
-                                );
-                              }).toList(),
-                            )),
-                          ]),
-                  ]),
-            ),
-            const SizedBox(height: 16),
+                            ]),
+                    ]),
+              ),
+              const SizedBox(height: 16),
 
-            // Insights
-            Container(
-              decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: borderColor)),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(Translations.t('detailed_insights', state.language),
-                        style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: fgColor)),
-                    const SizedBox(height: 16),
-                    
-                    if (maxExpense != null) ...[
+              // Insights
+              Container(
+                decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: borderColor)),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(Translations.t('detailed_insights', lang),
+                          style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: fgColor)),
+                      const SizedBox(height: 16),
+                      if (maxExpense != null) ...[
                         _InsightRow(
-                            icon: Icons.receipt_long,
-                            color: AppColors.secondary,
-                            title: Translations.t('largest_expense', state.language),
-                            description: '${maxExpense.merchant} ${formatDate(maxExpense.date, state.language)} (${state.formatCurrency(maxExpense.amount)})',
-                            fgColor: fgColor,
-                            mutedColor: mutedColor,
+                          icon: Icons.receipt_long,
+                          color: AppColors.secondary,
+                          title: Translations.t('largest_expense', lang),
+                          description:
+                              '${maxExpense.merchant} ${DateFormat('MMM d, yyyy', lang == 'Turkish' ? 'tr' : 'en').format(DateTime.parse(maxExpense.date))} (${state.formatCurrency(maxExpense.amount)})',
+                          fgColor: fgColor,
+                          mutedColor: mutedColor,
                         ),
                         const SizedBox(height: 12),
-                    ],
-
-                    if (mostActiveDayIdx != -1) ...[
+                      ],
+                      if (mostActiveDayIdx != -1) ...[
                         _InsightRow(
-                            icon: Icons.calendar_month,
-                            color: AppColors.primary,
-                            title: Translations.t('most_active_day', state.language),
-                            description: Translations.t('most_active_day_desc', state.language) + daysArr[mostActiveDayIdx - 1] + (state.language == 'Turkish' ? ' günleridir.' : '.'),
-                            fgColor: fgColor,
-                            mutedColor: mutedColor,
+                          icon: Icons.calendar_month,
+                          color: AppColors.primary,
+                          title: Translations.t('most_active_day', lang),
+                          description:
+                              Translations.t('most_active_day_desc', lang) +
+                                  daysArr[mostActiveDayIdx - 1] +
+                                  (lang == 'Turkish' ? ' günleridir.' : '.'),
+                          fgColor: fgColor,
+                          mutedColor: mutedColor,
                         ),
                         const SizedBox(height: 12),
-                    ],
-
-                    if (categorySummary.isNotEmpty) ...[
-                      Builder(builder: (ctx) {
-                        final sorted = [...categorySummary]..sort((a, b) => b.value.compareTo(a.value));
-                        return _InsightRow(
+                      ],
+                      if (categorySummary.isNotEmpty) ...[
+                        Builder(builder: (ctx) {
+                          final sorted = [...categorySummary]
+                            ..sort((a, b) => b.value.compareTo(a.value));
+                          return _InsightRow(
                             icon: Icons.pie_chart,
                             color: AppColors.chartAmber,
-                            title: Translations.t('top_category', state.language),
-                            description: Translations.t(sorted[0].name, state.language) + Translations.t('top_category_desc', state.language) + ((sorted[0].value / totalSpending) * 100).toStringAsFixed(1) + Translations.t('percent_of_spending', state.language),
+                            title: Translations.t('top_category', lang),
+                            description: Translations.t(sorted[0].name, lang) +
+                                Translations.t('top_category_desc', lang) +
+                                ((sorted[0].value / totalSpending) * 100)
+                                    .toStringAsFixed(1) +
+                                Translations.t('percent_of_spending', lang),
                             fgColor: fgColor,
                             mutedColor: mutedColor,
-                        );
-                      }),
-                    ] else ...[
+                          );
+                        }),
+                      ] else ...[
                         Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(Translations.t('not_enough_data', state.language),
-                                  style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
-                            ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(Translations.t('not_enough_data', lang),
+                                style: GoogleFonts.inter(
+                                    fontSize: 12, color: mutedColor)),
+                          ),
                         )
-                    ],
-                  ]),
-            ),
-            ], // end overview else block
+                      ],
+                    ]),
+              ),
+            ],
           ]),
         ),
       ),
@@ -575,7 +599,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 }
 
 class _CalendarView extends StatelessWidget {
-  final List<dynamic> expenses;
+  final List<Expense> expenses;
   final DateTime calendarMonth;
   final DateTime? selectedDay;
   final Color fgColor;
@@ -603,32 +627,34 @@ class _CalendarView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lang = context.read<AppState>().language;
+    final state = context.read<AppState>();
+    final lang = state.language;
     final firstDay = calendarMonth;
     final daysInMonth = DateTime(firstDay.year, firstDay.month + 1, 0).day;
-    final startWeekday = firstDay.weekday % 7; // Sun=0, Mon=1, ...
+    final startWeekday = firstDay.weekday % 7;
 
-    // Build day->total map
     final Map<int, double> dayTotals = {};
     final Map<int, List<Color>> dayCategoryColors = {};
     final monthExpenses = expenses.where((e) {
-      final d = DateTime.parse(e.date as String);
+      final d = DateTime.parse(e.date);
       return d.year == firstDay.year && d.month == firstDay.month;
     }).toList();
 
-    final totalMonthSpend = monthExpenses.fold(0.0, (s, e) => s + (e.amount as double));
-    final busyDay = monthExpenses.isEmpty ? '-' : () {
-      final counts = <int, int>{};
-      for (final e in monthExpenses) {
-        final d = DateTime.parse(e.date as String).day;
-        counts[d] = (counts[d] ?? 0) + 1;
-      }
-      return '${counts.entries.reduce((a, b) => a.value > b.value ? a : b).key}';
-    }();
+    final totalMonthSpend = monthExpenses.fold(0.0, (s, e) => s + e.amount);
+    final busyDay = monthExpenses.isEmpty
+        ? '-'
+        : () {
+            final counts = <int, int>{};
+            for (final e in monthExpenses) {
+              final d = DateTime.parse(e.date).day;
+              counts[d] = (counts[d] ?? 0) + 1;
+            }
+            return '${counts.entries.reduce((a, b) => a.value > b.value ? a : b).key}';
+          }();
 
     for (final e in monthExpenses) {
-      final day = DateTime.parse(e.date as String).day;
-      dayTotals[day] = (dayTotals[day] ?? 0) + (e.amount as double);
+      final day = DateTime.parse(e.date).day;
+      dayTotals[day] = (dayTotals[day] ?? 0) + e.amount;
     }
 
     final categoryCols = <String, Color>{};
@@ -636,54 +662,75 @@ class _CalendarView extends StatelessWidget {
       categoryCols[cat.name] = Color(cat.color);
     }
     for (final e in monthExpenses) {
-      final day = DateTime.parse(e.date as String).day;
-      final col = categoryCols[e.category as String] ?? AppColors.primary;
+      final day = DateTime.parse(e.date).day;
+      final col = categoryCols[e.category] ?? AppColors.primary;
       dayCategoryColors[day] = [...(dayCategoryColors[day] ?? []), col];
     }
 
-    final monthLabel = DateFormat('MMMM yyyy', context.read<AppState>().language == 'Turkish' ? 'tr' : 'en').format(calendarMonth);
+    final monthLabel = DateFormat('MMMM yyyy', lang == 'Turkish' ? 'tr' : 'en')
+        .format(calendarMonth);
     final cells = startWeekday + daysInMonth;
     final rows = (cells / 7).ceil();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      // Month navigation
       Row(children: [
         IconButton(
           icon: Icon(Icons.chevron_left, color: fgColor),
-          onPressed: () => onMonthChanged(DateTime(calendarMonth.year, calendarMonth.month - 1, 1)),
+          onPressed: () => onMonthChanged(
+              DateTime(calendarMonth.year, calendarMonth.month - 1, 1)),
         ),
         Expanded(
           child: Text(monthLabel,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.w700, color: fgColor)),
+              style: GoogleFonts.dmSans(
+                  fontSize: 15, fontWeight: FontWeight.w700, color: fgColor)),
         ),
         IconButton(
           icon: Icon(Icons.chevron_right, color: fgColor),
-          onPressed: () => onMonthChanged(DateTime(calendarMonth.year, calendarMonth.month + 1, 1)),
+          onPressed: () => onMonthChanged(
+              DateTime(calendarMonth.year, calendarMonth.month + 1, 1)),
         ),
       ]),
       const SizedBox(height: 8),
-
-      // Month stats bar
       Container(
         decoration: BoxDecoration(
-            color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+            color: cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor)),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         child: Row(children: [
-          _CalStat(label: Translations.t('expenses_label', lang), value: formatCurrency(totalMonthSpend), fgColor: fgColor, mutedColor: mutedColor),
-          Container(width: 1, height: 28, color: borderColor, margin: const EdgeInsets.symmetric(horizontal: 12)),
           _CalStat(
-              label: Translations.t('avg_day', lang),
-              value: daysInMonth > 0 ? formatCurrency(totalMonthSpend / daysInMonth) : '-',
+              label: Translations.t('expenses_label', lang),
+              value: formatCurrency(totalMonthSpend),
               fgColor: fgColor,
               mutedColor: mutedColor),
-          Container(width: 1, height: 28, color: borderColor, margin: const EdgeInsets.symmetric(horizontal: 12)),
-          _CalStat(label: Translations.t('busiest', lang), value: busyDay == '-' ? '-' : '${Translations.t('day_suffix', lang)} $busyDay', fgColor: fgColor, mutedColor: mutedColor),
+          Container(
+              width: 1,
+              height: 28,
+              color: borderColor,
+              margin: const EdgeInsets.symmetric(horizontal: 12)),
+          _CalStat(
+              label: Translations.t('avg_day', lang),
+              value: daysInMonth > 0
+                  ? formatCurrency(totalMonthSpend / daysInMonth)
+                  : '-',
+              fgColor: fgColor,
+              mutedColor: mutedColor),
+          Container(
+              width: 1,
+              height: 28,
+              color: borderColor,
+              margin: const EdgeInsets.symmetric(horizontal: 12)),
+          _CalStat(
+              label: Translations.t('busiest', lang),
+              value: busyDay == '-'
+                  ? '-'
+                  : '${Translations.t('day_suffix', lang)} $busyDay',
+              fgColor: fgColor,
+              mutedColor: mutedColor),
         ]),
       ),
       const SizedBox(height: 12),
-
-      // Day of week headers
       Row(
         children: [
           Translations.t('sun_short', lang),
@@ -693,16 +740,22 @@ class _CalendarView extends StatelessWidget {
           Translations.t('thu_short', lang),
           Translations.t('fri_short', lang),
           Translations.t('sat_short', lang)
-        ].map((d) =>
-          Expanded(child: Center(child: Text(d, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: mutedColor))))
-        ).toList(),
+        ]
+            .map((d) => Expanded(
+                child: Center(
+                    child: Text(d,
+                        style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: mutedColor)))))
+            .toList(),
       ),
       const SizedBox(height: 4),
-
-      // Day grid
       Container(
         decoration: BoxDecoration(
-            color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+            color: cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor)),
         child: Column(
           children: List.generate(rows, (row) {
             return Row(
@@ -712,7 +765,8 @@ class _CalendarView extends StatelessWidget {
                 if (day < 1 || day > daysInMonth) {
                   return const Expanded(child: SizedBox(height: 64));
                 }
-                final date = DateTime(calendarMonth.year, calendarMonth.month, day);
+                final date =
+                    DateTime(calendarMonth.year, calendarMonth.month, day);
                 final total = dayTotals[day];
                 final colors = (dayCategoryColors[day] ?? []).take(3).toList();
                 final isSelected = selectedDay != null &&
@@ -728,10 +782,24 @@ class _CalendarView extends StatelessWidget {
                     child: Container(
                       height: 64,
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary.withValues(alpha: 0.12) : Colors.transparent,
-                        border: Border.all(
-                          color: isSelected ? AppColors.primary : borderColor,
-                          width: isSelected ? 1.5 : 0.5,
+                        color: isSelected
+                            ? AppColors.primary.withValues(alpha: 0.12)
+                            : Colors.transparent,
+                        border: Border(
+                          right: col < 6
+                              ? BorderSide(color: borderColor, width: 0.5)
+                              : BorderSide.none,
+                          bottom: row < rows - 1
+                              ? BorderSide(color: borderColor, width: 0.5)
+                              : BorderSide.none,
+                          top: isSelected
+                              ? const BorderSide(
+                                  color: AppColors.primary, width: 1.5)
+                              : BorderSide.none,
+                          left: isSelected
+                              ? const BorderSide(
+                                  color: AppColors.primary, width: 1.5)
+                              : BorderSide.none,
                         ),
                       ),
                       padding: const EdgeInsets.all(4),
@@ -742,26 +810,35 @@ class _CalendarView extends StatelessWidget {
                             '$day',
                             style: GoogleFonts.dmSans(
                               fontSize: 12,
-                              fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                              fontWeight:
+                                  isToday ? FontWeight.w700 : FontWeight.w500,
                               color: isToday ? AppColors.primary : fgColor,
                             ),
                           ),
                           if (total != null)
                             Flexible(
                               child: Text(
-                                formatCurrency(total),
+                                state.formatCurrency(total),
                                 style: GoogleFonts.inter(
-                                    fontSize: 9, color: AppColors.destructive, fontWeight: FontWeight.w600),
+                                    fontSize: 8,
+                                    color: AppColors.destructive,
+                                    fontWeight: FontWeight.w600),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                          const Spacer(),
                           if (colors.isNotEmpty)
                             Row(
-                              children: colors.map((c) => Container(
-                                width: 5, height: 5,
-                                margin: const EdgeInsets.only(right: 2),
-                                decoration: BoxDecoration(color: c, shape: BoxShape.circle),
-                              )).toList(),
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: colors
+                                  .map((c) => Container(
+                                        width: 5,
+                                        height: 5,
+                                        margin: const EdgeInsets.only(right: 2),
+                                        decoration: BoxDecoration(
+                                            color: c, shape: BoxShape.circle),
+                                      ))
+                                  .toList(),
                             ),
                         ],
                       ),
@@ -782,13 +859,19 @@ class _CalStat extends StatelessWidget {
   final String value;
   final Color fgColor;
   final Color mutedColor;
-  const _CalStat({required this.label, required this.value, required this.fgColor, required this.mutedColor});
+  const _CalStat(
+      {required this.label,
+      required this.value,
+      required this.fgColor,
+      required this.mutedColor});
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Column(children: [
-        Text(value, style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: fgColor)),
+        Text(value,
+            style: GoogleFonts.dmSans(
+                fontSize: 13, fontWeight: FontWeight.w700, color: fgColor)),
         Text(label, style: GoogleFonts.inter(fontSize: 10, color: mutedColor)),
       ]),
     );
@@ -797,7 +880,7 @@ class _CalStat extends StatelessWidget {
 
 class _DayDetailSheet extends StatelessWidget {
   final DateTime day;
-  final List<dynamic> expenses;
+  final List<Expense> expenses;
   final Color fgColor;
   final Color mutedColor;
   final Color borderColor;
@@ -816,7 +899,8 @@ class _DayDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = expenses.fold(0.0, (s, e) => s + (e.amount as double));
+    final total = expenses.fold(0.0, (s, e) => s + e.amount);
+    final lang = context.read<AppState>().language;
     return DraggableScrollableSheet(
       initialChildSize: 0.45,
       minChildSize: 0.3,
@@ -827,86 +911,108 @@ class _DayDetailSheet extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           Center(
-            child: Container(width: 36, height: 4, margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4))),
+            child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(4))),
           ),
-          Text(DateFormat('EEEE, MMMM d', context.read<AppState>().language == 'Turkish' ? 'tr' : 'en').format(day),
-              style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w700, color: fgColor)),
-          Text('${expenses.length} ${expenses.length == 1 ? Translations.t('transactions_singular', context.read<AppState>().language) : Translations.t('transactions_plural', context.read<AppState>().language)} · ${formatCurrency(total)}',
+          Text(
+              DateFormat('EEEE, MMMM d', lang == 'Turkish' ? 'tr' : 'en')
+                  .format(day),
+              style: GoogleFonts.dmSans(
+                  fontSize: 16, fontWeight: FontWeight.w700, color: fgColor)),
+          Text(
+              '${expenses.length} ${expenses.length == 1 ? Translations.t('transactions_singular', lang) : Translations.t('transactions_plural', lang)} · ${formatCurrency(total)}',
               style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
           const SizedBox(height: 16),
           ...expenses.map((e) => Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-                color: cardColor, borderRadius: BorderRadius.circular(10), border: Border.all(color: borderColor)),
-            child: Row(children: [
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(e.merchant as String, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: fgColor)),
-                Text(Translations.t(e.category as String, context.read<AppState>().language), style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
-              ])),
-              Text(formatCurrency(e.amount as double),
-                  style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.destructive)),
-            ]),
-          )),
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: borderColor)),
+                child: Row(children: [
+                  Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(e.merchant,
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: fgColor)),
+                        Text(Translations.t(e.category, lang),
+                            style: GoogleFonts.inter(
+                                fontSize: 11, color: mutedColor)),
+                      ])),
+                  Text(formatCurrency(e.amount),
+                      style: GoogleFonts.dmSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.destructive)),
+                ]),
+              )),
         ],
       ),
     );
   }
 }
+
 class _InsightRow extends StatelessWidget {
-    final IconData icon;
-    final Color color;
-    final String title;
-    final String description;
-    final Color fgColor;
-    final Color mutedColor;
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String description;
+  final Color fgColor;
+  final Color mutedColor;
 
-    const _InsightRow({
-        required this.icon,
-        required this.color,
-        required this.title,
-        required this.description,
-        required this.fgColor,
-        required this.mutedColor,
-    });
+  const _InsightRow({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.description,
+    required this.fgColor,
+    required this.mutedColor,
+  });
 
-    @override
-    Widget build(BuildContext context) {
-        return Row(
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(icon, size: 16, color: color),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                            Text(title,
-                                style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: fgColor)),
-                            const SizedBox(height: 2),
-                            Text(description,
-                                style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    height: 1.4,
-                                    color: mutedColor)),
-                        ],
-                    ),
-                ),
+              Text(title,
+                  style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: fgColor)),
+              const SizedBox(height: 2),
+              Text(description,
+                  style: GoogleFonts.inter(
+                      fontSize: 11, height: 1.4, color: mutedColor)),
             ],
-        );
-    }
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _TimeTab extends StatelessWidget {
@@ -936,7 +1042,8 @@ class _TimeTab extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 4)
                 ]
               : null,
         ),

@@ -36,7 +36,8 @@ class Translations {
       'category': 'Category',
       'amount': 'Amount',
       'budget_warning': 'Budget Warning',
-      'budget_warning_msg': 'You are approaching your overall budget limit for this month! Please be careful with your spending.',
+      'budget_warning_msg':
+          'You are approaching your overall budget limit for this month! Please be careful with your spending.',
       'got_it': 'Got it',
       'sort_newest': 'Newest First',
       'sort_oldest': 'Oldest First',
@@ -91,7 +92,13 @@ class Translations {
       'day_suffix': 'Day',
       'transactions_plural': 'transactions',
       'transactions_singular': 'transaction',
-      'sun_short': 'Sun', 'mon_short': 'Mon', 'tue_short': 'Tue', 'wed_short': 'Wed', 'thu_short': 'Thu', 'fri_short': 'Fri', 'sat_short': 'Sat',
+      'sun_short': 'Sun',
+      'mon_short': 'Mon',
+      'tue_short': 'Tue',
+      'wed_short': 'Wed',
+      'thu_short': 'Thu',
+      'fri_short': 'Fri',
+      'sat_short': 'Sat',
 
       // Profile
       'profile_title': 'Profile',
@@ -127,7 +134,8 @@ class Translations {
       'select_currency': 'Select Currency',
       'data_backup_unavailable': 'Data backup is not available yet.',
       'clear_data_confirm_title': 'Clear All Data?',
-      'clear_data_confirm_msg': 'This will delete all your expenses, settings, and account data. This action cannot be undone.',
+      'clear_data_confirm_msg':
+          'This will delete all your expenses, settings, and account data. This action cannot be undone.',
       'appearance_title': 'Appearance',
       'dark_mode_subtitle': 'Switch between light and dark theme',
       'budget_manager_title': 'Budget Manager',
@@ -148,7 +156,8 @@ class Translations {
       'message_sent_success': 'Message sent successfully!',
       'privacy_title': 'Privacy & Security',
       'data_protection': 'Data protection',
-      'privacy_policy_text': 'Your data is stored locally on your device. We do not share your financial information with any third parties. All expense data is encrypted and protected.\n\nYou can delete all your data at any time from Settings → Clear All Data.',
+      'privacy_policy_text':
+          'Your data is stored locally on your device. We do not share your financial information with any third parties. All expense data is encrypted and protected.\n\nYou can delete all your data at any time from Settings → Clear All Data.',
       'payment_methods_title': 'Payment Methods',
       'manage_cards': 'Manage your cards',
       'no_payment_methods': 'No payment methods',
@@ -160,13 +169,16 @@ class Translations {
       'email': 'Email',
       'save_changes': 'Save Changes',
       'faq_q1': 'How do I add an expense?',
-      'faq_a1': 'Tap the + button on the dashboard or use the Add Expense form.',
+      'faq_a1':
+          'Tap the + button on the dashboard or use the Add Expense form.',
       'faq_q2': 'How do I scan a receipt?',
-      'faq_a2': 'Use the Scan tab in the bottom navigation to scan receipts using your camera.',
+      'faq_a2':
+          'Use the Scan tab in the bottom navigation to scan receipts using your camera.',
       'faq_q3': 'How do I set a budget?',
       'faq_a3': 'Go to Profile → Budget Manager to set spending limits.',
       'faq_q4': 'How do I export my data?',
-      'faq_a4': 'Go to History and tap the CSV button to export your transactions.',
+      'faq_a4':
+          'Go to History and tap the CSV button to export your transactions.',
 
       // Login/Register
       'login_welcome_back': 'Welcome back',
@@ -224,7 +236,8 @@ class Translations {
       'enter_details_manual': 'Enter details manually',
       'expense_added': 'Expense Added!',
       'redirecting_to_dashboard': 'Redirecting to dashboard...',
-      'prefilled_from_scan_banner': 'Pre-filled from scan — verify details below.',
+      'prefilled_from_scan_banner':
+          'Pre-filled from scan — verify details below.',
       'merchant_name': 'Merchant Name',
       'merchant_hint': 'e.g. Starbucks, Amazon',
       'merchant_required': 'Merchant name is required',
@@ -249,7 +262,6 @@ class Translations {
       'Notes (Optional)': 'Notes (Optional)',
       'Add any additional notes...': 'Add any additional notes...',
     },
-
     'Turkish': {
       // Navigation
       'nav_dashboard': 'Panel',
@@ -282,7 +294,8 @@ class Translations {
       'category': 'Kategori',
       'amount': 'Tutar',
       'budget_warning': 'Bütçe Uyarısı',
-      'budget_warning_msg': 'Bu ayki toplam bütçe limitinize yaklaşıyorsunuz! Lütfen harcamalarınıza dikkat edin.',
+      'budget_warning_msg':
+          'Bu ayki toplam bütçe limitinize yaklaşıyorsunuz! Lütfen harcamalarınıza dikkat edin.',
       'got_it': 'Tamam',
       'sort_newest': 'En Yeni',
       'sort_oldest': 'En Eski',
@@ -337,7 +350,13 @@ class Translations {
       'day_suffix': 'Gün',
       'transactions_plural': 'işlem',
       'transactions_singular': 'işlem',
-      'sun_short': 'Paz', 'mon_short': 'Pzt', 'tue_short': 'Sal', 'wed_short': 'Çar', 'thu_short': 'Per', 'fri_short': 'Cum', 'sat_short': 'Cmt',
+      'sun_short': 'Paz',
+      'mon_short': 'Pzt',
+      'tue_short': 'Sal',
+      'wed_short': 'Çar',
+      'thu_short': 'Per',
+      'fri_short': 'Cum',
+      'sat_short': 'Cmt',
 
       // Profile
       'profile_title': 'Profil',
@@ -373,7 +392,8 @@ class Translations {
       'select_currency': 'Para Birimi Seçin',
       'data_backup_unavailable': 'Veri yedekleme henüz kullanılamıyor.',
       'clear_data_confirm_title': 'Tüm Verileri Sil?',
-      'clear_data_confirm_msg': 'Bu işlem tüm harcamalarınızı, ayarlarınızı ve hesap verilerinizi silecektir. Bu işlem geri alınamaz.',
+      'clear_data_confirm_msg':
+          'Bu işlem tüm harcamalarınızı, ayarlarınızı ve hesap verilerinizi silecektir. Bu işlem geri alınamaz.',
       'appearance_title': 'Görünüm',
       'dark_mode_subtitle': 'Açık ve karanlık tema arasında geçiş yapın',
       'budget_manager_title': 'Bütçe Yöneticisi',
@@ -388,17 +408,20 @@ class Translations {
       'subject': 'Konu',
       'regarding_hint': 'Bu neyle ilgili?',
       'message': 'Mesaj',
-      'describe_issue_hint': 'Sorununuzu veya geri bildiriminizi detaylıca açıklayın...',
+      'describe_issue_hint':
+          'Sorununuzu veya geri bildiriminizi detaylıca açıklayın...',
       'send_message': 'Mesaj Gönder',
       'fill_all_fields': 'Lütfen tüm alanları doldurun.',
       'message_sent_success': 'Mesaj başarıyla gönderildi!',
       'privacy_title': 'Gizlilik & Güvenlik',
       'data_protection': 'Veri koruması',
-      'privacy_policy_text': 'Verileriniz cihazınızda yerel olarak saklanır. Finansal bilgilerinizi üçüncü taraflarla paylaşmayız. Tüm harcama verileri şifrelenir ve korunur.\n\nTüm verilerinizi istediğiniz zaman Ayarlar → Tüm Verileri Sil yolundan silebilirsiniz.',
+      'privacy_policy_text':
+          'Verileriniz cihazınızda yerel olarak saklanır. Finansal bilgilerinizi üçüncü taraflarla paylaşmayız. Tüm harcama verileri şifrelenir ve korunur.\n\nTüm verilerinizi istediğiniz zaman Ayarlar → Tüm Verileri Sil yolundan silebilirsiniz.',
       'payment_methods_title': 'Ödeme Yöntemleri',
       'manage_cards': 'Kartlarınızı yönetin',
       'no_payment_methods': 'Ödeme yöntemi yok',
-      'add_card_msg': 'Bağlantılı harcamaları takip etmek için bir kart ekleyin',
+      'add_card_msg':
+          'Bağlantılı harcamaları takip etmek için bir kart ekleyin',
       'add_payment_method': 'Ödeme Yöntemi Ekle',
       'edit_profile_title': 'Profili Düzenle',
       'update_info_subtitle': 'Bilgilerinizi güncelleyin',
@@ -406,13 +429,17 @@ class Translations {
       'email': 'E-posta',
       'save_changes': 'Değişiklikleri Kaydet',
       'faq_q1': 'Nasıl harcama eklerim?',
-      'faq_a1': 'Paneldeki + butonuna basın veya Harcama Ekle formunu kullanın.',
+      'faq_a1':
+          'Paneldeki + butonuna basın veya Harcama Ekle formunu kullanın.',
       'faq_q2': 'Nasıl fiş tararım?',
-      'faq_a2': 'Alt navigasyondaki Tara sekmesini kullanarak kameranızla fiş tarayın.',
+      'faq_a2':
+          'Alt navigasyondaki Tara sekmesini kullanarak kameranızla fiş tarayın.',
       'faq_q3': 'Nasıl bütçe ayarlarım?',
-      'faq_a3': 'Profil → Bütçe Yöneticisi yolunu izleyerek harcama limitleri belirleyin.',
+      'faq_a3':
+          'Profil → Bütçe Yöneticisi yolunu izleyerek harcama limitleri belirleyin.',
       'faq_q4': 'Verilerimi nasıl dışa aktarırım?',
-      'faq_a4': 'Geçmişe gidin ve işlemlerinizi dışa aktarmak için CSV butonuna basın.',
+      'faq_a4':
+          'Geçmişe gidin ve işlemlerinizi dışa aktarmak için CSV butonuna basın.',
 
       // Login/Register
       'login_welcome_back': 'Tekrar Hoş Geldiniz',
@@ -470,7 +497,8 @@ class Translations {
       'enter_details_manual': 'Detayları manuel girin',
       'expense_added': 'Harcama Eklendi!',
       'redirecting_to_dashboard': 'Ana ekrana yönlendiriliyor...',
-      'prefilled_from_scan_banner': 'Fişten dolduruldu — lütfen detayları kontrol edin.',
+      'prefilled_from_scan_banner':
+          'Fişten dolduruldu — lütfen detayları kontrol edin.',
       'merchant_name': 'İşyeri Adı',
       'merchant_hint': 'örn. Starbucks, Getir',
       'merchant_required': 'İşyeri adı gerekli',

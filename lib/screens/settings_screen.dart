@@ -60,7 +60,6 @@ Widget _buildSimpleScreen(BuildContext context, String title, String subtitle,
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
@@ -71,7 +70,10 @@ class SettingsScreen extends StatelessWidget {
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
-    return _buildSimpleScreen(context, Translations.t('settings_title', state.language), Translations.t('settings_subtitle', state.language), [
+    return _buildSimpleScreen(
+        context,
+        Translations.t('settings_title', state.language),
+        Translations.t('settings_subtitle', state.language), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -89,17 +91,20 @@ class SettingsScreen extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: Text(Translations.t('select_language', state.language)),
+                    title:
+                        Text(Translations.t('select_language', state.language)),
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: ['English', 'Turkish'].map((lang) => ListTile(
-                        title: Text(lang),
-                        selected: state.language == lang,
-                        onTap: () {
-                          state.setLanguage(lang);
-                          Navigator.pop(ctx);
-                        },
-                      )).toList(),
+                      children: ['English', 'Turkish']
+                          .map((lang) => ListTile(
+                                title: Text(lang),
+                                selected: state.language == lang,
+                                onTap: () {
+                                  state.setLanguage(lang);
+                                  Navigator.pop(ctx);
+                                },
+                              ))
+                          .toList(),
                     ),
                   ),
                 );
@@ -115,17 +120,20 @@ class SettingsScreen extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: Text(Translations.t('select_currency', state.language)),
+                    title:
+                        Text(Translations.t('select_currency', state.language)),
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: ['TRY (₺)', 'USD (\$)', 'EUR (€)', 'GBP (£)'].map((curr) => ListTile(
-                        title: Text(curr),
-                        selected: state.currency == curr,
-                        onTap: () {
-                          state.setCurrency(curr);
-                          Navigator.pop(ctx);
-                        },
-                      )).toList(),
+                      children: ['TRY (₺)', 'USD (\$)', 'EUR (€)', 'GBP (£)']
+                          .map((curr) => ListTile(
+                                title: Text(curr),
+                                selected: state.currency == curr,
+                                onTap: () {
+                                  state.setCurrency(curr);
+                                  Navigator.pop(ctx);
+                                },
+                              ))
+                          .toList(),
                     ),
                   ),
                 );
@@ -133,12 +141,15 @@ class SettingsScreen extends StatelessWidget {
           _SettingsTile(
               icon: Icons.notifications_outlined,
               label: Translations.t('push_notifications', state.language),
-              value: state.pushNotificationsEnabled ? Translations.t('on', state.language) : Translations.t('off', state.language),
+              value: state.pushNotificationsEnabled
+                  ? Translations.t('on', state.language)
+                  : Translations.t('off', state.language),
               fgColor: fgColor,
               mutedColor: mutedColor,
               borderColor: borderColor,
               onTap: () {
-                state.setPushNotificationsEnabled(!state.pushNotificationsEnabled);
+                state.setPushNotificationsEnabled(
+                    !state.pushNotificationsEnabled);
               }),
           _SettingsTile(
               icon: Icons.backup_outlined,
@@ -149,7 +160,9 @@ class SettingsScreen extends StatelessWidget {
               borderColor: borderColor,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(Translations.t('data_backup_unavailable', state.language))),
+                  SnackBar(
+                      content: Text(Translations.t(
+                          'data_backup_unavailable', state.language))),
                 );
               }),
           _SettingsTile(
@@ -164,8 +177,10 @@ class SettingsScreen extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: Text(Translations.t('clear_data_confirm_title', state.language)),
-                    content: Text(Translations.t('clear_data_confirm_msg', state.language)),
+                    title: Text(Translations.t(
+                        'clear_data_confirm_title', state.language)),
+                    content: Text(Translations.t(
+                        'clear_data_confirm_msg', state.language)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
@@ -176,7 +191,9 @@ class SettingsScreen extends StatelessWidget {
                           state.clearAllData();
                           Navigator.pop(ctx);
                         },
-                        child: Text(Translations.t('delete', state.language), style: const TextStyle(color: AppColors.destructive)),
+                        child: Text(Translations.t('delete', state.language),
+                            style:
+                                const TextStyle(color: AppColors.destructive)),
                       ),
                     ],
                   ),
@@ -199,7 +216,10 @@ class AppearanceScreen extends StatelessWidget {
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-    return _buildSimpleScreen(context, Translations.t('appearance_title', state.language), Translations.t('dark_mode_subtitle', state.language), [
+    return _buildSimpleScreen(
+        context,
+        Translations.t('appearance_title', state.language),
+        Translations.t('dark_mode_subtitle', state.language), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -255,7 +275,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
     return _buildSimpleScreen(
-        context, Translations.t('budget_manager_title', state.language), Translations.t('set_monthly_limit', state.language), [
+        context,
+        Translations.t('budget_manager_title', state.language),
+        Translations.t('set_monthly_limit', state.language), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -312,26 +334,20 @@ class HelpScreen extends StatelessWidget {
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final state = context.read<AppState>();
+    final lang = state.language;
+
     final faqs = [
-      (
-        Translations.t('faq_q1', context.read<AppState>().language),
-        Translations.t('faq_a1', context.read<AppState>().language)
-      ),
-      (
-        Translations.t('faq_q2', context.read<AppState>().language),
-        Translations.t('faq_a2', context.read<AppState>().language)
-      ),
-      (
-        Translations.t('faq_q3', context.read<AppState>().language),
-        Translations.t('faq_a3', context.read<AppState>().language)
-      ),
-      (
-        Translations.t('faq_q4', context.read<AppState>().language),
-        Translations.t('faq_a4', context.read<AppState>().language)
-      ),
+      (Translations.t('faq_q1', lang), Translations.t('faq_a1', lang)),
+      (Translations.t('faq_q2', lang), Translations.t('faq_a2', lang)),
+      (Translations.t('faq_q3', lang), Translations.t('faq_a3', lang)),
+      (Translations.t('faq_q4', lang), Translations.t('faq_a4', lang)),
     ];
-    final lang = context.read<AppState>().language;
-    return _buildSimpleScreen(context, Translations.t('help_support_title', lang), Translations.t('get_assistance', lang), [
+
+    return _buildSimpleScreen(
+        context,
+        Translations.t('help_support_title', lang),
+        Translations.t('get_assistance', lang), [
       ...faqs.map((faq) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Container(
@@ -363,7 +379,7 @@ class HelpScreen extends StatelessWidget {
             context.read<AppState>().setCurrentScreen('contact_us');
           },
           icon: const Icon(Icons.support_agent, size: 18),
-          label: Text(Translations.t('contact_us', context.read<AppState>().language)),
+          label: Text(Translations.t('contact_us', lang)),
         ),
       ),
     ]);
@@ -385,7 +401,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   Future<void> _sendMessage() async {
     if (_subjectCtrl.text.trim().isEmpty || _messageCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(Translations.t('fill_all_fields', context.read<AppState>().language))),
+        SnackBar(
+            content: Text(Translations.t(
+                'fill_all_fields', context.read<AppState>().language))),
       );
       return;
     }
@@ -399,7 +417,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     setState(() => _isSending = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(Translations.t('message_sent_success', context.read<AppState>().language))),
+      SnackBar(
+          content: Text(Translations.t(
+              'message_sent_success', context.read<AppState>().language))),
     );
 
     context.read<AppState>().goBack();
@@ -420,8 +440,8 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
     final lang = context.read<AppState>().language;
-    return _buildSimpleScreen(
-        context, Translations.t('contact_us_title', lang), Translations.t('send_message_subtitle', lang), [
+    return _buildSimpleScreen(context, Translations.t('contact_us_title', lang),
+        Translations.t('send_message_subtitle', lang), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -478,8 +498,8 @@ class PrivacyScreen extends StatelessWidget {
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final lang = context.read<AppState>().language;
-    return _buildSimpleScreen(
-        context, Translations.t('privacy_title', lang), Translations.t('data_protection', lang), [
+    return _buildSimpleScreen(context, Translations.t('privacy_title', lang),
+        Translations.t('data_protection', lang), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -507,7 +527,10 @@ class PaymentMethodsScreen extends StatelessWidget {
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final lang = context.read<AppState>().language;
-    return _buildSimpleScreen(context, Translations.t('payment_methods_title', lang), Translations.t('manage_cards', lang), [
+    return _buildSimpleScreen(
+        context,
+        Translations.t('payment_methods_title', lang),
+        Translations.t('manage_cards', lang), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -564,10 +587,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-
-    final lang = context.read<AppState>().language;
+    final lang = state.language;
     return _buildSimpleScreen(
-        context, Translations.t('edit_profile_title', lang), Translations.t('update_info_subtitle', lang), [
+        context,
+        Translations.t('edit_profile_title', lang),
+        Translations.t('update_info_subtitle', lang), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -648,7 +672,8 @@ class _SettingsTile extends StatelessWidget {
                     style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: isDestructive ? AppColors.destructive : fgColor))),
+                        color:
+                            isDestructive ? AppColors.destructive : fgColor))),
             if (value.isNotEmpty)
               Text(value,
                   style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
@@ -661,4 +686,3 @@ class _SettingsTile extends StatelessWidget {
     );
   }
 }
-

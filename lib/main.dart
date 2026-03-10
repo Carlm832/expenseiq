@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'app_state.dart';
 import 'theme.dart';
 import 'screens/login_screen.dart';
@@ -8,9 +10,12 @@ import 'screens/main_scaffold.dart';
 import 'screens/add_expense_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/splash_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     ChangeNotifierProvider(
       create: (_) => AppState(),
@@ -45,12 +50,11 @@ class AppRouter extends StatelessWidget {
     final state = context.watch<AppState>();
     final screen = state.currentScreen;
 
-    if (screen == 'splash') return const SplashScreen();
-
     if (!state.isLoggedIn) {
       if (screen == 'register') return const RegisterScreen();
       return const LoginScreen();
     }
+
 
     Widget child;
     switch (screen) {
@@ -72,8 +76,6 @@ class AppRouter extends StatelessWidget {
         child = const PaymentMethodsScreen();
       case 'editProfile':
         child = const EditProfileScreen();
-      case 'contact_us':
-        child = const ContactUsScreen();
       default:
         child = MainScaffold(currentScreen: screen);
     }

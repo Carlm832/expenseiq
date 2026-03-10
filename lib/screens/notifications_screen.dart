@@ -15,7 +15,8 @@ class NotificationsScreen extends StatelessWidget {
     final bgColor = isDark ? AppColors.darkBackground : AppColors.background;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
-    final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
     final typeColors = {
@@ -39,55 +40,105 @@ class NotificationsScreen extends StatelessWidget {
               GestureDetector(
                 onTap: () => state.goBack(),
                 child: Container(
-                  width: 36, height: 36,
-                  decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(10), border: Border.all(color: borderColor)),
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: borderColor)),
                   child: Icon(Icons.arrow_back, size: 18, color: fgColor),
                 ),
               ),
               const SizedBox(width: 12),
-              Text(Translations.t('notifications_title', state.language), style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
+              Text(Translations.t('notifications_title', state.language),
+                  style: GoogleFonts.dmSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: fgColor)),
             ]),
           ),
           const SizedBox(height: 16),
-          Expanded(child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: state.notifications.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (_, i) {
-              final n = state.notifications[i];
-              final color = typeColors[n.type] ?? AppColors.primary;
-              final icon = typeIcons[n.type] ?? Icons.info_outline;
-              return GestureDetector(
-                onTap: () => state.markNotificationRead(n.id),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: n.read ? cardColor : AppColors.primary.withValues(alpha: 0.03),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: n.read ? borderColor : AppColors.primary.withValues(alpha: 0.2)),
-                  ),
-                  padding: const EdgeInsets.all(12),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Container(
-                      width: 36, height: 36,
-                      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                      child: Icon(icon, size: 18, color: color),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Row(children: [
-                        Expanded(child: Text(Translations.t(n.title, state.language), style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: fgColor))),
-                        if (!n.read) Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
-                      ]),
-                      const SizedBox(height: 4),
-                      Text(n.message, style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
-                      const SizedBox(height: 4),
-                      Text(n.time, style: GoogleFonts.inter(fontSize: 10, color: mutedColor)),
-                    ])),
-                  ]),
-                ),
-              );
-            },
-          )),
+          Expanded(
+              child: state.notifications.isEmpty
+                  ? Center(
+                      child: Text(
+                          Translations.t('no_notifications', state.language),
+                          style: GoogleFonts.inter(color: mutedColor)))
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: state.notifications.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (_, i) {
+                        final n = state.notifications[i];
+                        final color = typeColors[n.type] ?? AppColors.primary;
+                        final icon = typeIcons[n.type] ?? Icons.info_outline;
+                        return GestureDetector(
+                          onTap: () => state.markNotificationRead(n.id),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: n.read
+                                  ? cardColor
+                                  : AppColors.primary.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: n.read
+                                      ? borderColor
+                                      : AppColors.primary
+                                          .withValues(alpha: 0.2)),
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                        color: color.withValues(alpha: 0.1),
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    child: Icon(icon, size: 18, color: color),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                        Row(children: [
+                                          Expanded(
+                                              child: Text(
+                                                  Translations.t(
+                                                      n.title, state.language),
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: fgColor))),
+                                          if (!n.read)
+                                            Container(
+                                                width: 8,
+                                                height: 8,
+                                                decoration: const BoxDecoration(
+                                                    color: AppColors.primary,
+                                                    shape: BoxShape.circle)),
+                                        ]),
+                                        const SizedBox(height: 4),
+                                        Text(n.message,
+                                            style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                color: mutedColor)),
+                                        const SizedBox(height: 4),
+                                        Text(n.time,
+                                            style: GoogleFonts.inter(
+                                                fontSize: 10,
+                                                color: mutedColor)),
+                                      ])),
+                                ]),
+                          ),
+                        );
+                      },
+                    )),
         ]),
       ),
     );

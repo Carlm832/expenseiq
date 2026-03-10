@@ -26,7 +26,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill from OCR scan result if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = context.read<AppState>().screenArgs;
       if (args != null && args['fromScan'] == true) {
@@ -59,9 +58,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   bool _validate() {
     final errors = <String, String>{};
-    if (_merchantCtrl.text.trim().isEmpty) errors['merchant'] = Translations.t('merchant_required', context.read<AppState>().language);
+    if (_merchantCtrl.text.trim().isEmpty) {
+      errors['merchant'] = Translations.t(
+          'merchant_required', context.read<AppState>().language);
+    }
     final amount = double.tryParse(_amountCtrl.text) ?? 0;
-    if (amount <= 0) errors['amount'] = Translations.t('valid_amount_required', context.read<AppState>().language);
+    if (amount <= 0) {
+      errors['amount'] = Translations.t(
+          'valid_amount_required', context.read<AppState>().language);
+    }
     setState(() => _errors = errors);
     return errors.isEmpty;
   }
@@ -71,7 +76,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final expense = Expense(
       id: 'exp_${DateTime.now().millisecondsSinceEpoch}',
       merchant: _merchantCtrl.text.trim(),
-      date: '${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}',
+      date:
+          '${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}',
       amount: double.parse(_amountCtrl.text),
       category: _category,
       icon: _iconForCategory[_category] ?? 'utensils',
@@ -96,11 +102,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.read<AppState>();
+    final lang = state.language;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBackground : AppColors.background;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
-    final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final mutedBg = isDark ? AppColors.darkMuted : AppColors.muted;
 
@@ -109,117 +117,202 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 40),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // Header
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               GestureDetector(
                 onTap: () => context.read<AppState>().goBack(),
                 child: Container(
-                  width: 36, height: 36,
-                  decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(10), border: Border.all(color: borderColor)),
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: borderColor)),
                   child: Icon(Icons.arrow_back, size: 18, color: fgColor),
                 ),
               ),
               const SizedBox(width: 12),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(Translations.t('add_expense_title', state.language), style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
-                Text(_prefilledFromScan ? Translations.t('review_scanned_details', state.language) : Translations.t('enter_details_manual', state.language), style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
+                Text(Translations.t('add_expense_title', lang),
+                    style: GoogleFonts.dmSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: fgColor)),
+                Text(
+                    _prefilledFromScan
+                        ? Translations.t('review_scanned_details', lang)
+                        : Translations.t('enter_details_manual', lang),
+                    style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
               ]),
             ]),
             const SizedBox(height: 24),
-
             if (_saved)
               Container(
                 width: double.infinity,
-                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+                decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: borderColor)),
                 padding: const EdgeInsets.all(32),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Container(
-                    width: 64, height: 64,
-                    decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(18)),
-                    child: const Icon(Icons.check, size: 32, color: AppColors.secondary),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(Translations.t('expense_added', state.language), style: GoogleFonts.dmSans(fontSize: 18, fontWeight: FontWeight.w600, color: fgColor)),
-                  Text(Translations.t('redirecting_to_dashboard', state.language), style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
-                ]),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                            color: AppColors.secondary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(18)),
+                        child: const Icon(Icons.check,
+                            size: 32, color: AppColors.secondary),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(Translations.t('expense_added', lang),
+                          style: GoogleFonts.dmSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: fgColor)),
+                      Text(Translations.t('redirecting_to_dashboard', lang),
+                          style: GoogleFonts.inter(
+                              fontSize: 13, color: mutedColor)),
+                    ]),
               )
             else ...[
-              // OCR pre-fill banner
               if (_prefilledFromScan)
                 Container(
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppColors.secondary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: AppColors.secondary.withValues(alpha: 0.3)),
                   ),
                   child: Row(children: [
-                    const Icon(Icons.auto_awesome, size: 16, color: AppColors.secondary),
+                    const Icon(Icons.auto_awesome,
+                        size: 16, color: AppColors.secondary),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(Translations.t('prefilled_from_scan_banner', state.language),
-                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.secondary))),
+                    Expanded(
+                        child: Text(
+                            Translations.t('prefilled_from_scan_banner', lang),
+                            style: GoogleFonts.inter(
+                                fontSize: 12, color: AppColors.secondary))),
                   ]),
                 ),
               Container(
-                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+                decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: borderColor)),
                 padding: const EdgeInsets.all(16),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  // Merchant
-                   _FieldLabel(icon: Icons.store_outlined, label: Translations.t('merchant_name', state.language), mutedColor: mutedColor, fgColor: fgColor),
-                  TextField(controller: _merchantCtrl, decoration: InputDecoration(hintText: Translations.t('merchant_hint', state.language), errorText: _errors['merchant'])),
-                  const SizedBox(height: 16),
-                  // Date
-                  _FieldLabel(icon: Icons.calendar_today_outlined, label: Translations.t('date', state.language), mutedColor: mutedColor, fgColor: fgColor),
-                  GestureDetector(
-                    onTap: _pickDate,
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(color: isDark ? AppColors.darkCard : Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      child: Row(children: [
-                        Icon(Icons.calendar_today, size: 16, color: mutedColor),
-                        const SizedBox(width: 8),
-                        Text('${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}', style: GoogleFonts.inter(fontSize: 14, color: fgColor)),
-                      ]),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Amount
-                  _FieldLabel(icon: Icons.attach_money, label: Translations.t('amount_label', state.language), mutedColor: mutedColor, fgColor: fgColor),
-                  TextField(
-                    controller: _amountCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      hintText: '0.00',
-                      prefixText: '${context.read<AppState>().currencySymbol} ',
-                      errorText: _errors['amount'],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Category
-                  _FieldLabel(icon: Icons.label_outline, label: Translations.t('category_label', state.language), mutedColor: mutedColor, fgColor: fgColor),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8, runSpacing: 8,
-                    children: kCategories.map((cat) => GestureDetector(
-                      onTap: () => setState(() => _category = cat.name),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: _category == cat.name ? AppColors.primary : mutedBg,
-                          borderRadius: BorderRadius.circular(8),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _FieldLabel(
+                          icon: Icons.store_outlined,
+                          label: Translations.t('merchant_name', lang),
+                          mutedColor: mutedColor,
+                          fgColor: fgColor),
+                      TextField(
+                          controller: _merchantCtrl,
+                          style:
+                              GoogleFonts.inter(fontSize: 14, color: fgColor),
+                          decoration: InputDecoration(
+                              hintText: Translations.t('merchant_hint', lang),
+                              errorText: _errors['merchant'])),
+                      const SizedBox(height: 16),
+                      _FieldLabel(
+                          icon: Icons.calendar_today_outlined,
+                          label: Translations.t('date', lang),
+                          mutedColor: mutedColor,
+                          fgColor: fgColor),
+                      GestureDetector(
+                        onTap: _pickDate,
+                        child: Container(
+                          height: 48,
+                          decoration: BoxDecoration(
+                              color: isDark ? AppColors.darkCard : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: borderColor)),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          child: Row(children: [
+                            Icon(Icons.calendar_today,
+                                size: 16, color: mutedColor),
+                            const SizedBox(width: 8),
+                            Text(
+                                '${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}',
+                                style: GoogleFonts.inter(
+                                    fontSize: 14, color: fgColor)),
+                          ]),
                         ),
-                        child: Text(Translations.t(cat.name, state.language), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: _category == cat.name ? Colors.white : mutedColor)),
                       ),
-                    )).toList(),
-                  ),
-                  const SizedBox(height: 16),
-                  // Notes
-                  _FieldLabel(icon: Icons.notes, label: Translations.t('notes_label', state.language), mutedColor: mutedColor, fgColor: fgColor),
-                  TextField(controller: _notesCtrl, decoration: InputDecoration(hintText: Translations.t('notes_hint', state.language))),
-                ]),
+                      const SizedBox(height: 16),
+                      _FieldLabel(
+                          icon: Icons.attach_money,
+                          label: Translations.t('amount_label', lang),
+                          mutedColor: mutedColor,
+                          fgColor: fgColor),
+                      TextField(
+                        controller: _amountCtrl,
+                        style: GoogleFonts.inter(fontSize: 14, color: fgColor),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        decoration: InputDecoration(
+                          hintText: '0.00',
+                          prefixText: '${state.currencySymbol} ',
+                          errorText: _errors['amount'],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _FieldLabel(
+                          icon: Icons.label_outline,
+                          label: Translations.t('category_label', lang),
+                          mutedColor: mutedColor,
+                          fgColor: fgColor),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: kCategories
+                            .map((cat) => GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _category = cat.name),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: _category == cat.name
+                                          ? AppColors.primary
+                                          : mutedBg,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(Translations.t(cat.name, lang),
+                                        style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: _category == cat.name
+                                                ? Colors.white
+                                                : mutedColor)),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      _FieldLabel(
+                          icon: Icons.notes,
+                          label: Translations.t('notes_label', lang),
+                          mutedColor: mutedColor,
+                          fgColor: fgColor),
+                      TextField(
+                          controller: _notesCtrl,
+                          maxLines: 2,
+                          style:
+                              GoogleFonts.inter(fontSize: 14, color: fgColor),
+                          decoration: InputDecoration(
+                              hintText: Translations.t('notes_hint', lang))),
+                    ]),
               ),
               const SizedBox(height: 16),
               SizedBox(
@@ -227,8 +320,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () => _handleSave(state),
                   icon: const Icon(Icons.check, size: 18),
-                  label: Text(Translations.t('save_expense', state.language)),
-                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                  label: Text(Translations.t('save_expense', lang)),
+                  style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14)),
                 ),
               ),
               const SizedBox(height: 8),
@@ -236,7 +330,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () => context.read<AppState>().goBack(),
-                  child: Text(Translations.t('cancel', state.language), style: GoogleFonts.inter(color: mutedColor)),
+                  child: Text(Translations.t('cancel', lang),
+                      style: GoogleFonts.inter(color: mutedColor)),
                 ),
               ),
             ],
@@ -252,7 +347,11 @@ class _FieldLabel extends StatelessWidget {
   final String label;
   final Color mutedColor;
   final Color fgColor;
-  const _FieldLabel({required this.icon, required this.label, required this.mutedColor, required this.fgColor});
+  const _FieldLabel(
+      {required this.icon,
+      required this.label,
+      required this.mutedColor,
+      required this.fgColor});
 
   @override
   Widget build(BuildContext context) {
@@ -261,7 +360,9 @@ class _FieldLabel extends StatelessWidget {
       child: Row(children: [
         Icon(icon, size: 14, color: mutedColor),
         const SizedBox(width: 6),
-        Text(label, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
       ]),
     );
   }

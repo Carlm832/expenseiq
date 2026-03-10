@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../services/translations.dart';
@@ -22,44 +23,57 @@ class _LoginScreenState extends State<LoginScreen> {
     final errors = <String, String>{};
     final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
+    final lang = context.read<AppState>().language;
+
     if (email.isEmpty) {
-      errors['email'] = Translations.t('email_required', context.read<AppState>().language);
+      errors['email'] = Translations.t('email_required', lang);
     } else if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
-      errors['email'] = Translations.t('valid_email_required', context.read<AppState>().language);
+      errors['email'] = Translations.t('valid_email_required', lang);
     }
     if (password.isEmpty) {
-      errors['password'] = Translations.t('password_required', context.read<AppState>().language);
+      errors['password'] = Translations.t('password_required', lang);
     } else if (password.length < 6) {
-      errors['password'] = Translations.t('password_min_length', context.read<AppState>().language);
+      errors['password'] = Translations.t('password_min_length', lang);
     }
     setState(() => _errors = errors);
     return errors.isEmpty;
   }
 
-  void _handleLogin(AppState state) {
+  Future<void> _handleLogin(AppState state) async {
     if (!_validate()) return;
     final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
 
-    final name = state.getNameForEmail(email);
-    if (name == null || !state.validateLogin(email, password)) {
-      setState(() => _errors = {'form': Translations.t('invalid_credentials', state.language)});
-      return;
+    try {
+      await state.loginWithEmail(email, password);
+    } on FirebaseAuthException catch (e) {
+      String msg = 'Login failed.';
+      if (e.code == 'user-not-found') {
+        msg = 'No user found with this email.';
+      } else if (e.code == 'wrong-password') {
+        msg = 'Incorrect password.';
+      } else if (e.code == 'invalid-credential') {
+        msg = 'Invalid credentials.';
+      }
+      setState(() => _errors = {'form': msg});
+    } catch (e) {
+      setState(
+          () => _errors = {'form': 'An error occurred. Please try again.'});
     }
-    state.login(name, email);
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = context.read<AppState>();
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final state = context.watch<AppState>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBackground : AppColors.background;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final mutedColor =
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+
+    final lang = state.language;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -93,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
                               color: fgColor)),
-                      Text(Translations.t('smart_finance_tracking', state.language),
+                      Text(Translations.t('smart_finance_tracking', lang),
                           style: GoogleFonts.inter(
                               fontSize: 12, color: mutedColor)),
                     ],
@@ -109,15 +123,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   _FeaturePill(
                       icon: Icons.document_scanner,
-                      label: Translations.t('scan_receipts', state.language),
+                      label: Translations.t('scan_receipts', lang),
                       color: AppColors.primary),
                   _FeaturePill(
                       icon: Icons.bar_chart,
-                      label: Translations.t('track_spending', state.language),
+                      label: Translations.t('track_spending', lang),
                       color: AppColors.secondary),
                   _FeaturePill(
                       icon: Icons.savings,
-                      label: Translations.t('save_more', state.language),
+                      label: Translations.t('save_more', lang),
                       color: AppColors.primary),
                 ],
               ),
@@ -133,13 +147,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(Translations.t('login_welcome_back', state.language),
+                    Text(Translations.t('login_welcome_back', lang),
                         style: GoogleFonts.dmSans(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
                             color: fgColor)),
                     const SizedBox(height: 4),
-                    Text(Translations.t('login_subtitle', state.language),
+                    Text(Translations.t('login_subtitle', lang),
                         style:
                             GoogleFonts.inter(fontSize: 13, color: mutedColor)),
                     const SizedBox(height: 24),
@@ -147,6 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Container(
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(12),
+                        width: double.infinity,
                         decoration: BoxDecoration(
                           color: AppColors.destructive.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
@@ -159,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             textAlign: TextAlign.center),
                       ),
                     // Email
-                    Text(Translations.t('email', state.language),
+                    Text(Translations.t('email', lang),
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -168,6 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
+                      style: GoogleFonts.inter(fontSize: 14, color: fgColor),
                       decoration: InputDecoration(
                         hintText: 'you@example.com',
                         prefixIcon: Icon(Icons.mail_outline,
@@ -177,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
                     // Password
-                    Text(Translations.t('password', state.language),
+                    Text(Translations.t('password', lang),
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -186,8 +202,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextField(
                       controller: _passwordCtrl,
                       obscureText: !_showPassword,
+                      style: GoogleFonts.inter(fontSize: 14, color: fgColor),
                       decoration: InputDecoration(
-                        hintText: Translations.t('enter_details_manual', state.language),
+                        hintText: Translations.t('enter_details_manual', lang),
                         prefixIcon: Icon(Icons.lock_outline,
                             size: 18, color: mutedColor),
                         suffixIcon: IconButton(
@@ -208,7 +225,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {},
-                        child: Text(Translations.t('login_forgot_password', state.language),
+                        child: Text(
+                            Translations.t('login_forgot_password', lang),
                             style: GoogleFonts.inter(
                                 fontSize: 12,
                                 color: AppColors.primary,
@@ -220,10 +238,60 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () => _handleLogin(state),
-                        icon: const Icon(Icons.arrow_forward, size: 18),
-                        label: Text(Translations.t('login_sign_in', state.language)),
+                        icon: const Icon(Icons.login, size: 18),
+                        label: Text(Translations.t('login_sign_in', lang)),
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => state.setCurrentScreen('register'),
+                        icon: const Icon(Icons.person_add_outlined, size: 18),
+                        label: Text(Translations.t('reg_create_account', lang),
+                            style: TextStyle(color: fgColor)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: borderColor),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: borderColor)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('OR',
+                              style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: mutedColor,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                        Expanded(child: Divider(color: borderColor)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          try {
+                            await state.signInWithGoogle();
+                          } catch (e) {
+                            setState(() =>
+                                _errors = {'form': 'Google Sign-In failed.'});
+                          }
+                        },
+                        icon: const Icon(Icons.g_mobiledata, size: 24),
+                        label: Text('Sign in with Google',
+                            style: TextStyle(color: fgColor)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: borderColor),
+                        ),
                       ),
                     ),
                   ],
@@ -233,13 +301,13 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(Translations.t('login_no_account', state.language),
+                  Text(Translations.t('login_no_account', lang),
                       style:
                           GoogleFonts.inter(fontSize: 13, color: mutedColor)),
+                  const SizedBox(width: 4),
                   GestureDetector(
-                    onTap: () =>
-                        context.read<AppState>().setCurrentScreen('register'),
-                    child: Text(Translations.t('login_signup_free', state.language),
+                    onTap: () => state.setCurrentScreen('register'),
+                    child: Text(Translations.t('login_signup_free', lang),
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             color: AppColors.primary,

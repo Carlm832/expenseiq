@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../services/translations.dart';
@@ -23,7 +24,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _validate(AppState state) {
     final errors = <String, String>{};
-    if (_nameCtrl.text.trim().isEmpty) errors['name'] = Translations.t('name_required', state.language);
+    if (_nameCtrl.text.trim().isEmpty) {
+      errors['name'] = Translations.t('name_required', state.language);
+    }
     final email = _emailCtrl.text.trim();
     if (email.isEmpty) {
       errors['email'] = Translations.t('email_required', state.language);
@@ -35,10 +38,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_passwordCtrl.text.isEmpty) {
       errors['password'] = Translations.t('password_required', state.language);
     } else if (_passwordCtrl.text.length < 6) {
-      errors['password'] = Translations.t('password_min_length', state.language);
+      errors['password'] =
+          Translations.t('password_min_length', state.language);
     }
     if (_passwordCtrl.text != _confirmCtrl.text) {
-      errors['confirmPassword'] = Translations.t('passwords_dont_match', state.language);
+      errors['confirmPassword'] =
+          Translations.t('passwords_dont_match', state.language);
     }
     final budgetVal = double.tryParse(_budgetCtrl.text.trim()) ?? 0;
     if (budgetVal <= 0) {
@@ -49,25 +54,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return errors.isEmpty;
   }
 
-  void _handleRegister(AppState state) {
+  Future<void> _handleRegister(AppState state) async {
     if (!_validate(state)) return;
-    state.addRegisteredUser(
-        _nameCtrl.text.trim(), _emailCtrl.text.trim(), _passwordCtrl.text);
-    state.register(_nameCtrl.text.trim(), _emailCtrl.text.trim());
-    state.setOverallBudget(double.tryParse(_budgetCtrl.text.trim()) ?? 0.0);
+
+    try {
+      final budgetVal = double.parse(_budgetCtrl.text.trim());
+      await state.registerWithEmail(
+        _nameCtrl.text.trim(),
+        _emailCtrl.text.trim(),
+        _passwordCtrl.text,
+      );
+      await state.setOverallBudget(budgetVal);
+    } on FirebaseAuthException catch (e) {
+      String msg = 'Registration failed.';
+      if (e.code == 'email-already-in-use') {
+        msg = 'This email is already in use.';
+      } else if (e.code == 'weak-password') {
+        msg = 'The password is too weak.';
+      }
+      setState(() => _errors = {'form': msg});
+    } catch (e) {
+      setState(
+          () => _errors = {'form': 'An error occurred. Please try again.'});
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = context.read<AppState>();
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBackground : AppColors.background;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final mutedColor =
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+
+    final lang = state.language;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -83,7 +106,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: () =>
                       context.read<AppState>().setCurrentScreen('login'),
                   icon: Icon(Icons.arrow_back, size: 16, color: mutedColor),
-                  label: Text(Translations.t('reg_back_to_signin', state.language),
+                  label: Text(Translations.t('reg_back_to_signin', lang),
                       style:
                           GoogleFonts.inter(fontSize: 13, color: mutedColor)),
                 ),
@@ -113,19 +136,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(Translations.t('reg_create_account', state.language),
+                            Text(Translations.t('reg_create_account', lang),
                                 style: GoogleFonts.dmSans(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                     color: fgColor)),
-                            Text(Translations.t('reg_subtitle', state.language),
+                            Text(Translations.t('reg_subtitle', lang),
                                 style: GoogleFonts.inter(
                                     fontSize: 11, color: mutedColor)),
                           ]),
                     ]),
                     const SizedBox(height: 24),
                     _buildField(
-                        Translations.t('full_name', state.language),
+                        Translations.t('full_name', lang),
                         _nameCtrl,
                         'John Doe',
                         Icons.person_outline,
@@ -135,7 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         _errors['name']),
                     const SizedBox(height: 16),
                     _buildField(
-                        Translations.t('email', state.language),
+                        Translations.t('email', lang),
                         _emailCtrl,
                         'you@example.com',
                         Icons.mail_outline,
@@ -145,7 +168,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         _errors['email'],
                         type: TextInputType.emailAddress),
                     const SizedBox(height: 16),
-                    Text(Translations.t('password', state.language),
+                    Text(Translations.t('password', lang),
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -154,8 +177,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextField(
                       controller: _passwordCtrl,
                       obscureText: !_showPassword,
+                      style: GoogleFonts.inter(fontSize: 14, color: fgColor),
                       decoration: InputDecoration(
-                        hintText: Translations.t('password_min_length', state.language),
+                        hintText: Translations.t('password_min_length', lang),
                         prefixIcon: Icon(Icons.lock_outline,
                             size: 18, color: mutedColor),
                         suffixIcon: IconButton(
@@ -172,7 +196,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text(Translations.t('reg_confirm_password', state.language),
+                    Text(Translations.t('reg_confirm_password', lang),
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -181,8 +205,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextField(
                       controller: _confirmCtrl,
                       obscureText: !_showPassword,
+                      style: GoogleFonts.inter(fontSize: 14, color: fgColor),
                       decoration: InputDecoration(
-                        hintText: Translations.t('enter_details_manual', state.language),
+                        hintText: Translations.t('reg_confirm_password', lang),
                         prefixIcon: Icon(Icons.lock_outline,
                             size: 18, color: mutedColor),
                         errorText: _errors['confirmPassword'],
@@ -190,7 +215,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 16),
                     _buildField(
-                        Translations.t('monthly_budget', state.language),
+                        Translations.t('monthly_budget', lang),
                         _budgetCtrl,
                         'e.g. 5000',
                         Icons.account_balance_wallet_outlined,
@@ -199,13 +224,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         fgColor,
                         _errors['budget'],
                         type: TextInputType.number),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
+                    if (_errors['form'] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Text(_errors['form']!,
+                            style: GoogleFonts.inter(
+                                fontSize: 13, color: AppColors.destructive)),
+                      ),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () => _handleRegister(state),
                         icon: const Icon(Icons.person_add, size: 18),
-                        label: Text(Translations.t('reg_create_account', state.language)),
+                        label: Text(Translations.t('reg_create_account', lang)),
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14)),
                       ),
@@ -217,13 +249,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(Translations.t('reg_already_have_account', state.language),
+                  Text(Translations.t('reg_already_have_account', lang),
                       style:
                           GoogleFonts.inter(fontSize: 13, color: mutedColor)),
+                  const SizedBox(width: 4),
                   GestureDetector(
                     onTap: () =>
                         context.read<AppState>().setCurrentScreen('login'),
-                    child: Text(Translations.t('login_sign_in', state.language),
+                    child: Text(Translations.t('login_sign_in', lang),
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             color: AppColors.primary,
@@ -251,6 +284,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         controller: ctrl,
         obscureText: obscure,
         keyboardType: type,
+        style: GoogleFonts.inter(fontSize: 14, color: fg),
         decoration: InputDecoration(
           hintText: hint,
           prefixIcon: Icon(icon, size: 18, color: muted),

@@ -107,8 +107,9 @@ class OcrService {
     // Date patterns: DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD, DD-MM-YY, etc.
     final datePatterns = [
       RegExp(r'(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})'), // YYYY-MM-DD
-      RegExp(r'(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})'), // DD/MM/YYYY or MM/DD/YYYY
-      RegExp(r'(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})'),  // DD/MM/YY
+      RegExp(
+          r'(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})'), // DD/MM/YYYY or MM/DD/YYYY
+      RegExp(r'(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})'), // DD/MM/YY
     ];
 
     for (final line in lines) {
