@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../theme.dart';
+import '../services/translations.dart';
 import '../app_state.dart';
 import '../services/ocr_service.dart';
 
@@ -132,18 +133,18 @@ class _ScanScreenState extends State<ScanScreen> {
               if (_scanFailed) ...[
                 _ActionButton(
                   icon: Icons.refresh,
-                  label: 'Try Again',
+                  label: Translations.t('try_again', context.read<AppState>().language),
                   onPressed: () => setState(() {
                     _scanFailed = false;
                     _previewPath = null;
-                    _statusMessage = 'Point camera at receipt';
+                    _statusMessage = Translations.t('scan_instructions', context.read<AppState>().language);
                   }),
                   primary: true,
                 ),
                 const SizedBox(height: 12),
                 _ActionButton(
                   icon: Icons.edit,
-                  label: 'Enter Manually',
+                  label: Translations.t('enter_manually', context.read<AppState>().language),
                   onPressed: () =>
                       context.read<AppState>().setCurrentScreen('addExpense'),
                   primary: false,
@@ -151,14 +152,14 @@ class _ScanScreenState extends State<ScanScreen> {
               ] else if (!_isScanning) ...[
                 _ActionButton(
                   icon: Icons.camera_alt,
-                  label: 'Take Photo',
+                  label: Translations.t('take_photo', context.read<AppState>().language),
                   onPressed: () => _scan(ImageSource.camera),
                   primary: true,
                 ),
                 const SizedBox(height: 12),
                 _ActionButton(
                   icon: Icons.photo_library,
-                  label: 'Choose from Gallery',
+                  label: Translations.t('from_gallery', context.read<AppState>().language),
                   onPressed: () => _scan(ImageSource.gallery),
                   primary: false,
                 ),
@@ -215,7 +216,8 @@ class _ScanScreenState extends State<ScanScreen> {
     }
 
     if (_scanFailed) {
-      return Column(
+          final lang = context.read<AppState>().language;
+          return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
@@ -228,14 +230,14 @@ class _ScanScreenState extends State<ScanScreen> {
                 size: 36, color: AppColors.destructive),
           ),
           const SizedBox(height: 20),
-          Text('Could not read receipt',
+          Text(Translations.t('scan_failed', lang),
               style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: fgColor),
               textAlign: TextAlign.center),
           const SizedBox(height: 8),
-          Text('Please try again or enter manually',
+          Text(Translations.t('scan_failed_msg', lang),
               style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
         ],
       );

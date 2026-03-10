@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../app_state.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../services/translations.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   const AddExpenseScreen({super.key});
@@ -58,9 +59,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   bool _validate() {
     final errors = <String, String>{};
-    if (_merchantCtrl.text.trim().isEmpty) errors['merchant'] = 'Merchant name is required';
+    if (_merchantCtrl.text.trim().isEmpty) errors['merchant'] = Translations.t('merchant_required', context.read<AppState>().language);
     final amount = double.tryParse(_amountCtrl.text) ?? 0;
-    if (amount <= 0) errors['amount'] = 'Enter a valid amount';
+    if (amount <= 0) errors['amount'] = Translations.t('valid_amount_required', context.read<AppState>().language);
     setState(() => _errors = errors);
     return errors.isEmpty;
   }
@@ -121,8 +122,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               ),
               const SizedBox(width: 12),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Add Expense', style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
-                Text(_prefilledFromScan ? 'Review and confirm scanned details' : 'Enter expense details manually', style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
+                Text(Translations.t('add_expense_title', state.language), style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
+                Text(_prefilledFromScan ? Translations.t('review_scanned_details', state.language) : Translations.t('enter_details_manual', state.language), style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
               ]),
             ]),
             const SizedBox(height: 24),
@@ -139,8 +140,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     child: const Icon(Icons.check, size: 32, color: AppColors.secondary),
                   ),
                   const SizedBox(height: 16),
-                  Text('Expense Added!', style: GoogleFonts.dmSans(fontSize: 18, fontWeight: FontWeight.w600, color: fgColor)),
-                  Text('Redirecting to dashboard...', style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
+                  Text(Translations.t('expense_added', state.language), style: GoogleFonts.dmSans(fontSize: 18, fontWeight: FontWeight.w600, color: fgColor)),
+                  Text(Translations.t('redirecting_to_dashboard', state.language), style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
                 ]),
               )
             else ...[
@@ -157,7 +158,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   child: Row(children: [
                     const Icon(Icons.auto_awesome, size: 16, color: AppColors.secondary),
                     const SizedBox(width: 8),
-                    Expanded(child: Text('Pre-filled from scan — please verify the details below.',
+                    Expanded(child: Text(Translations.t('prefilled_from_scan_banner', state.language),
                         style: GoogleFonts.inter(fontSize: 12, color: AppColors.secondary))),
                   ]),
                 ),
@@ -166,11 +167,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   // Merchant
-                  _FieldLabel(icon: Icons.store_outlined, label: 'Merchant Name', mutedColor: mutedColor, fgColor: fgColor),
-                  TextField(controller: _merchantCtrl, decoration: InputDecoration(hintText: 'e.g. Starbucks, Amazon', errorText: _errors['merchant'])),
+                   _FieldLabel(icon: Icons.store_outlined, label: Translations.t('merchant_name', state.language), mutedColor: mutedColor, fgColor: fgColor),
+                  TextField(controller: _merchantCtrl, decoration: InputDecoration(hintText: Translations.t('merchant_hint', state.language), errorText: _errors['merchant'])),
                   const SizedBox(height: 16),
                   // Date
-                  _FieldLabel(icon: Icons.calendar_today_outlined, label: 'Date', mutedColor: mutedColor, fgColor: fgColor),
+                  _FieldLabel(icon: Icons.calendar_today_outlined, label: Translations.t('date', state.language), mutedColor: mutedColor, fgColor: fgColor),
                   GestureDetector(
                     onTap: _pickDate,
                     child: Container(
@@ -186,7 +187,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   ),
                   const SizedBox(height: 16),
                   // Amount
-                  _FieldLabel(icon: Icons.attach_money, label: 'Amount', mutedColor: mutedColor, fgColor: fgColor),
+                  _FieldLabel(icon: Icons.attach_money, label: Translations.t('amount_label', state.language), mutedColor: mutedColor, fgColor: fgColor),
                   TextField(
                     controller: _amountCtrl,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -198,7 +199,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   ),
                   const SizedBox(height: 16),
                   // Category
-                  _FieldLabel(icon: Icons.label_outline, label: 'Category', mutedColor: mutedColor, fgColor: fgColor),
+                  _FieldLabel(icon: Icons.label_outline, label: Translations.t('category_label', state.language), mutedColor: mutedColor, fgColor: fgColor),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8, runSpacing: 8,
@@ -210,14 +211,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           color: _category == cat.name ? AppColors.primary : mutedBg,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(cat.name, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: _category == cat.name ? Colors.white : mutedColor)),
+                        child: Text(Translations.t(cat.name, state.language), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: _category == cat.name ? Colors.white : mutedColor)),
                       ),
                     )).toList(),
                   ),
                   const SizedBox(height: 16),
                   // Notes
-                  _FieldLabel(icon: Icons.notes, label: 'Notes (Optional)', mutedColor: mutedColor, fgColor: fgColor),
-                  TextField(controller: _notesCtrl, decoration: const InputDecoration(hintText: 'Add any additional notes...')),
+                  _FieldLabel(icon: Icons.notes, label: Translations.t('notes_label', state.language), mutedColor: mutedColor, fgColor: fgColor),
+                  TextField(controller: _notesCtrl, decoration: InputDecoration(hintText: Translations.t('notes_hint', state.language))),
                 ]),
               ),
               const SizedBox(height: 16),
@@ -226,7 +227,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () => _handleSave(state),
                   icon: const Icon(Icons.check, size: 18),
-                  label: const Text('Save Expense'),
+                  label: Text(Translations.t('save_expense', state.language)),
                   style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
                 ),
               ),
@@ -235,7 +236,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () => context.read<AppState>().goBack(),
-                  child: Text('Cancel', style: GoogleFonts.inter(color: mutedColor)),
+                  child: Text(Translations.t('cancel', state.language), style: GoogleFonts.inter(color: mutedColor)),
                 ),
               ),
             ],

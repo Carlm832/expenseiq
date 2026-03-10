@@ -1,11 +1,47 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import '../services/translations.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  Future<void> _pickProfilePhoto(BuildContext context, AppState state) async {
+    final lang = state.language;
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: Text(Translations.t('camera', lang)),
+            onTap: () => Navigator.pop(context, ImageSource.camera),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library),
+            title: Text(Translations.t('gallery', lang)),
+            onTap: () => Navigator.pop(context, ImageSource.gallery),
+          ),
+          ListTile(
+            leading: const Icon(Icons.close),
+            title: Text(Translations.t('cancel', lang)),
+            onTap: () => Navigator.pop(context),
+          ),
+        ]),
+      ),
+    );
+    if (source == null) return;
+    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    if (picked != null) {
+      state.setProfileImage(picked.path);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,39 +54,40 @@ class ProfileScreen extends StatelessWidget {
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
+    final lang = state.language;
     final menu = [
       (
         Icons.credit_card,
-        'Payment Methods',
+        Translations.t('payment_methods', lang),
         'Manage your cards',
         'payment-methods'
       ),
       (
         Icons.notifications_outlined,
-        'Notifications',
+        Translations.t('notifications', lang),
         'Alerts & reminders',
         'notifications'
       ),
       (
         Icons.shield_outlined,
-        'Privacy & Security',
+        Translations.t('privacy_security', lang),
         'Data protection',
         'privacy'
       ),
       (
         Icons.dark_mode_outlined,
-        'Appearance',
+        Translations.t('appearance', lang),
         'Dark mode & themes',
         'appearance'
       ),
       (
         Icons.pie_chart_outline,
-        'Budget Manager',
+        Translations.t('budget_manager', lang),
         'Set spending limits',
         'budget'
       ),
-      (Icons.help_outline, 'Help & Support', 'Get assistance', 'help'),
-      (Icons.settings_outlined, 'Settings', 'App preferences', 'settings'),
+      (Icons.help_outline, Translations.t('help_support', lang), 'Get assistance', 'help'),
+      (Icons.settings_outlined, Translations.t('settings', lang), 'App preferences', 'settings'),
     ];
 
     final totalSaved =
@@ -70,20 +107,39 @@ class ProfileScreen extends StatelessWidget {
                   border: Border.all(color: borderColor)),
               padding: const EdgeInsets.all(20),
               child: Row(children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16)),
-                  child: state.profileImage.isNotEmpty
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(state.profileImage,
-                              fit: BoxFit.cover))
-                      : const Icon(Icons.person,
-                          size: 32, color: AppColors.primary),
+              GestureDetector(
+                onTap: () => _pickProfilePhoto(context, state),
+                child: Stack(
+                  children: [
+                    Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16)),
+                    child: state.profileImage.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.file(File(state.profileImage),
+                                fit: BoxFit.cover))
+                        : const Icon(Icons.person,
+                            size: 32, color: AppColors.primary),
+                    ),
+                    Positioned(
+                      right: 0, bottom: 0,
+                      child: Container(
+                        width: 20, height: 20,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                        child: const Icon(Icons.camera_alt, size: 11, color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
                 const SizedBox(width: 16),
                 Expanded(
                     child: Column(
@@ -128,7 +184,7 @@ class ProfileScreen extends StatelessWidget {
             Row(children: [
               _StatCard(
                   value: '${state.expenses.length}',
-                  label: 'Receipts',
+                  label: Translations.t('receipts', lang),
                   fgColor: fgColor,
                   mutedColor: mutedColor,
                   cardColor: cardColor,
@@ -136,7 +192,7 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(width: 12),
               _StatCard(
                   value: '6',
-                  label: 'Months',
+                  label: Translations.t('months', lang),
                   fgColor: fgColor,
                   mutedColor: mutedColor,
                   cardColor: cardColor,
@@ -144,7 +200,7 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(width: 12),
               _StatCard(
                   value: context.read<AppState>().formatCurrency(totalSaved.toDouble()),
-                  label: 'Saved',
+                  label: Translations.t('saved', lang),
                   fgColor: fgColor,
                   mutedColor: mutedColor,
                   cardColor: cardColor,
@@ -210,7 +266,7 @@ class ProfileScreen extends StatelessWidget {
                 onPressed: state.logout,
                 icon: const Icon(Icons.logout,
                     size: 18, color: AppColors.destructive),
-                label: Text('Sign Out',
+                label: Text(Translations.t('sign_out', lang),
                     style: GoogleFonts.inter(
                         color: AppColors.destructive,
                         fontWeight: FontWeight.w500)),

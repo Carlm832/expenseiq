@@ -7,6 +7,7 @@ import 'history_screen.dart';
 import 'analytics_screen.dart';
 import 'profile_screen.dart';
 import 'scan_screen.dart';
+import '../services/translations.dart';
 
 class MainScaffold extends StatelessWidget {
   final String currentScreen;
@@ -48,28 +49,29 @@ class MainScaffold extends StatelessWidget {
                 _NavItem(
                     icon: Icons.dashboard_outlined,
                     activeIcon: Icons.dashboard,
-                    label: 'Home',
+                    label: Translations.t('nav_dashboard', state.language),
                     isActive: currentScreen == 'dashboard',
                     onTap: () => state.setCurrentScreen('dashboard')),
                 _NavItem(
                     icon: Icons.history,
                     activeIcon: Icons.history,
-                    label: 'History',
+                    label: Translations.t('nav_history', state.language),
                     isActive: currentScreen == 'history',
                     onTap: () => state.setCurrentScreen('history')),
                 _ScanNavItem(
+                    label: Translations.t('nav_scan', state.language),
                     isActive: currentScreen == 'scan' || currentScreen == 'ocr',
                     onTap: () => state.setCurrentScreen('scan')),
                 _NavItem(
                     icon: Icons.bar_chart_outlined,
                     activeIcon: Icons.bar_chart,
-                    label: 'Analytics',
+                    label: Translations.t('nav_analytics', state.language),
                     isActive: currentScreen == 'analytics',
                     onTap: () => state.setCurrentScreen('analytics')),
                 _NavItem(
                     icon: Icons.person_outline,
                     activeIcon: Icons.person,
-                    label: 'Profile',
+                    label: Translations.t('nav_profile', state.language),
                     isActive: currentScreen == 'profile',
                     onTap: () => state.setCurrentScreen('profile')),
               ],
@@ -125,10 +127,11 @@ class _NavItem extends StatelessWidget {
 }
 
 class _ScanNavItem extends StatelessWidget {
+  final String label;
   final bool isActive;
   final VoidCallback onTap;
 
-  const _ScanNavItem({required this.isActive, required this.onTap});
+  const _ScanNavItem({required this.label, required this.isActive, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +159,7 @@ class _ScanNavItem extends StatelessWidget {
                   color: Colors.white, size: 20),
             ),
             const SizedBox(height: 2),
-            Text('Scan',
+            Text(label,
                 style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,

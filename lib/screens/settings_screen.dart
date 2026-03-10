@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import '../services/translations.dart';
 
 Widget _buildSimpleScreen(BuildContext context, String title, String subtitle,
     List<Widget> children) {
@@ -70,7 +71,7 @@ class SettingsScreen extends StatelessWidget {
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
-    return _buildSimpleScreen(context, 'Settings', 'App preferences', [
+    return _buildSimpleScreen(context, Translations.t('settings_title', state.language), Translations.t('settings_subtitle', state.language), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -79,7 +80,7 @@ class SettingsScreen extends StatelessWidget {
         child: Column(children: [
           _SettingsTile(
               icon: Icons.language,
-              label: 'Language',
+              label: Translations.t('language', state.language),
               value: state.language,
               fgColor: fgColor,
               mutedColor: mutedColor,
@@ -88,7 +89,7 @@ class SettingsScreen extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Select Language'),
+                    title: Text(Translations.t('select_language', state.language)),
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: ['English', 'Turkish'].map((lang) => ListTile(
@@ -105,7 +106,7 @@ class SettingsScreen extends StatelessWidget {
               }),
           _SettingsTile(
               icon: Icons.currency_exchange,
-              label: 'Currency',
+              label: Translations.t('currency', state.language),
               value: state.currency,
               fgColor: fgColor,
               mutedColor: mutedColor,
@@ -114,7 +115,7 @@ class SettingsScreen extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Select Currency'),
+                    title: Text(Translations.t('select_currency', state.language)),
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: ['TRY (₺)', 'USD (\$)', 'EUR (€)', 'GBP (£)'].map((curr) => ListTile(
@@ -131,8 +132,8 @@ class SettingsScreen extends StatelessWidget {
               }),
           _SettingsTile(
               icon: Icons.notifications_outlined,
-              label: 'Push Notifications',
-              value: state.pushNotificationsEnabled ? 'On' : 'Off',
+              label: Translations.t('push_notifications', state.language),
+              value: state.pushNotificationsEnabled ? Translations.t('on', state.language) : Translations.t('off', state.language),
               fgColor: fgColor,
               mutedColor: mutedColor,
               borderColor: borderColor,
@@ -141,19 +142,19 @@ class SettingsScreen extends StatelessWidget {
               }),
           _SettingsTile(
               icon: Icons.backup_outlined,
-              label: 'Backup Data',
+              label: Translations.t('backup_data', state.language),
               value: '',
               fgColor: fgColor,
               mutedColor: mutedColor,
               borderColor: borderColor,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Data backup is not available yet.')),
+                  SnackBar(content: Text(Translations.t('data_backup_unavailable', state.language))),
                 );
               }),
           _SettingsTile(
               icon: Icons.delete_outline,
-              label: 'Clear All Data',
+              label: Translations.t('clear_all_data', state.language),
               value: '',
               fgColor: fgColor,
               mutedColor: mutedColor,
@@ -163,19 +164,19 @@ class SettingsScreen extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Clear All Data?'),
-                    content: const Text('This will delete all your expenses, settings, and account data. This action cannot be undone.'),
+                    title: Text(Translations.t('clear_data_confirm_title', state.language)),
+                    content: Text(Translations.t('clear_data_confirm_msg', state.language)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
-                        child: const Text('Cancel'),
+                        child: Text(Translations.t('cancel', state.language)),
                       ),
                       TextButton(
                         onPressed: () {
                           state.clearAllData();
                           Navigator.pop(ctx);
                         },
-                        child: const Text('Delete', style: TextStyle(color: AppColors.destructive)),
+                        child: Text(Translations.t('delete', state.language), style: const TextStyle(color: AppColors.destructive)),
                       ),
                     ],
                   ),
@@ -198,7 +199,7 @@ class AppearanceScreen extends StatelessWidget {
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-    return _buildSimpleScreen(context, 'Appearance', 'Dark mode & themes', [
+    return _buildSimpleScreen(context, Translations.t('appearance_title', state.language), Translations.t('dark_mode_subtitle', state.language), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -210,12 +211,12 @@ class AppearanceScreen extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text('Dark Mode',
+                Text(Translations.t('dark_mode', state.language),
                     style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: fgColor)),
-                Text('Switch between light and dark theme',
+                Text(Translations.t('dark_mode_subtitle', state.language),
                     style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
               ])),
           Switch(
@@ -254,7 +255,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
     return _buildSimpleScreen(
-        context, 'Budget Manager', 'Set your monthly spending limit', [
+        context, Translations.t('budget_manager_title', state.language), Translations.t('set_monthly_limit', state.language), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -263,7 +264,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
         padding: const EdgeInsets.all(16),
         child: Row(children: [
           Expanded(
-              child: Text('Monthly Budget',
+              child: Text(Translations.t('monthly_budget', state.language),
                   style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -294,7 +295,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
             state.setOverallBudget(limit);
             state.goBack();
           },
-          child: const Text('Save Budget'),
+          child: Text(Translations.t('save_budget', state.language)),
         ),
       ),
     ]);
@@ -313,23 +314,24 @@ class HelpScreen extends StatelessWidget {
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final faqs = [
       (
-        'How do I add an expense?',
-        'Tap the + button on the dashboard or use the Add Expense form.'
+        Translations.t('faq_q1', context.read<AppState>().language),
+        Translations.t('faq_a1', context.read<AppState>().language)
       ),
       (
-        'How do I scan a receipt?',
-        'Use the Scan tab in the bottom navigation to scan receipts using your camera.'
+        Translations.t('faq_q2', context.read<AppState>().language),
+        Translations.t('faq_a2', context.read<AppState>().language)
       ),
       (
-        'How do I set a budget?',
-        'Go to Profile → Budget Manager to set spending limits per category.'
+        Translations.t('faq_q3', context.read<AppState>().language),
+        Translations.t('faq_a3', context.read<AppState>().language)
       ),
       (
-        'How do I export my data?',
-        'Go to History and tap the CSV button to export your transactions.'
+        Translations.t('faq_q4', context.read<AppState>().language),
+        Translations.t('faq_a4', context.read<AppState>().language)
       ),
     ];
-    return _buildSimpleScreen(context, 'Help & Support', 'Get assistance', [
+    final lang = context.read<AppState>().language;
+    return _buildSimpleScreen(context, Translations.t('help_support_title', lang), Translations.t('get_assistance', lang), [
       ...faqs.map((faq) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Container(
@@ -361,7 +363,7 @@ class HelpScreen extends StatelessWidget {
             context.read<AppState>().setCurrentScreen('contact_us');
           },
           icon: const Icon(Icons.support_agent, size: 18),
-          label: const Text('Contact Us'),
+          label: Text(Translations.t('contact_us', context.read<AppState>().language)),
         ),
       ),
     ]);
@@ -383,7 +385,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   Future<void> _sendMessage() async {
     if (_subjectCtrl.text.trim().isEmpty || _messageCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill out all fields.')),
+        SnackBar(content: Text(Translations.t('fill_all_fields', context.read<AppState>().language))),
       );
       return;
     }
@@ -397,7 +399,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     setState(() => _isSending = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Message sent successfully!')),
+      SnackBar(content: Text(Translations.t('message_sent_success', context.read<AppState>().language))),
     );
 
     context.read<AppState>().goBack();
@@ -417,8 +419,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
+    final lang = context.read<AppState>().language;
     return _buildSimpleScreen(
-        context, 'Contact Us', 'Send us a message directly', [
+        context, Translations.t('contact_us_title', lang), Translations.t('send_message_subtitle', lang), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -426,25 +429,25 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             border: Border.all(color: borderColor)),
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Subject',
+          Text(Translations.t('subject', lang),
               style: GoogleFonts.inter(
                   fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
           const SizedBox(height: 6),
           TextField(
             controller: _subjectCtrl,
-            decoration: const InputDecoration(
-                hintText: 'What is this regarding?'),
+            decoration: InputDecoration(
+                hintText: Translations.t('regarding_hint', lang)),
           ),
           const SizedBox(height: 16),
-          Text('Message',
+          Text(Translations.t('message', lang),
               style: GoogleFonts.inter(
                   fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
           const SizedBox(height: 6),
           TextField(
             controller: _messageCtrl,
             maxLines: 5,
-            decoration: const InputDecoration(
-                hintText: 'Describe your issue or feedback in detail...'),
+            decoration: InputDecoration(
+                hintText: Translations.t('describe_issue_hint', lang)),
           ),
         ]),
       ),
@@ -458,7 +461,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('Send Message'),
+              : Text(Translations.t('send_message', lang)),
         ),
       ),
     ]);
@@ -474,8 +477,9 @@ class PrivacyScreen extends StatelessWidget {
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final lang = context.read<AppState>().language;
     return _buildSimpleScreen(
-        context, 'Privacy & Security', 'Data protection', [
+        context, Translations.t('privacy_title', lang), Translations.t('data_protection', lang), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -483,7 +487,7 @@ class PrivacyScreen extends StatelessWidget {
             border: Border.all(color: borderColor)),
         padding: const EdgeInsets.all(16),
         child: Text(
-          'Your data is stored locally on your device. We do not share your financial information with any third parties. All expense data is encrypted and protected.\n\nYou can delete all your data at any time from Settings → Clear All Data.',
+          Translations.t('privacy_policy_text', lang),
           style:
               GoogleFonts.inter(fontSize: 13, color: mutedColor, height: 1.6),
         ),
@@ -502,7 +506,8 @@ class PaymentMethodsScreen extends StatelessWidget {
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-    return _buildSimpleScreen(context, 'Payment Methods', 'Manage your cards', [
+    final lang = context.read<AppState>().language;
+    return _buildSimpleScreen(context, Translations.t('payment_methods_title', lang), Translations.t('manage_cards', lang), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -513,10 +518,10 @@ class PaymentMethodsScreen extends StatelessWidget {
           Icon(Icons.credit_card,
               size: 48, color: AppColors.primary.withValues(alpha: 0.5)),
           const SizedBox(height: 12),
-          Text('No payment methods',
+          Text(Translations.t('no_payment_methods', lang),
               style: GoogleFonts.inter(
                   fontSize: 14, fontWeight: FontWeight.w500, color: fgColor)),
-          Text('Add a card to track linked expenses',
+          Text(Translations.t('add_card_msg', lang),
               style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
               textAlign: TextAlign.center),
         ]),
@@ -527,7 +532,7 @@ class PaymentMethodsScreen extends StatelessWidget {
         child: ElevatedButton.icon(
           onPressed: () {},
           icon: const Icon(Icons.add, size: 18),
-          label: const Text('Add Payment Method'),
+          label: Text(Translations.t('add_payment_method', lang)),
         ),
       ),
     ]);
@@ -560,8 +565,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
+    final lang = context.read<AppState>().language;
     return _buildSimpleScreen(
-        context, 'Edit Profile', 'Update your information', [
+        context, Translations.t('edit_profile_title', lang), Translations.t('update_info_subtitle', lang), [
       Container(
         decoration: BoxDecoration(
             color: cardColor,
@@ -569,7 +575,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             border: Border.all(color: borderColor)),
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Full Name',
+          Text(Translations.t('full_name', lang),
               style: GoogleFonts.inter(
                   fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
           const SizedBox(height: 6),
@@ -577,7 +583,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: _nameCtrl,
               decoration: const InputDecoration(hintText: 'John Doe')),
           const SizedBox(height: 16),
-          Text('Email',
+          Text(Translations.t('email', lang),
               style: GoogleFonts.inter(
                   fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
           const SizedBox(height: 6),
@@ -596,7 +602,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             state.setUserEmail(_emailCtrl.text.trim());
             state.goBack();
           },
-          child: const Text('Save Changes'),
+          child: Text(Translations.t('save_changes', lang)),
         ),
       ),
     ]);

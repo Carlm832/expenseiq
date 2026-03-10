@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models.dart';
+import 'services/translations.dart';
 
 class AppState extends ChangeNotifier {
   // Auth
@@ -347,10 +348,10 @@ class AppState extends ChangeNotifier {
           0,
           AppNotification(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
-            title: 'Budget Warning',
+            title: Translations.t('budget_alert', _language),
             message:
-                'You have spent ${((spentThisMonth / _overallBudget) * 100).toStringAsFixed(0)}% of your monthly budget.',
-            time: 'Just now',
+                '${Translations.t('spent', _language)} ${((spentThisMonth / _overallBudget) * 100).toStringAsFixed(0)}% ${Translations.t('percent_of_spending', _language)}',
+            time: Translations.t('just_now', _language),
             read: false,
             type: 'warning',
           ));

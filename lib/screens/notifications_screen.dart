@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import '../services/translations.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -44,7 +45,7 @@ class NotificationsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Text('Notifications', style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
+              Text(Translations.t('notifications_title', state.language), style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
             ]),
           ),
           const SizedBox(height: 16),
@@ -74,7 +75,7 @@ class NotificationsScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Row(children: [
-                        Expanded(child: Text(n.title, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: fgColor))),
+                        Expanded(child: Text(Translations.t(n.title, state.language), style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: fgColor))),
                         if (!n.read) Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
                       ]),
                       const SizedBox(height: 4),

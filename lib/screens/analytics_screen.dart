@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../app_state.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../services/translations.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -17,6 +18,11 @@ class AnalyticsScreen extends StatefulWidget {
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   String _timeRange = 'month'; // 'week', 'month', 'custom'
   DateTimeRange? _customRange;
+
+  // Calendar tab state
+  String _activeTab = 'overview'; // 'overview' or 'calendar'
+  DateTime _calendarMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime? _selectedDay;
 
   Future<void> _selectCustomRange() async {
     final DateTimeRange? picked = await showDateRangePicker(
@@ -138,8 +144,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
              chartData = monthTotals.entries.map((e) => (e.key, e.value)).toList();
         }
     } else {
-      const monthNames = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      final monthNames = [
+          Translations.t('m_jan', state.language),
+          Translations.t('m_feb', state.language),
+          Translations.t('m_mar', state.language),
+          Translations.t('m_apr', state.language),
+          Translations.t('m_may', state.language),
+          Translations.t('m_jun', state.language),
+          Translations.t('m_jul', state.language),
+          Translations.t('m_aug', state.language),
+          Translations.t('m_sep', state.language),
+          Translations.t('m_oct', state.language),
+          Translations.t('m_nov', state.language),
+          Translations.t('m_dec', state.language)
       ];
       final Map<int, double> monthTotals = {};
       for (final e in expenses) {
@@ -167,7 +184,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       }
       mostActiveDayIdx = countPerDay.entries.reduce((a, b) => a.value > b.value ? a : b).key;
     }
-    const daysArr = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    final daysArr = [
+      Translations.t('day_mon', state.language),
+      Translations.t('day_tue', state.language),
+      Translations.t('day_wed', state.language),
+      Translations.t('day_thu', state.language),
+      Translations.t('day_fri', state.language),
+      Translations.t('day_sat', state.language),
+      Translations.t('day_sun', state.language),
+    ];
 
 
     return Scaffold(
@@ -177,14 +202,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 100),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Analytics',
+            Text(Translations.t('analytics_title', state.language),
                 style: GoogleFonts.dmSans(
                     fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
-            Text('Understand your spending patterns',
+            Text(Translations.t('analytics_subtitle', state.language),
                 style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Time range toggle
+            // Master tab: Overview | Calendar
             Container(
               height: 40,
               padding: const EdgeInsets.all(4),
@@ -192,21 +217,82 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   color: mutedBg, borderRadius: BorderRadius.circular(12)),
               child: Row(children: [
                 _TimeTab(
-                    label: 'This Week',
+                    label: Translations.t('overview', state.language),
+                    isSelected: _activeTab == 'overview',
+                    onTap: () => setState(() => _activeTab = 'overview'),
+                    cardColor: cardColor,
+                    fgColor: fgColor,
+                    mutedColor: mutedColor),
+                _TimeTab(
+                    label: Translations.t('calendar', state.language),
+                    isSelected: _activeTab == 'calendar',
+                    onTap: () => setState(() => _activeTab = 'calendar'),
+                    cardColor: cardColor,
+                    fgColor: fgColor,
+                    mutedColor: mutedColor),
+              ]),
+            ),
+            const SizedBox(height: 16),
+
+            if (_activeTab == 'calendar') ...[
+              _CalendarView(
+                expenses: state.expenses,
+                calendarMonth: _calendarMonth,
+                selectedDay: _selectedDay,
+                fgColor: fgColor,
+                mutedColor: mutedColor,
+                cardColor: cardColor,
+                borderColor: borderColor,
+                mutedBg: mutedBg,
+                formatCurrency: state.formatCurrency,
+                onMonthChanged: (m) => setState(() => _calendarMonth = m),
+                onDayTapped: (day) {
+                  setState(() => _selectedDay = day);
+                  final dayExpenses = state.expenses.where((e) {
+                    final d = DateTime.parse(e.date);
+                    return d.year == day.year && d.month == day.month && d.day == day.day;
+                  }).toList();
+                  if (dayExpenses.isEmpty) return;
+                  showModalBottomSheet(
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                    builder: (_) => _DayDetailSheet(
+                      day: day,
+                      expenses: dayExpenses,
+                      fgColor: fgColor,
+                      mutedColor: mutedColor,
+                      borderColor: borderColor,
+                      cardColor: cardColor,
+                      formatCurrency: state.formatCurrency,
+                    ),
+                  );
+                },
+              ),
+            ] else ...[
+
+            Container(
+              height: 40,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                  color: mutedBg, borderRadius: BorderRadius.circular(12)),
+              child: Row(children: [
+                _TimeTab(
+                    label: Translations.t('week', state.language),
                     isSelected: _timeRange == 'week',
                     onTap: () => setState(() => _timeRange = 'week'),
                     cardColor: cardColor,
                     fgColor: fgColor,
                     mutedColor: mutedColor),
                 _TimeTab(
-                    label: 'Monthly',
+                    label: Translations.t('month', state.language),
                     isSelected: _timeRange == 'month',
                     onTap: () => setState(() => _timeRange = 'month'),
                     cardColor: cardColor,
                     fgColor: fgColor,
                     mutedColor: mutedColor),
                 _TimeTab(
-                    label: 'Custom',
+                    label: Translations.t('custom', state.language),
                     isSelected: _timeRange == 'custom',
                     onTap: _selectCustomRange,
                     cardColor: cardColor,
@@ -228,7 +314,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             // Stats row
             Row(children: [
               _StatCard(
-                  label: 'Total',
+                  label: Translations.t('total', state.language),
                   value: state.formatCurrency(totalSpending),
                   isDark: isDark,
                   fgColor: fgColor,
@@ -237,7 +323,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   cardColor: cardColor),
               const SizedBox(width: 8),
               _StatCard(
-                  label: 'Avg/Item',
+                  label: Translations.t('avg_item', state.language),
                   value: expenses.isEmpty ? '${state.currencySymbol}0' : state.formatCurrency(totalSpending / expenses.length),
                   isDark: isDark,
                   fgColor: fgColor,
@@ -246,7 +332,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   cardColor: cardColor),
               const SizedBox(width: 8),
               _StatCard(
-                  label: 'Count',
+                  label: Translations.t('count', state.language),
                   value: '${expenses.length}',
                   isDark: isDark,
                   fgColor: fgColor,
@@ -269,7 +355,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   children: [
                     Row(children: [
                       Expanded(
-                          child: Text('Spending Trend',
+                          child: Text(Translations.t('spending_trend', state.language),
                               style: GoogleFonts.inter(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -278,10 +364,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       const SizedBox(width: 4),
                       Text(
                           _timeRange == 'week' 
-                            ? 'This Week' 
+                            ? Translations.t('week', state.language) 
                             : _timeRange == 'custom' 
-                                ? 'Custom Range'
-                                : 'Last 6 Months',
+                                ? Translations.t('custom_range', state.language)
+                                : Translations.t('last_six_months', state.language),
                           style: GoogleFonts.inter(
                               fontSize: 11, color: mutedColor)),
                     ]),
@@ -348,7 +434,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Category Breakdown',
+                    Text(Translations.t('category_breakdown', state.language),
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -358,7 +444,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         ? Center(
                             child: Padding(
                               padding: const EdgeInsets.all(16.0),
-                              child: Text('No data for this period',
+                              child: Text(Translations.t('no_data', state.language),
                                   style: GoogleFonts.inter(color: mutedColor)),
                             ))
                         : Row(children: [
@@ -426,7 +512,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Detailed Insights',
+                    Text(Translations.t('detailed_insights', state.language),
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -437,8 +523,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         _InsightRow(
                             icon: Icons.receipt_long,
                             color: AppColors.secondary,
-                            title: 'Largest Expense',
-                            description: '${maxExpense.merchant} on ${DateFormat('MMM dd').format(DateTime.parse(maxExpense.date))} (${state.formatCurrency(maxExpense.amount)})',
+                            title: Translations.t('largest_expense', state.language),
+                            description: '${maxExpense.merchant} ${formatDate(maxExpense.date, state.language)} (${state.formatCurrency(maxExpense.amount)})',
                             fgColor: fgColor,
                             mutedColor: mutedColor,
                         ),
@@ -449,8 +535,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         _InsightRow(
                             icon: Icons.calendar_month,
                             color: AppColors.primary,
-                            title: 'Most Active Day',
-                            description: 'You tend to make the most purchases on ${daysArr[mostActiveDayIdx - 1]}s.',
+                            title: Translations.t('most_active_day', state.language),
+                            description: Translations.t('most_active_day_desc', state.language) + daysArr[mostActiveDayIdx - 1] + (state.language == 'Turkish' ? ' günleridir.' : '.'),
                             fgColor: fgColor,
                             mutedColor: mutedColor,
                         ),
@@ -463,8 +549,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         return _InsightRow(
                             icon: Icons.pie_chart,
                             color: AppColors.chartAmber,
-                            title: 'Top Category',
-                            description: '${sorted[0].name} accounts for ${((sorted[0].value / totalSpending) * 100).toStringAsFixed(1)}% of your spending in this period.',
+                            title: Translations.t('top_category', state.language),
+                            description: Translations.t(sorted[0].name, state.language) + Translations.t('top_category_desc', state.language) + ((sorted[0].value / totalSpending) * 100).toStringAsFixed(1) + Translations.t('percent_of_spending', state.language),
                             fgColor: fgColor,
                             mutedColor: mutedColor,
                         );
@@ -473,13 +559,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         Center(
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text('Not enough data to generate insights.',
+                              child: Text(Translations.t('not_enough_data', state.language),
                                   style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
                             ),
                         )
                     ],
                   ]),
             ),
+            ], // end overview else block
           ]),
         ),
       ),
@@ -487,6 +574,286 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 }
 
+class _CalendarView extends StatelessWidget {
+  final List<dynamic> expenses;
+  final DateTime calendarMonth;
+  final DateTime? selectedDay;
+  final Color fgColor;
+  final Color mutedColor;
+  final Color cardColor;
+  final Color borderColor;
+  final Color mutedBg;
+  final String Function(double) formatCurrency;
+  final void Function(DateTime) onMonthChanged;
+  final void Function(DateTime) onDayTapped;
+
+  const _CalendarView({
+    required this.expenses,
+    required this.calendarMonth,
+    required this.selectedDay,
+    required this.fgColor,
+    required this.mutedColor,
+    required this.cardColor,
+    required this.borderColor,
+    required this.mutedBg,
+    required this.formatCurrency,
+    required this.onMonthChanged,
+    required this.onDayTapped,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = context.read<AppState>().language;
+    final firstDay = calendarMonth;
+    final daysInMonth = DateTime(firstDay.year, firstDay.month + 1, 0).day;
+    final startWeekday = firstDay.weekday % 7; // Sun=0, Mon=1, ...
+
+    // Build day->total map
+    final Map<int, double> dayTotals = {};
+    final Map<int, List<Color>> dayCategoryColors = {};
+    final monthExpenses = expenses.where((e) {
+      final d = DateTime.parse(e.date as String);
+      return d.year == firstDay.year && d.month == firstDay.month;
+    }).toList();
+
+    final totalMonthSpend = monthExpenses.fold(0.0, (s, e) => s + (e.amount as double));
+    final busyDay = monthExpenses.isEmpty ? '-' : () {
+      final counts = <int, int>{};
+      for (final e in monthExpenses) {
+        final d = DateTime.parse(e.date as String).day;
+        counts[d] = (counts[d] ?? 0) + 1;
+      }
+      return '${counts.entries.reduce((a, b) => a.value > b.value ? a : b).key}';
+    }();
+
+    for (final e in monthExpenses) {
+      final day = DateTime.parse(e.date as String).day;
+      dayTotals[day] = (dayTotals[day] ?? 0) + (e.amount as double);
+    }
+
+    final categoryCols = <String, Color>{};
+    for (final cat in kCategories) {
+      categoryCols[cat.name] = Color(cat.color);
+    }
+    for (final e in monthExpenses) {
+      final day = DateTime.parse(e.date as String).day;
+      final col = categoryCols[e.category as String] ?? AppColors.primary;
+      dayCategoryColors[day] = [...(dayCategoryColors[day] ?? []), col];
+    }
+
+    final monthLabel = DateFormat('MMMM yyyy', context.read<AppState>().language == 'Turkish' ? 'tr' : 'en').format(calendarMonth);
+    final cells = startWeekday + daysInMonth;
+    final rows = (cells / 7).ceil();
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // Month navigation
+      Row(children: [
+        IconButton(
+          icon: Icon(Icons.chevron_left, color: fgColor),
+          onPressed: () => onMonthChanged(DateTime(calendarMonth.year, calendarMonth.month - 1, 1)),
+        ),
+        Expanded(
+          child: Text(monthLabel,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.w700, color: fgColor)),
+        ),
+        IconButton(
+          icon: Icon(Icons.chevron_right, color: fgColor),
+          onPressed: () => onMonthChanged(DateTime(calendarMonth.year, calendarMonth.month + 1, 1)),
+        ),
+      ]),
+      const SizedBox(height: 8),
+
+      // Month stats bar
+      Container(
+        decoration: BoxDecoration(
+            color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        child: Row(children: [
+          _CalStat(label: Translations.t('expenses_label', lang), value: formatCurrency(totalMonthSpend), fgColor: fgColor, mutedColor: mutedColor),
+          Container(width: 1, height: 28, color: borderColor, margin: const EdgeInsets.symmetric(horizontal: 12)),
+          _CalStat(
+              label: Translations.t('avg_day', lang),
+              value: daysInMonth > 0 ? formatCurrency(totalMonthSpend / daysInMonth) : '-',
+              fgColor: fgColor,
+              mutedColor: mutedColor),
+          Container(width: 1, height: 28, color: borderColor, margin: const EdgeInsets.symmetric(horizontal: 12)),
+          _CalStat(label: Translations.t('busiest', lang), value: busyDay == '-' ? '-' : '${Translations.t('day_suffix', lang)} $busyDay', fgColor: fgColor, mutedColor: mutedColor),
+        ]),
+      ),
+      const SizedBox(height: 12),
+
+      // Day of week headers
+      Row(
+        children: [
+          Translations.t('sun_short', lang),
+          Translations.t('mon_short', lang),
+          Translations.t('tue_short', lang),
+          Translations.t('wed_short', lang),
+          Translations.t('thu_short', lang),
+          Translations.t('fri_short', lang),
+          Translations.t('sat_short', lang)
+        ].map((d) =>
+          Expanded(child: Center(child: Text(d, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: mutedColor))))
+        ).toList(),
+      ),
+      const SizedBox(height: 4),
+
+      // Day grid
+      Container(
+        decoration: BoxDecoration(
+            color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+        child: Column(
+          children: List.generate(rows, (row) {
+            return Row(
+              children: List.generate(7, (col) {
+                final cellIndex = row * 7 + col;
+                final day = cellIndex - startWeekday + 1;
+                if (day < 1 || day > daysInMonth) {
+                  return const Expanded(child: SizedBox(height: 64));
+                }
+                final date = DateTime(calendarMonth.year, calendarMonth.month, day);
+                final total = dayTotals[day];
+                final colors = (dayCategoryColors[day] ?? []).take(3).toList();
+                final isSelected = selectedDay != null &&
+                    selectedDay!.year == date.year &&
+                    selectedDay!.month == date.month &&
+                    selectedDay!.day == date.day;
+                final isToday = date.year == DateTime.now().year &&
+                    date.month == DateTime.now().month &&
+                    date.day == DateTime.now().day;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => onDayTapped(date),
+                    child: Container(
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.primary.withValues(alpha: 0.12) : Colors.transparent,
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : borderColor,
+                          width: isSelected ? 1.5 : 0.5,
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$day',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12,
+                              fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                              color: isToday ? AppColors.primary : fgColor,
+                            ),
+                          ),
+                          if (total != null)
+                            Flexible(
+                              child: Text(
+                                formatCurrency(total),
+                                style: GoogleFonts.inter(
+                                    fontSize: 9, color: AppColors.destructive, fontWeight: FontWeight.w600),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          if (colors.isNotEmpty)
+                            Row(
+                              children: colors.map((c) => Container(
+                                width: 5, height: 5,
+                                margin: const EdgeInsets.only(right: 2),
+                                decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+                              )).toList(),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            );
+          }),
+        ),
+      ),
+    ]);
+  }
+}
+
+class _CalStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color fgColor;
+  final Color mutedColor;
+  const _CalStat({required this.label, required this.value, required this.fgColor, required this.mutedColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(children: [
+        Text(value, style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: fgColor)),
+        Text(label, style: GoogleFonts.inter(fontSize: 10, color: mutedColor)),
+      ]),
+    );
+  }
+}
+
+class _DayDetailSheet extends StatelessWidget {
+  final DateTime day;
+  final List<dynamic> expenses;
+  final Color fgColor;
+  final Color mutedColor;
+  final Color borderColor;
+  final Color cardColor;
+  final String Function(double) formatCurrency;
+
+  const _DayDetailSheet({
+    required this.day,
+    required this.expenses,
+    required this.fgColor,
+    required this.mutedColor,
+    required this.borderColor,
+    required this.cardColor,
+    required this.formatCurrency,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final total = expenses.fold(0.0, (s, e) => s + (e.amount as double));
+    return DraggableScrollableSheet(
+      initialChildSize: 0.45,
+      minChildSize: 0.3,
+      maxChildSize: 0.85,
+      expand: false,
+      builder: (_, scrollCtrl) => ListView(
+        controller: scrollCtrl,
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        children: [
+          Center(
+            child: Container(width: 36, height: 4, margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4))),
+          ),
+          Text(DateFormat('EEEE, MMMM d', context.read<AppState>().language == 'Turkish' ? 'tr' : 'en').format(day),
+              style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w700, color: fgColor)),
+          Text('${expenses.length} ${expenses.length == 1 ? Translations.t('transactions_singular', context.read<AppState>().language) : Translations.t('transactions_plural', context.read<AppState>().language)} · ${formatCurrency(total)}',
+              style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
+          const SizedBox(height: 16),
+          ...expenses.map((e) => Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                color: cardColor, borderRadius: BorderRadius.circular(10), border: Border.all(color: borderColor)),
+            child: Row(children: [
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(e.merchant as String, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: fgColor)),
+                Text(Translations.t(e.category as String, context.read<AppState>().language), style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
+              ])),
+              Text(formatCurrency(e.amount as double),
+                  style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.destructive)),
+            ]),
+          )),
+        ],
+      ),
+    );
+  }
+}
 class _InsightRow extends StatelessWidget {
     final IconData icon;
     final Color color;

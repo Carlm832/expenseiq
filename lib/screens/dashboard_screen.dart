@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../app_state.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../services/translations.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -32,13 +33,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Budget Warning'),
-          content: const Text(
-              'You are approaching your overall budget limit for this month! Please be careful with your spending.'),
+          title: Text(Translations.t('budget_warning', state.language)),
+          content: Text(Translations.t('budget_warning_msg', state.language)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Got it'),
+              child: Text(Translations.t('got_it', state.language)),
             ),
           ],
         ),
@@ -52,7 +52,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return [
         (
           now.toString().substring(0, 7),
-          '${_getMonthName(now.month)} ${now.year}'
+          '${_getMonthName(now.month, context.read<AppState>().language)} ${now.year}'
         )
       ];
     }
@@ -71,24 +71,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final parts = m.split('-');
       final year = parts[0];
       final month = int.parse(parts[1]);
-      return (m, '${_getMonthName(month)} $year');
+      final monthName = _getMonthName(month, context.read<AppState>().language);
+      return (m, '$monthName $year');
     }).toList();
   }
 
-  String _getMonthName(int month) {
+  String _getMonthName(int month, String lang) {
+    if (lang == 'Turkish') {
+      const months = [
+        'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'
+      ];
+      return months[month - 1];
+    }
     const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
     return months[month - 1];
   }
@@ -113,10 +109,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final totalSpending = expenses.fold(0.0, (s, e) => s + e.amount);
     final hour = DateTime.now().hour;
     final greeting = hour < 12
-        ? 'Good morning'
+        ? Translations.t('greeting_morning', state.language)
         : hour < 18
-            ? 'Good afternoon'
-            : 'Good evening';
+            ? Translations.t('greeting_afternoon', state.language)
+            : Translations.t('greeting_evening', state.language);
 
     // Category summary
     final Map<String, double> categoryMap = {};
@@ -173,7 +169,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   fontSize: 13, color: mutedColor)),
                           Text(
                               state.userName.isEmpty
-                                  ? 'Welcome!'
+                                  ? Translations.t('welcome', state.language)
                                   : state.userName,
                               style: GoogleFonts.dmSans(
                                   fontSize: 20,
@@ -336,14 +332,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Row(children: [
                                 Expanded(
-                                    child: Text('Overall Monthly Budget',
+                                    child: Text(Translations.t('overall_monthly_budget', state.language),
                                         style: GoogleFonts.inter(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w500,
                                             color: fgColor))),
+                                Container(width: 8),
                                 GestureDetector(
                                   onTap: () => state.setCurrentScreen('budget'),
-                                  child: Text('Manage',
+                                  child: Text(Translations.t('manage', state.language),
                                       style: GoogleFonts.inter(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w500,
@@ -387,7 +384,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 color: fgColor))),
                     GestureDetector(
                       onTap: () => state.setCurrentScreen('analytics'),
-                      child: Text('See All',
+                      child: Text(Translations.t('see_all', state.language),
                           style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -401,7 +398,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ? Center(
                             child: Padding(
                                 padding: const EdgeInsets.all(16),
-                                child: Text('No data',
+                                child: Text(Translations.t('no_data', state.language),
                                     style:
                                         GoogleFonts.inter(color: mutedColor))))
                         : Row(children: [
@@ -476,7 +473,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         size: 16, color: AppColors.secondary),
                                   ),
                                   const SizedBox(height: 8),
-                                  Text('Highest Expense',
+                                  Text(Translations.t('highest_expense', state.language),
                                       style: GoogleFonts.inter(
                                           fontSize: 11, color: mutedColor)),
                                   Text(state.formatCurrency(maxExpense),
@@ -504,7 +501,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         size: 16, color: AppColors.primary),
                                   ),
                                   const SizedBox(height: 8),
-                                  Text('Daily Average',
+                                  Text(Translations.t('daily_average', state.language),
                                       style: GoogleFonts.inter(
                                           fontSize: 11, color: mutedColor)),
                                   Text(state.formatCurrency(dailyAvg),
@@ -519,14 +516,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Recent expenses
                   Row(children: [
                     Expanded(
-                        child: Text('Recent Expenses',
+                        child: Text(Translations.t('recent_expenses', state.language),
                             style: GoogleFonts.dmSans(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: fgColor))),
                     GestureDetector(
                       onTap: () => state.setCurrentScreen('history'),
-                      child: Text('View All',
+                      child: Text(Translations.t('view_all', state.language),
                           style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -542,7 +539,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             onTap: () {
                               state.setSelectedExpense(e);
                               state.setShowExpenseDetail(true);
-                              _showExpenseDetail(context, e, isDark);
+                              _showExpenseDetail(context, e, isDark, state.language);
                             }),
                       )),
                 ],
@@ -554,7 +551,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _showExpenseDetail(BuildContext context, Expense e, bool isDark) {
+  void _showExpenseDetail(BuildContext context, Expense e, bool isDark, String lang) {
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final mutedColor =
@@ -579,29 +576,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               AppColors.mutedForeground.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 20),
-              Text('Expense Detail',
+              Text(Translations.t('expense_detail', lang),
                   style: GoogleFonts.dmSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: fgColor)),
               const SizedBox(height: 16),
               _DetailRow(
-                  label: 'Merchant',
+                  label: Translations.t('merchant', lang),
                   value: e.merchant,
                   fgColor: fgColor,
                   mutedColor: mutedColor),
               _DetailRow(
-                  label: 'Date',
-                  value: formatDate(e.date),
+                  label: Translations.t('date', lang),
+                  value: formatDate(e.date, lang),
                   fgColor: fgColor,
                   mutedColor: mutedColor),
               _DetailRow(
-                  label: 'Category',
+                  label: Translations.t('category', lang),
                   value: e.category,
                   fgColor: fgColor,
                   mutedColor: mutedColor),
               _DetailRow(
-                  label: 'Amount',
+                  label: Translations.t('amount', lang),
                   value: context.read<AppState>().formatCurrency(e.amount),
                   fgColor: fgColor,
                   mutedColor: mutedColor,
@@ -704,6 +701,7 @@ class _ExpenseItem extends StatelessWidget {
     final mutedColor =
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
 
+    final lang = context.read<AppState>().language;
     final catColor = _categoryColor(expense.category);
 
     return GestureDetector(
@@ -735,7 +733,7 @@ class _ExpenseItem extends StatelessWidget {
                         color: fgColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
-                Text(formatDate(expense.date),
+                Text(formatDate(expense.date, lang),
                     style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
               ])),
           const SizedBox(width: 8),

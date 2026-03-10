@@ -1,3 +1,5 @@
+import 'services/translations.dart';
+
 class Expense {
   final String id;
   final String merchant;
@@ -226,21 +228,21 @@ final List<AppNotification> kDefaultNotifications = [
       type: 'warning'),
 ];
 
-String formatDate(String dateStr) {
+String formatDate(String dateStr, String lang) {
   final date = DateTime.parse(dateStr);
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec'
+  final months = [
+    Translations.t('m_jan', lang),
+    Translations.t('m_feb', lang),
+    Translations.t('m_mar', lang),
+    Translations.t('m_apr', lang),
+    Translations.t('m_may', lang),
+    Translations.t('m_jun', lang),
+    Translations.t('m_jul', lang),
+    Translations.t('m_aug', lang),
+    Translations.t('m_sep', lang),
+    Translations.t('m_oct', lang),
+    Translations.t('m_nov', lang),
+    Translations.t('m_dec', lang)
   ];
   return '${months[date.month - 1]} ${date.day}';
 }

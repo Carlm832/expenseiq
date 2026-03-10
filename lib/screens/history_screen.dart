@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../app_state.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../services/translations.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -18,11 +19,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String _sortBy = 'date-desc';
   bool _showSortMenu = false;
 
-  final _sortLabels = {
-    'date-desc': 'Newest First',
-    'date-asc': 'Oldest First',
-    'amount-desc': 'Highest Amount',
-    'amount-asc': 'Lowest Amount',
+  Map<String, String> _getSortLabels(String lang) => {
+    'date-desc': Translations.t('sort_newest', lang),
+    'date-asc': Translations.t('sort_oldest', lang),
+    'amount-desc': Translations.t('sort_highest', lang),
+    'amount-asc': Translations.t('sort_lowest', lang),
   };
 
   @override
@@ -63,8 +64,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               child: Column(children: [
                 Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Expense History', style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
-                    Text('${expenses.length} transactions totaling ${state.formatCurrency(total)}', style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
+                    Text(Translations.t('expense_history', state.language), style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w700, color: fgColor)),
+                    Text('${expenses.length} ${Translations.t('transactions', state.language).toLowerCase()} ${Translations.t('totaling', state.language)} ${state.formatCurrency(total)}', style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
                   ])),
                   OutlinedButton.icon(
                     onPressed: () {},
@@ -84,13 +85,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     const SizedBox(width: 8),
                     Expanded(child: TextField(
                       onChanged: (v) => setState(() => _search = v),
-                      decoration: const InputDecoration(
-                        hintText: 'Search transactions...',
+                      decoration: InputDecoration(
+                        hintText: Translations.t('search_history', state.language),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
                         isDense: true,
+                        hintStyle: GoogleFonts.inter(fontSize: 13, color: mutedColor),
                       ),
                       style: GoogleFonts.inter(fontSize: 13),
                     )),
@@ -105,7 +107,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     margin: const EdgeInsets.only(top: 4),
                     decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
                     child: Column(
-                      children: _sortLabels.entries.map((entry) => GestureDetector(
+                      children: _getSortLabels(state.language).entries.map((entry) => GestureDetector(
                         onTap: () => setState(() { _sortBy = entry.key; _showSortMenu = false; }),
                         child: Container(
                           width: double.infinity,
@@ -126,8 +128,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
-                      _FilterChip(label: 'All', isSelected: _selectedCategory == 'All', onTap: () => setState(() => _selectedCategory = 'All'), mutedBg: mutedBg, mutedColor: mutedColor),
-                      ...kCategories.map((cat) => _FilterChip(label: cat.name, isSelected: _selectedCategory == cat.name, onTap: () => setState(() => _selectedCategory = cat.name), mutedBg: mutedBg, mutedColor: mutedColor)),
+                      _FilterChip(label: Translations.t('all', state.language), isSelected: _selectedCategory == 'All', onTap: () => setState(() => _selectedCategory = 'All'), mutedBg: mutedBg, mutedColor: mutedColor),
+                      ...kCategories.map((cat) => _FilterChip(label: Translations.t(cat.name, state.language), isSelected: _selectedCategory == cat.name, onTap: () => setState(() => _selectedCategory = cat.name), mutedBg: mutedBg, mutedColor: mutedColor)),
                     ],
                   ),
                 ),
@@ -139,7 +141,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                     Icon(Icons.search_off, size: 40, color: mutedColor.withValues(alpha: 0.5)),
                     const SizedBox(height: 8),
-                    Text('No transactions found', style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
+                    Text(Translations.t('no_history', state.language), style: GoogleFonts.inter(fontSize: 13, color: mutedColor)),
                   ]))
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
@@ -200,6 +202,7 @@ class _HistoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = context.read<AppState>().language;
     final catColor = _categoryColor(expense.category);
     return Container(
       decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
@@ -213,7 +216,7 @@ class _HistoryItem extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(expense.merchant, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
-          Text('${formatDate(expense.date)} · ${expense.category}', style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
+          Text('${formatDate(expense.date, lang)} · ${Translations.t(expense.category, lang)}', style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
         ])),
         Text('-${context.read<AppState>().formatCurrency(expense.amount)}', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: fgColor)),
       ]),
