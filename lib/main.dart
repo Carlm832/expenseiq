@@ -52,6 +52,7 @@ class AppRouter extends StatelessWidget {
 
     if (!state.isLoggedIn) {
       if (screen == 'register') return const RegisterScreen();
+      if (screen == 'forgot_password') return const ForgotPasswordScreen();
       return const LoginScreen();
     }
 
@@ -70,6 +71,8 @@ class AppRouter extends StatelessWidget {
         child = const BudgetScreen();
       case 'help':
         child = const HelpScreen();
+      case 'contact_us':
+        child = const ContactUsScreen();
       case 'privacy':
         child = const PrivacyScreen();
       case 'payment-methods':

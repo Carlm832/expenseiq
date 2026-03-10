@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _showPassword = false;
+  bool _isLoading = false;
   Map<String, String> _errors = {};
 
   bool _validate() {
@@ -44,6 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
 
+    setState(() => _isLoading = true);
     try {
       await state.loginWithEmail(email, password);
     } on FirebaseAuthException catch (e) {
@@ -59,6 +61,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       setState(
           () => _errors = {'form': 'An error occurred. Please try again.'});
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -224,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () => state.setCurrentScreen('forgot_password'),
                         child: Text(
                             Translations.t('login_forgot_password', lang),
                             style: GoogleFonts.inter(
@@ -237,9 +243,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () => _handleLogin(state),
-                        icon: const Icon(Icons.login, size: 18),
-                        label: Text(Translations.t('login_sign_in', lang)),
+                        onPressed: _isLoading ? null : () => _handleLogin(state),
+                        icon: _isLoading 
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Icon(Icons.login, size: 18),
+                        label: Text(_isLoading ? 'Signing In...' : Translations.t('login_sign_in', lang)),
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14)),
                       ),
@@ -346,6 +354,186 @@ class _FeaturePill extends StatelessWidget {
             style: GoogleFonts.inter(
                 fontSize: 12, fontWeight: FontWeight.w500, color: color)),
       ]),
+    );
+  }
+}
+
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final _emailCtrl = TextEditingController();
+  String? _error;
+  bool _isSending = false;
+  bool _isSent = false;
+
+  Future<void> _handleReset(AppState state) async {
+    final email = _emailCtrl.text.trim();
+    if (email.isEmpty || !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      setState(() => _error = Translations.t('valid_email_required', state.language));
+      return;
+    }
+
+    setState(() {
+      _error = null;
+      _isSending = true;
+    });
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      setState(() {
+        _isSending = false;
+        _isSent = true;
+      });
+    } catch (e) {
+      setState(() {
+        _isSending = false;
+        _error = 'Failed to send reset email. Please try again.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? AppColors.darkBackground : AppColors.background;
+    final cardColor = isDark ? AppColors.darkCard : AppColors.card;
+    final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
+    final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final lang = state.language;
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 24, bottom: 48),
+                child: Row(children: [
+                  GestureDetector(
+                    onTap: () => state.goBack(),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: borderColor)),
+                      child: Icon(Icons.arrow_back, size: 18, color: fgColor),
+                    ),
+                  ),
+                ]),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: borderColor),
+                ),
+                padding: const EdgeInsets.all(24),
+                child: _isSent
+                    ? Column(
+                        children: [
+                          const Icon(Icons.mark_email_read, size: 48, color: AppColors.primary),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Check your email',
+                            style: GoogleFonts.dmSans(
+                                fontSize: 20, fontWeight: FontWeight.w600, color: fgColor),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'We have sent password recovery instructions to your email.',
+                            style: GoogleFonts.inter(fontSize: 13, color: mutedColor),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => state.setCurrentScreen('login'),
+                              child: const Text('Return to Login'),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Reset Password',
+                        style: GoogleFonts.dmSans(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: fgColor)),
+                    const SizedBox(height: 4),
+                    Text('Enter your email to receive a password reset link.',
+                        style:
+                            GoogleFonts.inter(fontSize: 13, color: mutedColor)),
+                    const SizedBox(height: 24),
+                    if (_error != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppColors.destructive.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(_error!,
+                            style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: AppColors.destructive,
+                                fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center),
+                      ),
+                    Text(Translations.t('email', lang),
+                        style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: fgColor)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      style: GoogleFonts.inter(fontSize: 14, color: fgColor),
+                      decoration: InputDecoration(
+                        hintText: 'you@example.com',
+                        prefixIcon: Icon(Icons.mail_outline,
+                            size: 18, color: mutedColor),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isSending ? null : () => _handleReset(state),
+                        icon: _isSending
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.send, size: 18),
+                        label: Text(_isSending ? 'Sending...' : 'Send Reset Link'),
+                        style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
