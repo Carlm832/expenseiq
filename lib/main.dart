@@ -6,6 +6,8 @@ import 'app_state.dart';
 import 'theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/splash_screen.dart';
+import 'screens/pin_screen.dart';
 import 'screens/main_scaffold.dart';
 import 'screens/add_expense_screen.dart';
 import 'screens/notifications_screen.dart';
@@ -50,12 +52,17 @@ class AppRouter extends StatelessWidget {
     final state = context.watch<AppState>();
     final screen = state.currentScreen;
 
+    // Show the animated splash screen while Firebase auth is resolving
+    if (state.isInitializing) return const SplashScreen();
+
+    // If user has a PIN set and the app just launched, show PIN entry
+    if (state.isLoggedIn && state.isPinLocked) return const PinEntryScreen();
+
     if (!state.isLoggedIn) {
       if (screen == 'register') return const RegisterScreen();
       if (screen == 'forgot_password') return const ForgotPasswordScreen();
       return const LoginScreen();
     }
-
 
     Widget child;
     switch (screen) {
@@ -79,6 +86,8 @@ class AppRouter extends StatelessWidget {
         child = const PaymentMethodsScreen();
       case 'editProfile':
         child = const EditProfileScreen();
+      case 'setup_pin':
+        child = const PinSetupScreen();
       default:
         child = MainScaffold(currentScreen: screen);
     }

@@ -47,6 +47,13 @@ class AppState extends ChangeNotifier {
   // Syncing logic for Dashboard month selection (added by collaborator)
   String _selectedMonth = DateTime.now().toString().substring(0, 7);
 
+  // PIN Security
+  String _pin = '';      // empty = no PIN set
+  bool _isPinLocked = false; // true after app resumes if PIN is set
+
+  // Initializing flag — true until Firebase auth state has resolved
+  bool _isInitializing = true;
+
   // Firestore DB
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -73,6 +80,10 @@ class AppState extends ChangeNotifier {
   double get overallBudget => _overallBudget;
   String get currencySymbol =>
       _currency.contains('(') ? _currency.split('(')[1].split(')')[0] : '₺';
+  bool get isInitializing => _isInitializing;
+  bool get isPinLocked => _isPinLocked;
+  bool get hasPin => _pin.isNotEmpty;
+  String get pin => _pin;
 
   AppState() {
     _loadFromPrefs();
@@ -89,7 +100,10 @@ class AppState extends ChangeNotifier {
 
         _syncDataFromFirestore(user.uid);
 
-        if (_screenHistory.last == 'login' ||
+        // If PIN is set, lock the app for PIN entry on every fresh start
+        if (_isInitializing && _pin.isNotEmpty) {
+          _isPinLocked = true;
+        } else if (_screenHistory.last == 'login' ||
             _screenHistory.last == 'register') {
           _screenHistory = ['dashboard'];
         }
@@ -105,16 +119,13 @@ class AppState extends ChangeNotifier {
           _screenHistory = ['login'];
         }
       }
+      _isInitializing = false;
       notifyListeners();
     });
   }
 
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    _userName = prefs.getString('userName') ?? '';
-    _userEmail = prefs.getString('userEmail') ?? '';
-    _profileImage = prefs.getString('profileImage') ?? '';
     _isDarkMode = prefs.getBool('isDarkMode') ?? false;
     _language = prefs.getString('language') ?? 'English';
     _currency = prefs.getString('currency') ?? 'TRY (₺)';
@@ -123,6 +134,8 @@ class AppState extends ChangeNotifier {
     _overallBudget = prefs.getDouble('overallBudget') ?? 2500.0;
     _hasSeenBudgetWarningThisMonth =
         prefs.getBool('hasSeenBudgetWarningThisMonth') ?? false;
+    _pin = prefs.getString('appPin') ?? '';
+    notifyListeners();
   }
 
   Future<void> _saveExpenses() async {
@@ -442,5 +455,33 @@ class AppState extends ChangeNotifier {
 
   String formatCurrencyWithSymbol(double amount) {
     return '$currencySymbol${amount.toStringAsFixed(2).replaceAllMapped(RegExp(r"(\d)(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")}';
+  }
+
+  /// Set or update the PIN. Persists to SharedPreferences.
+  Future<void> setPin(String newPin) async {
+    _pin = newPin;
+    _isPinLocked = false;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('appPin', newPin);
+    notifyListeners();
+  }
+
+  /// Remove the PIN.
+  Future<void> clearPin() async {
+    _pin = '';
+    _isPinLocked = false;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('appPin');
+    notifyListeners();
+  }
+
+  /// Called when user successfully enters PIN; unlocks the app.
+  void unlockPin() {
+    _isPinLocked = false;
+    if (_screenHistory.last == 'login' ||
+        _screenHistory.last == 'register') {
+      _screenHistory = ['dashboard'];
+    }
+    notifyListeners();
   }
 }

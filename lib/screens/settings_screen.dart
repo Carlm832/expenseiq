@@ -152,6 +152,49 @@ class SettingsScreen extends StatelessWidget {
                     !state.pushNotificationsEnabled);
               }),
           _SettingsTile(
+              icon: Icons.pin_outlined,
+              label: 'App PIN',
+              value: state.hasPin ? 'Enabled' : 'Disabled',
+              fgColor: fgColor,
+              mutedColor: mutedColor,
+              borderColor: borderColor,
+              onTap: () {
+                if (state.hasPin) {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Manage PIN'),
+                      content: const Text(
+                          'What would you like to do with your PIN?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            state.setCurrentScreen('setup_pin');
+                          },
+                          child: const Text('Change PIN'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            state.clearPin();
+                            Navigator.pop(ctx);
+                          },
+                          child: const Text('Remove PIN',
+                              style: TextStyle(
+                                  color: AppColors.destructive)),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  state.setCurrentScreen('setup_pin');
+                }
+              }),
+          _SettingsTile(
               icon: Icons.backup_outlined,
               label: Translations.t('backup_data', state.language),
               value: '',
