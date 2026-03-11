@@ -76,6 +76,8 @@ class Translations {
       'top_category_desc': ' accounts for ',
       'percent_of_spending': '% of your spending in this period.',
       'not_enough_data': 'Not enough data to generate insights.',
+      'total_spending': 'Total Spending',
+      'expense_history': 'Expense History',
       'total': 'Total',
       'count': 'Count',
       'day_mon': 'Monday',
@@ -262,6 +264,14 @@ class Translations {
       'Category': 'Category',
       'Notes (Optional)': 'Notes (Optional)',
       'Add any additional notes...': 'Add any additional notes...',
+      
+      // Additional missing keys found in UI
+      'daily_average': 'Daily Average',
+      'expense_details': 'Expense Details',
+      'highest_expense': 'Highest Expense',
+      'no_transactions': 'No Transactions',
+      'ok': 'OK',
+      'password': 'Password',
     },
     'Turkish': {
       // Navigation
@@ -335,6 +345,8 @@ class Translations {
       'top_category_desc': ' harcamalarınızın %',
       'percent_of_spending': ' kadardır.',
       'not_enough_data': 'İçgörü oluşturmak için yeterli veri yok.',
+      'total_spending': 'Toplam Harcama',
+      'expense_history': 'Harcama Geçmişi',
       'total': 'Toplam',
       'count': 'Sayı',
       'day_mon': 'Pazartesi',
@@ -524,6 +536,14 @@ class Translations {
       'Category': 'Kategori',
       'Notes (Optional)': 'Notlar (İsteğe Bağlı)',
       'Add any additional notes...': 'Ek notlar ekleyin...',
+      
+      // Additional missing keys found in UI
+      'daily_average': 'Günlük Ortalama',
+      'expense_details': 'Harcama Detayı',
+      'highest_expense': 'En Yüksek Harcama',
+      'no_transactions': 'İşlem Yok',
+      'ok': 'Tamam',
+      'password': 'Şifre',
     },
   };
 }
