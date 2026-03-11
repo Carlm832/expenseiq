@@ -12,12 +12,15 @@ import 'screens/main_scaffold.dart';
 import 'screens/add_expense_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/settings_screen.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await initializeDateFormatting();
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => AppState(),

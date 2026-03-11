@@ -217,6 +217,7 @@ class Translations {
       'hours_ago': ' hours ago',
       'day_ago': '1 day ago',
       'days_ago': ' days ago',
+      'no_notifications': 'No notifications yet',
 
       // Months
       'm_jan': 'Jan', 'm_feb': 'Feb', 'm_mar': 'Mar', 'm_apr': 'Apr',
@@ -478,6 +479,7 @@ class Translations {
       'hours_ago': ' saat önce',
       'day_ago': '1 gün önce',
       'days_ago': ' gün önce',
+      'no_notifications': 'Henüz bildirim yok',
 
       // Months
       'm_jan': 'Oca', 'm_feb': 'Şub', 'm_mar': 'Mar', 'm_apr': 'Nis',

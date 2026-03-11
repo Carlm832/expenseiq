@@ -6,7 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'models.dart';
 
-class AppState extends ChangeNotifier {
+class AppState extends ChangeNotifier with WidgetsBindingObserver {
   // Auth
   bool _isLoggedIn = false;
   String _userName = '';
@@ -86,8 +86,29 @@ class AppState extends ChangeNotifier {
   String get pin => _pin;
 
   AppState() {
-    _loadFromPrefs();
+    WidgetsBinding.instance.addObserver(this);
+    _initApp();
+  }
+
+  Future<void> _initApp() async {
+    await _loadFromPrefs();
     _initAuthListener();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      if (_isLoggedIn && _pin.isNotEmpty && !_isPinLocked) {
+        _isPinLocked = true;
+        notifyListeners();
+      }
+    }
   }
 
   void _initAuthListener() {
@@ -135,6 +156,14 @@ class AppState extends ChangeNotifier {
     _hasSeenBudgetWarningThisMonth =
         prefs.getBool('hasSeenBudgetWarningThisMonth') ?? false;
     _pin = prefs.getString('appPin') ?? '';
+    // Load persisted notifications
+    final notifJson = prefs.getString('notifications');
+    if (notifJson != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(notifJson);
+        _notifications = decoded.map((n) => AppNotification.fromJson(n)).toList();
+      } catch (_) {}
+    }
     notifyListeners();
   }
 
@@ -294,15 +323,59 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Notification helpers
+  // ---------------------------------------------------------------------------
+
+  void pushNotification({
+    required String title,
+    required String message,
+    required String type, // 'success' | 'info' | 'warning'
+  }) {
+    final n = AppNotification(
+      id: 'n_${DateTime.now().millisecondsSinceEpoch}',
+      title: title,
+      message: message,
+      time: 'Just now',
+      read: false,
+      type: type,
+    );
+    _notifications = [n, ..._notifications];
+    _saveNotifications();
+    notifyListeners();
+  }
+
+  Future<void> _saveNotifications() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('notifications',
+        jsonEncode(_notifications.map((n) => n.toJson()).toList()));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Expense CRUD
+  // ---------------------------------------------------------------------------
+
   void addExpense(Expense expense) {
     _expenses = [expense, ..._expenses];
     _saveExpenses();
+    pushNotification(
+      title: 'expense_saved',
+      message:
+          '${expense.merchant} (${formatCurrency(expense.amount)}) was saved successfully.',
+      type: 'success',
+    );
     notifyListeners();
   }
 
   void editExpense(String id, Expense updated) {
     _expenses = _expenses.map((e) => e.id == id ? updated : e).toList();
     _saveExpenses();
+    pushNotification(
+      title: 'expense_saved',
+      message:
+          '${updated.merchant} (${formatCurrency(updated.amount)}) was updated successfully.',
+      type: 'info',
+    );
     notifyListeners();
   }
 
@@ -414,6 +487,13 @@ class AppState extends ChangeNotifier {
           .doc(user.uid)
           .set({'overallBudget': amount}, SetOptions(merge: true));
     }
+    notifyListeners();
+  }
+
+  Future<void> setHasSeenBudgetWarningThisMonth(bool seen) async {
+    _hasSeenBudgetWarningThisMonth = seen;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenBudgetWarningThisMonth', seen);
     notifyListeners();
   }
 

@@ -15,19 +15,24 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  bool _alertShown = false;
-
   void _checkAndShowAlert() {
     final state = context.read<AppState>();
-    if (state.overallBudget > 0 && !_alertShown) {
+    final isCurrentMonth = state.selectedMonth == DateTime.now().toIso8601String().substring(0, 7);
+
+    if (state.overallBudget > 0 && isCurrentMonth && !state.hasSeenBudgetWarningThisMonth) {
       final total = state.expenses
           .where((e) => e.date.startsWith(state.selectedMonth))
           .fold(0.0, (s, e) => s + e.amount);
       if (total >= state.overallBudget * 0.9) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
+          state.setHasSeenBudgetWarningThisMonth(true);
           _showBudgetWarning();
-          setState(() => _alertShown = true);
+          state.pushNotification(
+            title: 'budget_alert',
+            message: Translations.t('budget_warning_msg', state.language),
+            type: 'warning',
+          );
         });
       }
     }
@@ -557,15 +562,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               right: 16,
               bottom: 24,
               child: FloatingActionButton.extended(
-                onPressed: () => state.setCurrentScreen('add_expense'),
+                onPressed: () => state.setCurrentScreen('scan'),
                 backgroundColor: AppColors.primary,
                 elevation: 4,
-                label: Text(Translations.t('add_expense', lang),
+                label: Text(Translations.t('scan_receipt', lang),
                     style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white)),
-                icon: const Icon(Icons.add_rounded, color: Colors.white),
+                icon: const Icon(Icons.document_scanner, color: Colors.white),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(100)),
               ),
@@ -637,23 +642,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                     child: OutlinedButton.icon(
                   onPressed: () {
-                    state.deleteExpense(e.id);
                     Navigator.pop(ctx);
+                    state.setScreenArgs({
+                      'editExpense': true,
+                      'id': e.id,
+                      'merchant': e.merchant,
+                      'amount': e.amount.toString(),
+                      'date': e.date,
+                      'category': e.category,
+                      'notes': '',
+                    });
+                    state.setCurrentScreen('addExpense');
                   },
-                  icon: const Icon(Icons.delete_outline,
-                      size: 16, color: AppColors.destructive),
-                  label: Text('Delete',
-                      style: GoogleFonts.inter(color: AppColors.destructive)),
+                  icon: const Icon(Icons.edit_outlined,
+                      size: 16, color: AppColors.primary),
+                  label: Text(Translations.t('edit_expense_title', lang),
+                      style: GoogleFonts.inter(color: AppColors.primary)),
                   style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.destructive),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12))),
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(12)))),
                 )),
                 const SizedBox(width: 12),
                 Expanded(
                     child: ElevatedButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Close'),
+                  child: Text(Translations.t('cancel', lang)),
                 )),
               ]),
               const SizedBox(height: 8),

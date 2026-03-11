@@ -23,12 +23,29 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   bool _prefilledFromScan = false;
   Map<String, String> _errors = {};
 
+  // Edit mode state
+  String? _editingId; // non-null = edit mode
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = context.read<AppState>().screenArgs;
-      if (args != null && args['fromScan'] == true) {
+      if (args != null && args['editExpense'] == true) {
+        // Edit mode: pre-fill from the passed expense fields
+        setState(() {
+          _editingId = args['id'] as String?;
+          _merchantCtrl.text = args['merchant'] as String? ?? '';
+          _amountCtrl.text = args['amount'] as String? ?? '';
+          _category = args['category'] as String? ?? 'Food & Dining';
+          _notesCtrl.text = args['notes'] as String? ?? '';
+          if (args['date'] != null) {
+            try {
+              _date = DateTime.parse(args['date'] as String);
+            } catch (_) {}
+          }
+        });
+      } else if (args != null && args['fromScan'] == true) {
         setState(() {
           _prefilledFromScan = true;
           if (args['merchant'] != null) {
@@ -73,16 +90,34 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   void _handleSave(AppState state) {
     if (!_validate()) return;
-    final expense = Expense(
-      id: 'exp_${DateTime.now().millisecondsSinceEpoch}',
-      merchant: _merchantCtrl.text.trim(),
-      date:
-          '${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}',
-      amount: double.parse(_amountCtrl.text),
-      category: _category,
-      icon: _iconForCategory[_category] ?? 'utensils',
-    );
-    state.addExpense(expense);
+
+    final dateStr =
+        '${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}';
+
+    if (_editingId != null) {
+      // Edit mode: update existing expense, keep the same ID
+      final updated = Expense(
+        id: _editingId!,
+        merchant: _merchantCtrl.text.trim(),
+        date: dateStr,
+        amount: double.parse(_amountCtrl.text),
+        category: _category,
+        icon: _iconForCategory[_category] ?? 'utensils',
+      );
+      state.editExpense(_editingId!, updated);
+    } else {
+      // Add mode: create a new expense
+      final expense = Expense(
+        id: 'exp_${DateTime.now().millisecondsSinceEpoch}',
+        merchant: _merchantCtrl.text.trim(),
+        date: dateStr,
+        amount: double.parse(_amountCtrl.text),
+        category: _category,
+        icon: _iconForCategory[_category] ?? 'utensils',
+      );
+      state.addExpense(expense);
+    }
+
     setState(() => _saved = true);
     Future.delayed(const Duration(milliseconds: 1200), () {
       if (mounted) state.setCurrentScreen('dashboard');
@@ -103,6 +138,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Widget build(BuildContext context) {
     final state = context.read<AppState>();
     final lang = state.language;
+    final isEditMode = _editingId != null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBackground : AppColors.background;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
@@ -134,15 +170,20 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               ),
               const SizedBox(width: 12),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(Translations.t('add_expense_title', lang),
+                Text(
+                    isEditMode
+                        ? Translations.t('edit_expense_title', lang)
+                        : Translations.t('add_expense_title', lang),
                     style: GoogleFonts.dmSans(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: fgColor)),
                 Text(
-                    _prefilledFromScan
+                    isEditMode
                         ? Translations.t('review_scanned_details', lang)
-                        : Translations.t('enter_details_manual', lang),
+                        : _prefilledFromScan
+                            ? Translations.t('review_scanned_details', lang)
+                            : Translations.t('enter_details_manual', lang),
                     style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
               ]),
             ]),
@@ -168,7 +209,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             size: 32, color: AppColors.secondary),
                       ),
                       const SizedBox(height: 16),
-                      Text(Translations.t('expense_added', lang),
+                      Text(
+                          isEditMode
+                              ? Translations.t('expense_saved', lang)
+                              : Translations.t('expense_added', lang),
                           style: GoogleFonts.dmSans(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -179,7 +223,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     ]),
               )
             else ...[
-              if (_prefilledFromScan)
+              if (_prefilledFromScan && !isEditMode)
                 Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding:
@@ -320,7 +364,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () => _handleSave(state),
                   icon: const Icon(Icons.check, size: 18),
-                  label: Text(Translations.t('save_expense', lang)),
+                  label: Text(isEditMode
+                      ? Translations.t('save_changes', lang)
+                      : Translations.t('save_expense', lang)),
                   style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14)),
                 ),

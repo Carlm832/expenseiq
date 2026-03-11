@@ -112,46 +112,8 @@ const List<Expense> kDefaultExpenses = [
       icon: 'utensils'),
 ];
 
-final List<AppNotification> kDefaultNotifications = [
-  AppNotification(
-      id: 'n1',
-      title: 'Budget Alert',
-      message: "You've used 85% of your Food & Dining budget this month.",
-      time: '2 hours ago',
-      read: false,
-      type: 'warning'),
-  AppNotification(
-      id: 'n2',
-      title: 'Weekly Summary',
-      message:
-          'Your total spending last week was ₺615. That\'s 8% less than the previous week.',
-      time: '1 day ago',
-      read: false,
-      type: 'info'),
-  AppNotification(
-      id: 'n3',
-      title: 'Expense Saved',
-      message:
-          'Your receipt from Whole Foods Market (₺67.43) was saved successfully.',
-      time: '2 days ago',
-      read: true,
-      type: 'success'),
-  AppNotification(
-      id: 'n4',
-      title: 'Savings Tip',
-      message:
-          'Try setting a weekly spending limit to stay on track with your goals.',
-      time: '3 days ago',
-      read: true,
-      type: 'info'),
-  AppNotification(
-      id: 'n5',
-      title: 'Shopping Alert',
-      message: 'Your Shopping category spending is 23% higher than last month.',
-      time: '4 days ago',
-      read: false,
-      type: 'warning'),
-];
+final List<AppNotification> kDefaultNotifications = [];
+
 
 final List<Budget> kDefaultBudgets = [
   Budget(category: 'Food & Dining', limit: 500),

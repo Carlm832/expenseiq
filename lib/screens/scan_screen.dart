@@ -57,7 +57,7 @@ class _ScanScreenState extends State<ScanScreen> {
           'date': result.date,
           'fromScan': true,
         });
-        context.read<AppState>().setCurrentScreen('add_expense');
+        context.read<AppState>().setCurrentScreen('addExpense');
       } else {
         setState(() {
           _isScanning = false;
@@ -136,7 +136,7 @@ class _ScanScreenState extends State<ScanScreen> {
                   icon: Icons.edit,
                   label: Translations.t('enter_manually', lang),
                   onPressed: () =>
-                      context.read<AppState>().setCurrentScreen('add_expense'),
+                      context.read<AppState>().setCurrentScreen('addExpense'),
                   primary: false,
                 ),
               ] else if (!_isScanning) ...[
