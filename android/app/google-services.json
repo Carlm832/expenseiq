@@ -12,7 +12,12 @@
           "package_name": "com.expenseiq.expense_iq_flutter"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "238458552267-oh805j97c64hg0jp0supg3h0jf1ftkro.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBxMIB3-cXgD6AVnyaPbtPtT7EC8kFgVhY"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "238458552267-1anl4fj8hfrk3jgd1t1ulv3tp73mugaa.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "238458552267-j7kmrrq4avi2brnfu7kn43cjrsrvvfhf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.expenseiq.expenseIqFlutter"
+              }
+            }
+          ]
         }
       }
     }
