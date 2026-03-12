@@ -1,0 +1,162 @@
+﻿Running Gradle task 'assembleRelease'...                        
+flutter : ERROR: 
+Missing classes 
+detected while 
+running R8. Please 
+add the missing 
+classes or apply 
+additional keep rules 
+that are generated in 
+C:\Users\Carl\Download
+s\expense_iq_flutter\e
+xpense_iq_flutter\buil
+d\app\outputs\mapping\
+release\missing_rules.
+txt.
+At line:1 char:1
++ flutter build apk > 
+build_error.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (ERROR: Mis   
+ sing ...sing_rule    
+s.txt.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+ERROR: R8: Missing 
+class com.google.mlkit
+.vision.text.chinese.C
+hineseTextRecognizerOp
+tions$Builder 
+(referenced from: com.
+google.mlkit.vision.te
+xt.TextRecognizer com.
+google_mlkit_text_reco
+gnition.TextRecognizer
+.initialize(io.flutter
+.plugin.common.MethodC
+all))
+Missing class com.goog
+le.mlkit.vision.text.c
+hinese.ChineseTextReco
+gnizerOptions 
+(referenced from: com.
+google.mlkit.vision.te
+xt.TextRecognizer com.
+google_mlkit_text_reco
+gnition.TextRecognizer
+.initialize(io.flutter
+.plugin.common.MethodC
+all))
+Missing class com.goog
+le.mlkit.vision.text.d
+evanagari.DevanagariTe
+xtRecognizerOptions$Bu
+ilder (referenced 
+from: com.google.mlkit
+.vision.text.TextRecog
+nizer com.google_mlkit
+_text_recognition.Text
+Recognizer.initialize(
+io.flutter.plugin.comm
+on.MethodCall))
+Missing class com.goog
+le.mlkit.vision.text.d
+evanagari.DevanagariTe
+xtRecognizerOptions 
+(referenced from: com.
+google.mlkit.vision.te
+xt.TextRecognizer com.
+google_mlkit_text_reco
+gnition.TextRecognizer
+.initialize(io.flutter
+.plugin.common.MethodC
+all))
+Missing class com.goog
+le.mlkit.vision.text.j
+apanese.JapaneseTextRe
+cognizerOptions$Builde
+r (referenced from: co
+m.google.mlkit.vision.
+text.TextRecognizer co
+m.google_mlkit_text_re
+cognition.TextRecogniz
+er.initialize(io.flutt
+er.plugin.common.Metho
+dCall))
+Missing class com.goog
+le.mlkit.vision.text.j
+apanese.JapaneseTextRe
+cognizerOptions 
+(referenced from: com.
+google.mlkit.vision.te
+xt.TextRecognizer com.
+google_mlkit_text_reco
+gnition.TextRecognizer
+.initialize(io.flutter
+.plugin.common.MethodC
+all))
+Missing class com.goog
+le.mlkit.vision.text.k
+orean.KoreanTextRecogn
+izerOptions$Builder 
+(referenced from: com.
+google.mlkit.vision.te
+xt.TextRecognizer com.
+google_mlkit_text_reco
+gnition.TextRecognizer
+.initialize(io.flutter
+.plugin.common.MethodC
+all))
+Missing class com.goog
+le.mlkit.vision.text.k
+orean.KoreanTextRecogn
+izerOptions 
+(referenced from: com.
+google.mlkit.vision.te
+xt.TextRecognizer com.
+google_mlkit_text_reco
+gnition.TextRecognizer
+.initialize(io.flutter
+.plugin.common.MethodC
+all))
+
+FAILURE: Build failed 
+with an exception.
+
+* What went wrong:
+Execution failed for 
+task ':app:minifyRelea
+seWithR8'.
+> A failure occurred 
+while executing com.an
+droid.build.gradle.int
+ernal.tasks.R8Task$R8R
+unnable
+   > Compilation 
+failed to complete
+
+* Try:
+> Run with 
+--stacktrace option 
+to get the stack 
+trace.
+> Run with --info or 
+--debug option to get 
+more log output.
+> Run with --scan to 
+get full insights.
+> Get more help at htt
+ps://help.gradle.org.
+
+BUILD FAILED in 1m 17s
+Running Gradle task 'assembleRelease'...                           78.7s
+Gradle task 
+assembleRelease 
+failed with exit code 
+1
