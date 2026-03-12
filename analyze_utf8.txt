@@ -1,0 +1,4 @@
+﻿Analyzing expense_iq_flutter...                                 
+
+   info - Use 'const' with the constructor to improve performance - lib\screens\dashboard_screen.dart:657:25 - prefer_const_constructors
+
