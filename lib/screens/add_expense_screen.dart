@@ -162,7 +162,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         width: 64,
                         height: 64,
                         decoration: BoxDecoration(
-                            color: AppColors.secondary.withOpacity(0.1),
+                            color: AppColors.secondary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(18)),
                         child: const Icon(Icons.check,
                             size: 32, color: AppColors.secondary),
@@ -185,10 +185,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withOpacity(0.1),
+                    color: AppColors.secondary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: AppColors.secondary.withOpacity(0.3)),
+                        color: AppColors.secondary.withValues(alpha: 0.3)),
                   ),
                   child: Row(children: [
                     const Icon(Icons.auto_awesome,

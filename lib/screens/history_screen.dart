@@ -217,7 +217,7 @@ class _HistoryItem extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-              color: Color(_getCatColor(expense.category)).withOpacity(0.1),
+              color: Color(_getCatColor(expense.category)).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10)),
           child: Icon(_getCatIcon(expense.icon),
               size: 18, color: Color(_getCatColor(expense.category))),

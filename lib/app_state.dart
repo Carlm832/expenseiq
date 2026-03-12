@@ -484,4 +484,28 @@ class AppState extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  /// Resends the verification email to the current user.
+  Future<void> resendVerificationEmail() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  }
+
+  /// Refreshes the user state and checks if the email is verified.
+  Future<void> checkEmailVerificationStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await user.reload();
+      final updatedUser = FirebaseAuth.instance.currentUser;
+      if (updatedUser != null && updatedUser.emailVerified) {
+        _isLoggedIn = true;
+        _userEmail = updatedUser.email ?? '';
+        _userName = updatedUser.displayName ?? '';
+        _screenHistory = ['dashboard'];
+        notifyListeners();
+      }
+    }
+  }
 }

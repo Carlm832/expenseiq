@@ -196,7 +196,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final current = _confirming ? _confirm : _first;
-    final maxLen = 6;
+    const maxLen = 6;
 
     return Scaffold(
       backgroundColor: bgColor,

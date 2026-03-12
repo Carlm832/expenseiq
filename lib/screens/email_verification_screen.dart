@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_state.dart';
 import '../theme.dart';
-import '../services/translations.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   const EmailVerificationScreen({super.key});
@@ -55,7 +54,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final lang = state.language;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
 
@@ -84,7 +82,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                       blurRadius: 30, offset: const Offset(0, 15),
                     ),
                   ],
@@ -95,7 +93,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.mark_email_read_rounded, size: 48, color: AppColors.primary),

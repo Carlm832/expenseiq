@@ -783,7 +783,7 @@ class _CalendarView extends StatelessWidget {
                       height: 64,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary.withOpacity(0.12)
+                            ? AppColors.primary.withValues(alpha: 0.12)
                             : Colors.transparent,
                         border: Border(
                           right: col < 6
@@ -988,7 +988,7 @@ class _InsightRow extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, size: 16, color: color),
@@ -1042,7 +1042,7 @@ class _TimeTab extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 4)
                 ]
               : null,

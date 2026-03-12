@@ -219,7 +219,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                            color: AppColors.primary.withOpacity(0.3),
+                            color: AppColors.primary.withValues(alpha: 0.3),
                             blurRadius: 16,
                             offset: const Offset(0, 6))
                       ],
@@ -235,7 +235,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     style: GoogleFonts.inter(
                                         fontSize: 13,
                                         color: Colors.white
-                                            .withOpacity(0.75))),
+                                            .withValues(alpha: 0.75))),
                                 const SizedBox(height: 4),
                                 Text(state.formatCurrency(totalSpending),
                                     style: GoogleFonts.dmSans(
@@ -248,7 +248,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
                                       color:
-                                          Colors.white.withOpacity(0.2),
+                                          Colors.white.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(100)),
                                   child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -269,7 +269,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(100)),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
@@ -468,7 +468,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     height: 36,
                                     decoration: BoxDecoration(
                                         color: AppColors.secondary
-                                            .withOpacity(0.1),
+                                            .withValues(alpha: 0.1),
                                         borderRadius:
                                             BorderRadius.circular(10)),
                                     child: const Icon(Icons.trending_up,
@@ -496,7 +496,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     height: 36,
                                     decoration: BoxDecoration(
                                         color: AppColors.primary
-                                            .withOpacity(0.1),
+                                            .withValues(alpha: 0.1),
                                         borderRadius:
                                             BorderRadius.circular(10)),
                                     child: const Icon(Icons.trending_down,
@@ -749,7 +749,7 @@ class _ExpenseItem extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-                color: catColor.withOpacity(0.1),
+                color: catColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10)),
             child: Icon(_categoryIcon(expense.icon), size: 18, color: catColor),
           ),

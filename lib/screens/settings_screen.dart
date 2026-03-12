@@ -591,7 +591,7 @@ class PaymentMethodsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(children: [
           Icon(Icons.credit_card,
-              size: 48, color: AppColors.primary.withOpacity(0.5)),
+              size: 48, color: AppColors.primary.withValues(alpha: 0.5)),
           const SizedBox(height: 12),
           Text(Translations.t('no_payment_methods', lang),
               style: GoogleFonts.inter(

@@ -151,7 +151,7 @@ class _ScanNavItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                      color: AppColors.primary.withOpacity(0.4),
+                      color: AppColors.primary.withValues(alpha: 0.4),
                       blurRadius: 10,
                       offset: const Offset(0, 3))
                 ],
