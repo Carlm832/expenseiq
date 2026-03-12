@@ -313,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.network('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_G_logo.svg/24px-Google_G_logo.svg.png', height: 20),
+                  Image.asset('assets/google_logo.png', height: 24),
                   const SizedBox(width: 12),
                   Text('Sign in with Google', 
                     style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.w600, color: fgColor)),
