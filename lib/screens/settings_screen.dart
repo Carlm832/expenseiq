@@ -152,6 +152,16 @@ class SettingsScreen extends StatelessWidget {
                     !state.pushNotificationsEnabled);
               }),
           _SettingsTile(
+              icon: Icons.fingerprint,
+              label: 'Biometric Security',
+              value: state.isBiometricEnabled ? 'Enabled' : 'Disabled',
+              fgColor: fgColor,
+              mutedColor: mutedColor,
+              borderColor: borderColor,
+              onTap: () {
+                state.setBiometricEnabled(!state.isBiometricEnabled);
+              }),
+          _SettingsTile(
               icon: Icons.pin_outlined,
               label: 'App PIN',
               value: state.hasPin ? 'Enabled' : 'Disabled',
@@ -381,10 +391,10 @@ class HelpScreen extends StatelessWidget {
     final lang = state.language;
 
     final faqs = [
-      (Translations.t('faq_q1', lang), Translations.t('faq_a1', lang)),
-      (Translations.t('faq_q2', lang), Translations.t('faq_a2', lang)),
-      (Translations.t('faq_q3', lang), Translations.t('faq_a3', lang)),
-      (Translations.t('faq_q4', lang), Translations.t('faq_a4', lang)),
+      ('How do I capture a receipt?', 'Tap the floating "+" button on the dashboard and select the camera or gallery icon.'),
+      ('Can I export my data?', 'Yes! Go to the Analytics screen and use the Export PDF or Export CSV buttons at the top.'),
+      ('How does currency conversion work?', 'ExpenseIQ fetches real-time rates. You can change your display currency in Settings.'),
+      ('Is my data stored online?', 'Your data is saved locally and synced to your secure Firebase account if you are signed in.'),
     ];
 
     return _buildSimpleScreen(
@@ -535,12 +545,14 @@ class PrivacyScreen extends StatelessWidget {
   const PrivacyScreen({super.key});
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final mutedColor =
         isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-    final lang = context.read<AppState>().language;
+    final lang = state.language;
     return _buildSimpleScreen(context, Translations.t('privacy_title', lang),
         Translations.t('data_protection', lang), [
       Container(
@@ -549,61 +561,32 @@ class PrivacyScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: borderColor)),
         padding: const EdgeInsets.all(16),
-        child: Text(
-          Translations.t('privacy_policy_text', lang),
-          style:
-              GoogleFonts.inter(fontSize: 13, color: mutedColor, height: 1.6),
-        ),
+        child: Column(children: [
+          Row(children: [
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('Biometric Authentication', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: fgColor)),
+                Text('Use Fingerprint or FaceID to unlock the app', style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
+              ]),
+            ),
+            Switch(
+              value: state.isBiometricEnabled,
+              onChanged: (v) => state.setBiometricEnabled(v),
+              activeColor: AppColors.primary,
+            ),
+          ]),
+          const Divider(height: 32),
+          Text(
+            Translations.t('privacy_policy_text', lang),
+            style: GoogleFonts.inter(fontSize: 13, color: mutedColor, height: 1.6),
+          ),
+        ]),
       ),
     ]);
   }
 }
 
-class PaymentMethodsScreen extends StatelessWidget {
-  const PaymentMethodsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
-    final mutedColor =
-        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
-    final cardColor = isDark ? AppColors.darkCard : AppColors.card;
-    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-    final lang = context.read<AppState>().language;
-    return _buildSimpleScreen(
-        context,
-        Translations.t('payment_methods_title', lang),
-        Translations.t('manage_cards', lang), [
-      Container(
-        decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: borderColor)),
-        padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          Icon(Icons.credit_card,
-              size: 48, color: AppColors.primary.withValues(alpha: 0.5)),
-          const SizedBox(height: 12),
-          Text(Translations.t('no_payment_methods', lang),
-              style: GoogleFonts.inter(
-                  fontSize: 14, fontWeight: FontWeight.w500, color: fgColor)),
-          Text(Translations.t('add_card_msg', lang),
-              style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
-              textAlign: TextAlign.center),
-        ]),
-      ),
-      const SizedBox(height: 16),
-      SizedBox(
-        width: double.infinity,
-        child: ElevatedButton.icon(
-          onPressed: () {},
-          icon: const Icon(Icons.add, size: 18),
-          label: Text(Translations.t('add_payment_method', lang)),
-        ),
-      ),
-    ]);
-  }
-}
+// PaymentMethodsScreen removed as per user request
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});

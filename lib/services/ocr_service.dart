@@ -6,6 +6,7 @@ class OcrResult {
   final String? merchant;
   final double? amount;
   final String? date; // ISO format YYYY-MM-DD
+  final String currency;
   final String rawText;
   final bool success;
 
@@ -13,6 +14,7 @@ class OcrResult {
     this.merchant,
     this.amount,
     this.date,
+    this.currency = 'TRY',
     required this.rawText,
     required this.success,
   });
@@ -49,11 +51,13 @@ class OcrService {
       final merchant = _extractMerchant(lines);
       final amount = _extractTotal(lines);
       final date = _extractDate(lines);
+      final currency = _extractCurrency(lines);
 
       return OcrResult(
         merchant: merchant,
         amount: amount,
         date: date,
+        currency: currency,
         rawText: rawText,
         success: merchant != null || amount != null,
       );
@@ -173,6 +177,16 @@ class OcrService {
   String _capitalize(String s) {
     if (s.isEmpty) return s;
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
+  }
+
+  String _extractCurrency(List<String> lines) {
+    for (final line in lines) {
+      if (line.contains('\$')) return 'USD';
+      if (line.contains('€')) return 'EUR';
+      if (line.contains('£')) return 'GBP';
+      if (line.contains('₺') || line.contains('TL')) return 'TRY';
+    }
+    return 'TRY'; // Default
   }
 
   void dispose() {

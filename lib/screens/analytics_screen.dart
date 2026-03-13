@@ -7,6 +7,7 @@ import '../app_state.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../services/translations.dart';
+import '../services/report_service.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -365,6 +366,41 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               ]),
               const SizedBox(height: 16),
 
+              // Export Buttons
+              Row(children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => ReportService.generateAndPrintPDF(
+                      expenses, 
+                      state.currency, 
+                      totalSpending, 
+                      state.userName
+                    ),
+                    icon: const Icon(Icons.picture_as_pdf, size: 16),
+                    label: Text(Translations.t('export_pdf', lang), style: GoogleFonts.inter(fontSize: 12)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => ReportService.generateCSV(expenses, state.currency),
+                    icon: const Icon(Icons.table_chart, size: 16),
+                    label: Text(Translations.t('export_csv', lang), style: GoogleFonts.inter(fontSize: 12)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ]),
+              const SizedBox(height: 16),
+
               // Bar chart
               Container(
                 decoration: BoxDecoration(
@@ -396,8 +432,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       const SizedBox(height: 16),
                       SizedBox(
                         height: 180,
-                        child: BarChart(BarChartData(
-                          gridData: const FlGridData(show: false),
+                        child: LineChart(LineChartData(
+                          gridData: FlGridData(
+                            show: true,
+                            drawVerticalLine: false,
+                            getDrawingHorizontalLine: (value) => FlLine(
+                                color: borderColor.withValues(alpha: 0.1),
+                                strokeWidth: 1),
+                          ),
                           borderData: FlBorderData(show: false),
                           titlesData: FlTitlesData(
                             leftTitles: const AxisTitles(
@@ -420,27 +462,38 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                   return const SizedBox();
                                 }
 
-                                return Text(chartData[idx].$1,
-                                    style: GoogleFonts.inter(
-                                        fontSize: 10, color: mutedColor));
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(chartData[idx].$1,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 10, color: mutedColor)),
+                                );
                               },
                             )),
                           ),
-                          barGroups: List.generate(
-                              chartData.length,
-                              (i) => BarChartGroupData(
-                                    x: i,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: chartData[i].$2,
-                                        color: AppColors.primary,
-                                        width: chartData.length > 7 ? 8 : 20,
-                                        borderRadius:
-                                            const BorderRadius.vertical(
-                                                top: Radius.circular(4)),
-                                      )
-                                    ],
-                                  )),
+                          lineBarsData: [
+                            LineChartBarData(
+                              spots: List.generate(
+                                  chartData.length,
+                                  (i) => FlSpot(i.toDouble(), chartData[i].$2)),
+                              isCurved: true,
+                              color: AppColors.primary,
+                              barWidth: 3,
+                              isStrokeCapRound: true,
+                              dotData: const FlDotData(show: false),
+                              belowBarData: BarAreaData(
+                                show: true,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.primary.withValues(alpha: 0.3),
+                                    AppColors.primary.withValues(alpha: 0.0),
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                              ),
+                            ),
+                          ],
                         )),
                       ),
                     ]),

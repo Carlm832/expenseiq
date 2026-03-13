@@ -182,19 +182,33 @@ class ProfileScreen extends StatelessWidget {
                                 color: AppColors.secondary)),
                       ]),
                     ])),
-                GestureDetector(
-                  onTap: () => state.setCurrentScreen('settings'),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkMuted : AppColors.muted,
-                        borderRadius: BorderRadius.circular(10)),
-                    child: Icon(Icons.settings_outlined,
-                        size: 18, color: mutedColor),
+                  GestureDetector(
+                    onTap: () => state.setCurrentScreen('edit_profile'),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkMuted : AppColors.muted,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Icon(Icons.edit_outlined,
+                          size: 18, color: mutedColor),
+                    ),
                   ),
-                ),
-              ]),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => state.setCurrentScreen('settings'),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkMuted : AppColors.muted,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Icon(Icons.settings_outlined,
+                          size: 18, color: mutedColor),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             // Stats

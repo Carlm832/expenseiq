@@ -3,13 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_state.dart';
 import '../theme.dart';
-import '../services/translations.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   const EmailVerificationScreen({super.key});
 
   @override
-  State<EmailVerificationScreen> createState() => _EmailVerificationScreenState();
+  State<EmailVerificationScreen> createState() =>
+      _EmailVerificationScreenState();
 }
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
@@ -57,7 +57,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final lang = state.language;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
-    final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
 
     return Scaffold(
       body: Container(
@@ -67,9 +68,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDark 
-              ? [const Color(0xFF0F172A), const Color(0xFF1E293B)] 
-              : [const Color(0xFFF8FAFC), const Color(0xFFEEF2FF)],
+            colors: isDark
+                ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                : [const Color(0xFFF8FAFC), const Color(0xFFEEF2FF)],
           ),
         ),
         child: SafeArea(
@@ -81,11 +82,16 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1E293B) : Colors.white,
                   borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                  border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF334155)
+                          : const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-                      blurRadius: 30, offset: const Offset(0, 15),
+                      color:
+                          Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                      blurRadius: 30,
+                      offset: const Offset(0, 15),
                     ),
                   ],
                 ),
@@ -98,48 +104,70 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                         color: AppColors.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.mark_email_read_rounded, size: 48, color: AppColors.primary),
+                      child: const Icon(Icons.mark_email_read_rounded,
+                          size: 48, color: AppColors.primary),
                     ),
                     const SizedBox(height: 24),
                     Text(
                       'Verify Your Email',
-                      style: GoogleFonts.dmSans(fontSize: 24, fontWeight: FontWeight.bold, color: fgColor),
+                      style: GoogleFonts.dmSans(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: fgColor),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       'We have sent a verification link to:\n${state.userEmail}',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(fontSize: 14, color: mutedColor, height: 1.5),
+                      style: GoogleFonts.inter(
+                          fontSize: 14, color: mutedColor, height: 1.5),
                     ),
                     const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _isChecking ? null : () => _handleCheckStatus(state),
+                        onPressed: _isChecking
+                            ? null
+                            : () => _handleCheckStatus(state),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
                         ),
-                        child: _isChecking 
-                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                          : Text('I Have Verified', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 16)),
+                        child: _isChecking
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2.5, color: Colors.white))
+                            : Text('I Have Verified',
+                                style: GoogleFonts.dmSans(
+                                    fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: _isResending ? null : () => _handleResend(state),
-                      child: _isResending 
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : Text('Resend Verification Email', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppColors.primary)),
+                      onPressed:
+                          _isResending ? null : () => _handleResend(state),
+                      child: _isResending
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : Text('Resend Verification Email',
+                              style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary)),
                     ),
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () => state.logout(),
-                      child: Text('Back to Login', style: GoogleFonts.inter(color: mutedColor)),
+                      child: Text('Back to Login',
+                          style: GoogleFonts.inter(color: mutedColor)),
                     ),
                   ],
                 ),

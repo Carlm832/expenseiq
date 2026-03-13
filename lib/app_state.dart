@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'models.dart';
+import 'services/currency_service.dart';
+import 'services/bio_service.dart';
 
 class AppState extends ChangeNotifier with WidgetsBindingObserver {
   // Auth
@@ -48,9 +50,14 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   // Syncing logic for Dashboard month selection (added by collaborator)
   String _selectedMonth = DateTime.now().toString().substring(0, 7);
 
-  // PIN Security
+  // PIN & Biometric Security
   String _pin = '';      // empty = no PIN set
   bool _isPinLocked = false; // true after app resumes if PIN is set
+  bool _isBiometricEnabled = false;
+
+  // Services
+  final CurrencyService _currencyService = CurrencyService();
+  final BioService _bioService = BioService();
 
   // Initializing flag — true until Firebase auth state has resolved
   bool _isInitializing = true;
@@ -85,6 +92,8 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   bool get isPinLocked => _isPinLocked;
   bool get hasPin => _pin.isNotEmpty;
   String get pin => _pin;
+  bool get isBiometricEnabled => _isBiometricEnabled;
+  CurrencyService get currencyService => _currencyService;
 
   AppState() {
     WidgetsBinding.instance.addObserver(this);
@@ -94,6 +103,8 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> _initApp() async {
     await _loadFromPrefs();
     _initAuthListener();
+    await _currencyService.init();
+    notifyListeners();
   }
 
   @override
@@ -105,7 +116,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
-      if (_isLoggedIn && _pin.isNotEmpty && !_isPinLocked) {
+      if (_isLoggedIn && (_pin.isNotEmpty || _isBiometricEnabled) && !_isPinLocked) {
         _isPinLocked = true;
         notifyListeners();
       }
@@ -174,6 +185,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         _notifications = decoded.map((n) => AppNotification.fromJson(n)).toList();
       } catch (_) {}
     }
+    _isBiometricEnabled = prefs.getBool('isBiometricEnabled') ?? false;
     notifyListeners();
   }
 
@@ -583,7 +595,22 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   String formatCurrencyWithSymbol(double amount) {
-    return '$currencySymbol${amount.toStringAsFixed(2).replaceAllMapped(RegExp(r"(\d)(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")}';
+    final symbol = _currencyService.getCurrencySymbol(_currency);
+    return '$symbol${amount.toStringAsFixed(2).replaceAllMapped(RegExp(r"(\d)(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")}';
+  }
+
+  double convertToCurrent(double amount, String fromCurrency) {
+    final to = _currencyService.cleanCurrencyCode(_currency);
+    return _currencyService.convert(amount, fromCurrency, to);
+  }
+
+  double getTotalInCurrentCurrency() {
+    double total = 0;
+    final to = _currencyService.cleanCurrencyCode(_currency);
+    for (var e in _expenses) {
+      total += _currencyService.convert(e.amount, e.currency, to);
+    }
+    return total;
   }
 
   /// Set or update the PIN. Persists to SharedPreferences.
@@ -604,6 +631,13 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  Future<void> setBiometricEnabled(bool enabled) async {
+    _isBiometricEnabled = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isBiometricEnabled', enabled);
+    notifyListeners();
+  }
+
   /// Called when user successfully enters PIN; unlocks the app.
   void unlockPin() {
     _isPinLocked = false;
@@ -612,5 +646,14 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       _screenHistory = ['dashboard'];
     }
     notifyListeners();
+  }
+
+  Future<void> authenticateWithBiometrics() async {
+    if (!_isBiometricEnabled) return;
+    final success = await _bioService.authenticate();
+    if (success) {
+      _isPinLocked = false;
+      notifyListeners();
+    }
   }
 }

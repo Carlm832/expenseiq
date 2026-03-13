@@ -5,6 +5,7 @@ class Expense {
   final String merchant;
   final String date;
   final double amount;
+  final String currency;
   final String category;
   final String icon;
 
@@ -13,6 +14,7 @@ class Expense {
     required this.merchant,
     required this.date,
     required this.amount,
+    this.currency = 'TRY',
     required this.category,
     required this.icon,
   });
@@ -22,6 +24,7 @@ class Expense {
         'merchant': merchant,
         'date': date,
         'amount': amount,
+        'currency': currency,
         'category': category,
         'icon': icon,
       };
@@ -31,6 +34,7 @@ class Expense {
         merchant: json['merchant'],
         date: json['date'],
         amount: (json['amount'] as num).toDouble(),
+        currency: json['currency'] ?? 'TRY',
         category: json['category'],
         icon: json['icon'],
       );

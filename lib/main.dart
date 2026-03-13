@@ -13,12 +13,6 @@ import 'screens/add_expense_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/email_verification_screen.dart';
-import 'screens/appearance_screen.dart';
-import 'screens/budget_screen.dart';
-import 'screens/help_screen.dart';
-import 'screens/privacy_screen.dart';
-import 'screens/payment_methods_screen.dart';
-import 'screens/edit_profile_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
@@ -94,9 +88,7 @@ class AppRouter extends StatelessWidget {
         child = const ContactUsScreen();
       case 'privacy':
         child = const PrivacyScreen();
-      case 'payment-methods':
-        child = const PaymentMethodsScreen();
-      case 'editProfile':
+      case 'edit_profile':
         child = const EditProfileScreen();
       case 'setup_pin':
         child = const PinSetupScreen();
