@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import '../services/translations.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   const EmailVerificationScreen({super.key});
@@ -54,6 +55,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final lang = state.language;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
 

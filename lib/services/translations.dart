@@ -76,6 +76,8 @@ class Translations {
       'top_category_desc': ' accounts for ',
       'percent_of_spending': '% of your spending in this period.',
       'not_enough_data': 'Not enough data to generate insights.',
+      'total_spending': 'Total Spending',
+      'expense_history': 'Expense History',
       'total': 'Total',
       'count': 'Count',
       'day_mon': 'Monday',
@@ -217,6 +219,7 @@ class Translations {
       'hours_ago': ' hours ago',
       'day_ago': '1 day ago',
       'days_ago': ' days ago',
+      'no_notifications': 'No notifications yet',
 
       // Months
       'm_jan': 'Jan', 'm_feb': 'Feb', 'm_mar': 'Mar', 'm_apr': 'Apr',
@@ -231,7 +234,7 @@ class Translations {
       'add_expense': 'Add Expense',
       'scan_receipt': 'Scan Receipt',
       'dark_mode': 'Dark Mode',
-      'add_expense_title': 'Add Expense',
+      'add_expense_title': 'Harcama Ekle',
       'review_scanned_details': 'Review and confirm scanned details',
       'enter_details_manual': 'Enter details manually',
       'expense_added': 'Expense Added!',
@@ -261,11 +264,14 @@ class Translations {
       'Category': 'Category',
       'Notes (Optional)': 'Notes (Optional)',
       'Add any additional notes...': 'Add any additional notes...',
-      'total_spending': 'Total Spending',
-      'expense_details': 'Expense Details',
-      'ok': 'OK',
+      
+      // Additional missing keys found in UI
       'daily_average': 'Daily Average',
+      'expense_details': 'Expense Details',
       'highest_expense': 'Highest Expense',
+      'no_transactions': 'No Transactions',
+      'ok': 'OK',
+      'password': 'Password',
     },
     'Turkish': {
       // Navigation
@@ -308,11 +314,6 @@ class Translations {
       'sort_lowest': 'En Düşük',
       'no_history': 'İşlem bulunamadı',
       'search_history': 'İşlemlerde ara...',
-      'total_spending': 'Toplam Harcama',
-      'expense_details': 'Harcama Detayları',
-      'ok': 'Tamam',
-      'daily_average': 'Günlük Ortalama',
-      'highest_expense': 'En Yüksek Harcama',
 
       // History
       'history_title': 'Harcama Geçmişi',
@@ -344,6 +345,8 @@ class Translations {
       'top_category_desc': ' harcamalarınızın %',
       'percent_of_spending': ' kadardır.',
       'not_enough_data': 'İçgörü oluşturmak için yeterli veri yok.',
+      'total_spending': 'Toplam Harcama',
+      'expense_history': 'Harcama Geçmişi',
       'total': 'Toplam',
       'count': 'Sayı',
       'day_mon': 'Pazartesi',
@@ -488,6 +491,7 @@ class Translations {
       'hours_ago': ' saat önce',
       'day_ago': '1 gün önce',
       'days_ago': ' gün önce',
+      'no_notifications': 'Henüz bildirim yok',
 
       // Months
       'm_jan': 'Oca', 'm_feb': 'Şub', 'm_mar': 'Mar', 'm_apr': 'Nis',
@@ -532,6 +536,14 @@ class Translations {
       'Category': 'Kategori',
       'Notes (Optional)': 'Notlar (İsteğe Bağlı)',
       'Add any additional notes...': 'Ek notlar ekleyin...',
+      
+      // Additional missing keys found in UI
+      'daily_average': 'Günlük Ortalama',
+      'expense_details': 'Harcama Detayı',
+      'highest_expense': 'En Yüksek Harcama',
+      'no_transactions': 'İşlem Yok',
+      'ok': 'Tamam',
+      'password': 'Şifre',
     },
   };
 }

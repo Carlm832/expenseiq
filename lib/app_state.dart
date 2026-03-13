@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'models.dart';
 
-class AppState extends ChangeNotifier {
+class AppState extends ChangeNotifier with WidgetsBindingObserver {
   // Auth
   bool _isLoggedIn = false;
   String _userName = '';
@@ -86,8 +87,29 @@ class AppState extends ChangeNotifier {
   String get pin => _pin;
 
   AppState() {
-    _loadFromPrefs();
+    WidgetsBinding.instance.addObserver(this);
+    _initApp();
+  }
+
+  Future<void> _initApp() async {
+    await _loadFromPrefs();
     _initAuthListener();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      if (_isLoggedIn && _pin.isNotEmpty && !_isPinLocked) {
+        _isPinLocked = true;
+        notifyListeners();
+      }
+    }
   }
 
   void _initAuthListener() {
@@ -100,12 +122,21 @@ class AppState extends ChangeNotifier {
 
         _syncDataFromFirestore(user.uid);
 
-        // If PIN is set, lock the app for PIN entry on every fresh start
-        if (_isInitializing && _pin.isNotEmpty) {
-          _isPinLocked = true;
-        } else if (_screenHistory.last == 'login' ||
-            _screenHistory.last == 'register') {
-          _screenHistory = ['dashboard'];
+        // Handle Email Verification for password provider
+        bool isPasswordProvider = user.providerData.any((p) => p.providerId == 'password');
+        if (isPasswordProvider && !user.emailVerified) {
+          if (_screenHistory.last != 'email_verification') {
+            _screenHistory = ['email_verification'];
+          }
+        } else {
+          // If PIN is set, lock the app for PIN entry on every fresh start
+          if (_isInitializing && _pin.isNotEmpty) {
+            _isPinLocked = true;
+          } else if (_screenHistory.last == 'login' ||
+              _screenHistory.last == 'register' ||
+              _screenHistory.last == 'email_verification') {
+            _screenHistory = ['dashboard'];
+          }
         }
       } else {
         _isLoggedIn = false;
@@ -135,6 +166,14 @@ class AppState extends ChangeNotifier {
     _hasSeenBudgetWarningThisMonth =
         prefs.getBool('hasSeenBudgetWarningThisMonth') ?? false;
     _pin = prefs.getString('appPin') ?? '';
+    // Load persisted notifications
+    final notifJson = prefs.getString('notifications');
+    if (notifJson != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(notifJson);
+        _notifications = decoded.map((n) => AppNotification.fromJson(n)).toList();
+      } catch (_) {}
+    }
     notifyListeners();
   }
 
@@ -199,17 +238,36 @@ class AppState extends ChangeNotifier {
 
   Future<void> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return; // User canceled
+      if (kIsWeb) {
+        // On web, use the popup-based sign-in via Firebase directly
+        final GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+        googleProvider.addScope('profile');
+        // Ensure the correct client ID is used for initialization
+        await FirebaseAuth.instance.signInWithPopup(googleProvider);
+      } else {
+        // On Android/iOS, use the native GoogleSignIn package
+        // Note: Client ID is usually picked up from google-services.json/Info.plist automatically
+        final GoogleSignIn googleSignIn = GoogleSignIn();
+        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+        
+        if (googleUser == null) {
+          // User canceled the sign-in flow
+          return;
+        }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      await FirebaseAuth.instance.signInWithCredential(credential);
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+        final OAuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        await FirebaseAuth.instance.signInWithCredential(credential);
+      }
+    } on FirebaseAuthException catch (e) {
+      // ignore: avoid_print
+      print('Firebase Google Sign-In error: ${e.code} - ${e.message}');
+      rethrow;
     } catch (e) {
       // ignore: avoid_print
       print('Google sign in error: $e');
@@ -240,6 +298,7 @@ class AppState extends ChangeNotifier {
       );
       if (credential.user != null) {
         await credential.user!.updateDisplayName(name);
+        await credential.user!.sendEmailVerification();
         // Refresh state
         _userName = name;
         notifyListeners();
@@ -248,6 +307,25 @@ class AppState extends ChangeNotifier {
       // ignore: avoid_print
       print('Registration error: $e');
       rethrow;
+    }
+  }
+
+  Future<void> resendVerificationEmail() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  }
+
+  Future<void> checkEmailVerificationStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await user.reload();
+      final freshUser = FirebaseAuth.instance.currentUser;
+      if (freshUser != null && freshUser.emailVerified) {
+        _screenHistory = ['dashboard'];
+        notifyListeners();
+      }
     }
   }
 
@@ -294,15 +372,59 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Notification helpers
+  // ---------------------------------------------------------------------------
+
+  void pushNotification({
+    required String title,
+    required String message,
+    required String type, // 'success' | 'info' | 'warning'
+  }) {
+    final n = AppNotification(
+      id: 'n_${DateTime.now().millisecondsSinceEpoch}',
+      title: title,
+      message: message,
+      time: 'Just now',
+      read: false,
+      type: type,
+    );
+    _notifications = [n, ..._notifications];
+    _saveNotifications();
+    notifyListeners();
+  }
+
+  Future<void> _saveNotifications() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('notifications',
+        jsonEncode(_notifications.map((n) => n.toJson()).toList()));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Expense CRUD
+  // ---------------------------------------------------------------------------
+
   void addExpense(Expense expense) {
     _expenses = [expense, ..._expenses];
     _saveExpenses();
+    pushNotification(
+      title: 'expense_saved',
+      message:
+          '${expense.merchant} (${formatCurrency(expense.amount)}) was saved successfully.',
+      type: 'success',
+    );
     notifyListeners();
   }
 
   void editExpense(String id, Expense updated) {
     _expenses = _expenses.map((e) => e.id == id ? updated : e).toList();
     _saveExpenses();
+    pushNotification(
+      title: 'expense_saved',
+      message:
+          '${updated.merchant} (${formatCurrency(updated.amount)}) was updated successfully.',
+      type: 'info',
+    );
     notifyListeners();
   }
 
@@ -417,6 +539,13 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setHasSeenBudgetWarningThisMonth(bool seen) async {
+    _hasSeenBudgetWarningThisMonth = seen;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenBudgetWarningThisMonth', seen);
+    notifyListeners();
+  }
+
   Future<void> clearAllData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
@@ -483,29 +612,5 @@ class AppState extends ChangeNotifier {
       _screenHistory = ['dashboard'];
     }
     notifyListeners();
-  }
-
-  /// Resends the verification email to the current user.
-  Future<void> resendVerificationEmail() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null && !user.emailVerified) {
-      await user.sendEmailVerification();
-    }
-  }
-
-  /// Refreshes the user state and checks if the email is verified.
-  Future<void> checkEmailVerificationStatus() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await user.reload();
-      final updatedUser = FirebaseAuth.instance.currentUser;
-      if (updatedUser != null && updatedUser.emailVerified) {
-        _isLoggedIn = true;
-        _userEmail = updatedUser.email ?? '';
-        _userName = updatedUser.displayName ?? '';
-        _screenHistory = ['dashboard'];
-        notifyListeners();
-      }
-    }
   }
 }

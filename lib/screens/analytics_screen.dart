@@ -261,7 +261,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         d.month == day.month &&
                         d.day == day.day;
                   }).toList();
-                  if (dayExpenses.isEmpty) return;
+                  if (dayExpenses.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(Translations.t('no_data', state.language)),
+                        duration: const Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    return;
+                  }
                   showModalBottomSheet(
                     context: context,
                     shape: const RoundedRectangleBorder(
@@ -334,7 +343,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     cardColor: cardColor),
                 const SizedBox(width: 8),
                 _StatCard(
-                    label: Translations.t('avg_item', lang),
+                    label: Translations.t('avg_per_item', lang),
                     value: expenses.isEmpty
                         ? '${state.currencySymbol}0'
                         : state.formatCurrency(totalSpending / expenses.length),

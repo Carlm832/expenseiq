@@ -83,41 +83,32 @@ class SettingsScreen extends StatelessWidget {
           _SettingsTile(
               icon: Icons.language,
               label: Translations.t('language', state.language),
-              value: '',
+              value: state.language,
               fgColor: fgColor,
               mutedColor: mutedColor,
               borderColor: borderColor,
-              secondary: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: () => state.setLanguage('English'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: state.language == 'English' ? AppColors.primary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: state.language == 'English' ? AppColors.primary : borderColor),
-                      ),
-                      child: Text('EN', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: state.language == 'English' ? Colors.white : mutedColor)),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title:
+                        Text(Translations.t('select_language', state.language)),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: ['English', 'Turkish']
+                          .map((lang) => ListTile(
+                                title: Text(lang),
+                                selected: state.language == lang,
+                                onTap: () {
+                                  state.setLanguage(lang);
+                                  Navigator.pop(ctx);
+                                },
+                              ))
+                          .toList(),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => state.setLanguage('Turkish'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: state.language == 'Turkish' ? AppColors.primary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: state.language == 'Turkish' ? AppColors.primary : borderColor),
-                      ),
-                      child: Text('TR', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: state.language == 'Turkish' ? Colors.white : mutedColor)),
-                    ),
-                  ),
-                ],
-              ),
-              onTap: null),
+                );
+              }),
           _SettingsTile(
               icon: Icons.currency_exchange,
               label: Translations.t('currency', state.language),
@@ -294,7 +285,7 @@ class AppearanceScreen extends StatelessWidget {
           Switch(
               value: state.isDarkMode,
               onChanged: (_) => state.toggleDarkMode(),
-              thumbColor: WidgetStateProperty.all(AppColors.primary)),
+              activeThumbColor: AppColors.primary),
         ]),
       ),
     ]);
@@ -693,7 +684,6 @@ class _SettingsTile extends StatelessWidget {
   final Color mutedColor;
   final Color borderColor;
   final bool isDestructive;
-  final Widget? secondary;
   final VoidCallback? onTap;
 
   const _SettingsTile({
@@ -704,7 +694,6 @@ class _SettingsTile extends StatelessWidget {
     required this.mutedColor,
     required this.borderColor,
     this.isDestructive = false,
-    this.secondary,
     this.onTap,
   });
 
@@ -731,13 +720,8 @@ class _SettingsTile extends StatelessWidget {
             if (value.isNotEmpty)
               Text(value,
                   style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
-            if (secondary != null) ...[
-              const SizedBox(width: 8),
-              secondary!,
-            ] else ...[
-              const SizedBox(width: 4),
-              Icon(Icons.chevron_right, size: 16, color: mutedColor),
-            ],
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, size: 16, color: mutedColor),
           ]),
         ),
         Divider(height: 1, color: borderColor, indent: 16),
