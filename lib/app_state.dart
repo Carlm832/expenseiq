@@ -672,6 +672,24 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  Future<void> refreshRates() async {
+    final success = await _currencyService.fetchLatestRates();
+    if (success) {
+      pushNotification(
+        title: 'rates_updated',
+        message: Translations.t('rates_updated', _language),
+        type: 'success',
+      );
+      notifyListeners();
+    } else {
+      pushNotification(
+        title: 'Update Failed',
+        message: 'Could not fetch latest rates. Please check your connection.',
+        type: 'warning',
+      );
+    }
+  }
+
   Future<void> setPushNotificationsEnabled(bool enabled) async {
     _pushNotificationsEnabled = enabled;
     final prefs = await SharedPreferences.getInstance();

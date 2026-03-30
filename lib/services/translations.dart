@@ -138,6 +138,9 @@ class Translations {
       'off': 'Off',
       'select_language': 'Select Language',
       'select_currency': 'Select Currency',
+      'refresh_rates': 'Refresh Exchange Rates',
+      'rates_updated': 'Exchange rates updated',
+      'updating_rates': 'Updating rates...',
       'data_backup_unavailable': 'Data backup is not available yet.',
       'clear_data_confirm_title': 'Clear All Data?',
       'clear_data_confirm_msg':
@@ -417,6 +420,9 @@ class Translations {
       'off': 'Kapalı',
       'select_language': 'Dil Seçin',
       'select_currency': 'Para Birimi Seçin',
+      'refresh_rates': 'Döviz Kurlarını Güncelle',
+      'rates_updated': 'Döviz kurları güncellendi',
+      'updating_rates': 'Kurlar güncelleniyor...',
       'data_backup_unavailable': 'Veri yedekleme henüz kullanılamıyor.',
       'clear_data_confirm_title': 'Tüm Verileri Sil?',
       'clear_data_confirm_msg':

@@ -123,21 +123,36 @@ class SettingsScreen extends StatelessWidget {
                   builder: (ctx) => AlertDialog(
                     title:
                         Text(Translations.t('select_currency', state.language)),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: ['TRY (₺)', 'USD (\$)', 'EUR (€)', 'GBP (£)']
-                          .map((curr) => ListTile(
-                                title: Text(curr),
-                                selected: state.currency == curr,
-                                onTap: () {
-                                  state.setCurrency(curr);
-                                  Navigator.pop(ctx);
-                                },
-                              ))
-                          .toList(),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: ['TRY (₺)', 'USD (\$)', 'EUR (€)', 'GBP (£)', 'JPY (¥)', 'AUD (\$)', 'CAD (\$)', 'CHF (Fr)', 'CNY (¥)']
+                            .map((curr) => ListTile(
+                                  title: Text(curr),
+                                  selected: state.currency == curr,
+                                  onTap: () {
+                                    state.setCurrency(curr);
+                                    Navigator.pop(ctx);
+                                  },
+                                ))
+                            .toList(),
+                      ),
                     ),
                   ),
                 );
+              }),
+          _SettingsTile(
+              icon: Icons.refresh,
+              label: Translations.t('refresh_rates', state.language),
+              value: '',
+              fgColor: fgColor,
+              mutedColor: mutedColor,
+              borderColor: borderColor,
+              onTap: () async {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(Translations.t('updating_rates', state.language))),
+                );
+                await state.refreshRates();
               }),
           _SettingsTile(
               icon: Icons.notifications_outlined,

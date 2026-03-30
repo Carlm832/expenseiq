@@ -26,7 +26,7 @@ class CurrencyService {
     final lastUpdate = prefs.getInt(_timestampKey) ?? 0;
     final now = DateTime.now().millisecondsSinceEpoch;
 
-    if (now - lastUpdate > 24 * 60 * 60 * 1000) {
+    if (now - lastUpdate > 6 * 60 * 60 * 1000) {
       await fetchLatestRates();
     }
   }
@@ -44,7 +44,7 @@ class CurrencyService {
     }
   }
 
-  Future<void> fetchLatestRates() async {
+  Future<bool> fetchLatestRates() async {
     try {
       // We use TRY as base because it's the default app currency
       final response = await http.get(Uri.parse('$_baseUrl/TRY'));
@@ -57,10 +57,12 @@ class CurrencyService {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_storageKey, jsonEncode(_rates));
           await prefs.setInt(_timestampKey, DateTime.now().millisecondsSinceEpoch);
+          return true;
         }
       }
+      return false;
     } catch (e) {
-      // Fallback is handled by getter
+      return false;
     }
   }
 
@@ -91,6 +93,21 @@ class CurrencyService {
       case 'GBP (£)':
       case 'GBP':
         return '£';
+      case 'JPY (¥)':
+      case 'JPY':
+        return '¥';
+      case 'AUD ($)':
+      case 'AUD':
+        return 'A$';
+      case 'CAD ($)':
+      case 'CAD':
+        return 'C$';
+      case 'CHF (Fr)':
+      case 'CHF':
+        return 'Fr';
+      case 'CNY (¥)':
+      case 'CNY':
+        return '¥';
       default:
         return currency;
     }
