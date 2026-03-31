@@ -1,10 +1,10 @@
 {
-    "java.jdt.ls.java.home": "C:\\Program Files\\Android\\Android Studio\\jbr",
-    "java.import.gradle.java.home": "C:\\Program Files\\Android\\Android Studio\\jbr",
+    "java.jdt.ls.java.home": "C:\\Program Files\\Android\\openjdk\\jdk-21.0.8",
+    "java.import.gradle.java.home": "C:\\Program Files\\Android\\openjdk\\jdk-21.0.8",
     "java.configuration.runtimes": [
         {
-            "name": "JavaSE-17",
-            "path": "C:\\Program Files\\Android\\Android Studio\\jbr",
+            "name": "JavaSE-21",
+            "path": "C:\\Program Files\\Android\\openjdk\\jdk-21.0.8",
             "default": true
         }
     ]

@@ -805,7 +805,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               if (!mounted) return;
               state.goBack();
             } catch (e) {
-              if (mounted) {
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Error saving changes: $e')),
                 );

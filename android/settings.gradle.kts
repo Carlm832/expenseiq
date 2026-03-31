@@ -1,4 +1,5 @@
 pluginManagement {
+    rootProject.name = "expense_iq_android"
     val flutterSdkPath =
         run {
             val properties = java.util.Properties()
