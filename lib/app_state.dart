@@ -8,6 +8,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'models.dart';
 import 'services/currency_service.dart';
 import 'services/bio_service.dart';
+import 'services/translations.dart';
+import 'dart:async';
 
 class AppState extends ChangeNotifier with WidgetsBindingObserver {
   // Auth
@@ -68,6 +70,8 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   // Firestore DB
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  StreamSubscription? _userSubscription;
+  StreamSubscription? _expensesSubscription;
 
   // Getters
   bool get isLoggedIn => _isLoggedIn;
@@ -227,18 +231,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  Future<void> _saveExpenses() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString(
-        'expenses', jsonEncode(_expenses.map((e) => e.toJson()).toList()));
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await _db.collection('users').doc(user.uid).set({
-        'expenses': _expenses.map((e) => e.toJson()).toList(),
-      }, SetOptions(merge: true));
-    }
-  }
 
   Future<void> _saveBudgets() async {
     final prefs = await SharedPreferences.getInstance();
@@ -273,17 +266,31 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _syncDataFromFirestore(String uid) async {
-    try {
-      final doc = await _db.collection('users').doc(uid).get();
+  void _syncDataFromFirestore(String uid) {
+    _userSubscription?.cancel();
+    _expensesSubscription?.cancel();
+
+    // 1. Listen to the user's root document (Preferences, Budgets, Notifications)
+    _userSubscription = _db.collection('users').doc(uid).snapshots().listen((doc) async {
       if (doc.exists && doc.data() != null) {
         final data = doc.data()!;
         
-        // Restore Expenses & Budgets
-        if (data.containsKey('expenses')) {
-          final List<dynamic> exps = data['expenses'];
-          _expenses = exps.map((e) => Expense.fromJson(e)).toList();
+        // --- Migration Logic ---
+        // If we still have an "expenses" array in the root document, migrate it to the sub-collection.
+        if (data.containsKey('expenses') && (data['expenses'] as List).isNotEmpty) {
+          final List<dynamic> oldExpenses = data['expenses'];
+          final batch = _db.batch();
+          for (var expData in oldExpenses) {
+             final expense = Expense.fromJson(expData);
+             final expRef = _db.collection('users').doc(uid).collection('expenses').doc(expense.id);
+             batch.set(expRef, expData);
+          }
+          // Remove the legacy array from the root document
+          batch.update(_db.collection('users').doc(uid), {'expenses': FieldValue.delete()});
+          await batch.commit();
         }
+
+        // Restore Budgets
         if (data.containsKey('budgets')) {
           final List<dynamic> bdgs = data['budgets'];
           _budgets = bdgs.map((b) => Budget.fromJson(b)).toList();
@@ -343,10 +350,26 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
         notifyListeners();
       }
-    } catch (e) {
+    }, onError: (e) {
       // ignore: avoid_print
-      print('Error syncing from Firestore: $e');
-    }
+      print('Error syncing user doc: $e');
+    });
+
+    // 2. Listen to the expenses sub-collection
+    _expensesSubscription = _db
+        .collection('users')
+        .doc(uid)
+        .collection('expenses')
+        .snapshots()
+        .listen((snapshot) {
+      _expenses = snapshot.docs.map((doc) => Expense.fromJson(doc.data())).toList();
+      // Sort by date descending
+      _expenses.sort((a, b) => b.date.compareTo(a.date));
+      notifyListeners();
+    }, onError: (e) {
+      // ignore: avoid_print
+      print('Error syncing expenses: $e');
+    });
   }
 
   void setCurrentScreen(String screen) {
@@ -456,6 +479,10 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> logout() async {
     try {
+      _userSubscription?.cancel();
+      _userSubscription = null;
+      _expensesSubscription?.cancel();
+      _expensesSubscription = null;
       await FirebaseAuth.instance.signOut();
       await GoogleSignIn().signOut();
     } catch (e) {
@@ -463,8 +490,15 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       print('Logout error: $e');
     }
     _isLoggedIn = false;
+    _userName = '';
+    _userEmail = '';
+    _profileImage = '';
+    _expenses = [];
+    _budgets = [];
+    _notifications = [];
     _screenHistory = ['login'];
-    SharedPreferences.getInstance().then((p) => p.setBool('isLoggedIn', false));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false);
     notifyListeners();
   }
 
@@ -560,7 +594,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   void addExpense(Expense expense) {
     _expenses = [expense, ..._expenses];
-    _saveExpenses();
+    
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _db.collection('users').doc(user.uid).collection('expenses').doc(expense.id).set(expense.toJson());
+    }
+    
     pushNotification(
       title: 'expense_saved',
       message:
@@ -572,7 +611,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   void editExpense(String id, Expense updated) {
     _expenses = _expenses.map((e) => e.id == id ? updated : e).toList();
-    _saveExpenses();
+    
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _db.collection('users').doc(user.uid).collection('expenses').doc(updated.id).set(updated.toJson());
+    }
+
     pushNotification(
       title: 'expense_saved',
       message:
@@ -584,7 +628,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   void deleteExpense(String id) {
     _expenses = _expenses.where((e) => e.id != id).toList();
-    _saveExpenses();
+    
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _db.collection('users').doc(user.uid).collection('expenses').doc(id).delete();
+    }
+    
     notifyListeners();
   }
 

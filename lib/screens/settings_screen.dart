@@ -802,6 +802,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             try {
               await state.setUserName(_nameCtrl.text.trim());
               await state.setUserEmail(_emailCtrl.text.trim());
+              if (!mounted) return;
               state.goBack();
             } catch (e) {
               if (mounted) {

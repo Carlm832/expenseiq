@@ -96,12 +96,12 @@ class CurrencyService {
       case 'JPY (¥)':
       case 'JPY':
         return '¥';
-      case 'AUD ($)':
+      case 'AUD (\$)':
       case 'AUD':
-        return 'A$';
-      case 'CAD ($)':
+        return 'A\$';
+      case 'CAD (\$)':
       case 'CAD':
-        return 'C$';
+        return 'C\$';
       case 'CHF (Fr)':
       case 'CHF':
         return 'Fr';
