@@ -28,6 +28,12 @@ class OcrService {
 
   Future<XFile?> scanReceipt() async {
     try {
+      if (Platform.isIOS) {
+        final picker = ImagePicker();
+        final pickedFile = await picker.pickImage(source: ImageSource.camera);
+        return pickedFile;
+      }
+
       final options = DocumentScannerOptions(
         mode: ScannerMode.filter,
         pageLimit: 1,

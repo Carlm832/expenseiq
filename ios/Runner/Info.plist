@@ -41,6 +41,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>ExpenseIQ needs camera access to scan your receipts for automated expense entry.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ExpenseIQ needs microphone access to record videos with the camera.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>ExpenseIQ requires FaceID to secure your financial data and unlock the app.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

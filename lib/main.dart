@@ -87,9 +87,14 @@ class ExpenseIQApp extends StatelessWidget {
         Locale('ru'),
       ],
       builder: (context, child) {
-        return Directionality(
-          textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-          child: child!,
+        return GestureDetector(
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: Directionality(
+            textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+            child: child!,
+          ),
         );
       },
       home: const AppRouter(),
