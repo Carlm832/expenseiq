@@ -1,8 +1,0 @@
-Analyzing expense_iq_flutter...                                 
-
-  error - The named parameter 'documentFormat' isn't defined - lib\services\ocr_service_mobile.dart:31:9 - undefined_named_parameter
-  error - The property 'isNotEmpty' can't be unconditionally accessed because the receiver can be 'null' - lib\services\ocr_service_mobile.dart:38:25 - unchecked_use_of_nullable_value
-  error - The property 'first' can't be unconditionally accessed because the receiver can be 'null' - lib\services\ocr_service_mobile.dart:39:36 - unchecked_use_of_nullable_value
-  error - Undefined class 'Rect' - lib\services\ocr_service_mobile.dart:481:9 - undefined_class
-
-4 issues found. (ran in 23.6s)
