@@ -55,6 +55,25 @@ class NotificationsScreen extends StatelessWidget {
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: fgColor)),
+              const Spacer(),
+              if (state.notifications.isNotEmpty) ...[
+                TextButton(
+                  onPressed: () => state.markAllNotificationsRead(),
+                  child: Text(Translations.t('mark_all_read', state.language),
+                      style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary)),
+                ),
+                TextButton(
+                  onPressed: () => state.clearAllNotifications(),
+                  child: Text(Translations.t('clear_all', state.language),
+                      style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.destructive)),
+                ),
+              ],
             ]),
           ),
           const SizedBox(height: 16),

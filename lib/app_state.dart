@@ -372,8 +372,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     });
   }
 
-  void setCurrentScreen(String screen) {
-    _screenHistory = [..._screenHistory, screen];
+  void setCurrentScreen(String screen, {bool replace = false}) {
+    if (replace && _screenHistory.isNotEmpty) {
+      _screenHistory[_screenHistory.length - 1] = screen;
+    } else {
+      _screenHistory = [..._screenHistory, screen];
+    }
     notifyListeners();
   }
 
@@ -641,6 +645,21 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     for (var n in _notifications) {
       if (n.id == id) n.read = true;
     }
+    _saveNotifications();
+    notifyListeners();
+  }
+
+  void markAllNotificationsRead() {
+    for (var n in _notifications) {
+      n.read = true;
+    }
+    _saveNotifications();
+    notifyListeners();
+  }
+
+  void clearAllNotifications() {
+    _notifications.clear();
+    _saveNotifications();
     notifyListeners();
   }
 

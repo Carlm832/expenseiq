@@ -227,6 +227,8 @@ class Translations {
       'day_ago': '1 day ago',
       'days_ago': ' days ago',
       'no_notifications': 'No notifications yet',
+      'mark_all_read': 'Mark all as read',
+      'clear_all': 'Clear all',
 
       // Months
       'm_jan': 'Jan', 'm_feb': 'Feb', 'm_mar': 'Mar', 'm_apr': 'Apr',
@@ -512,6 +514,8 @@ class Translations {
       'day_ago': '1 gün önce',
       'days_ago': ' gün önce',
       'no_notifications': 'Henüz bildirim yok',
+      'mark_all_read': 'Tümünü okundu işaretle',
+      'clear_all': 'Tümünü temizle',
 
       // Months
       'm_jan': 'Oca', 'm_feb': 'Şub', 'm_mar': 'Mar', 'm_apr': 'Nis',
