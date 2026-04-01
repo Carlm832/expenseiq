@@ -825,7 +825,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 );
               }
             } finally {
-              if (mounted) setState(() => _isSaving = false);
+              if (context.mounted) setState(() => _isSaving = false);
             }
           },
           child: _isSaving
