@@ -843,6 +843,23 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     return _currencyService.convert(amount, from, to);
   }
 
+  double getConvertedExpenseAmount(Expense e) {
+    return convertToCurrent(e.amount, e.currency);
+  }
+
+  double sumExpenses(List<Expense> list) {
+    return list.fold(0.0, (totalSum, e) => totalSum + getConvertedExpenseAmount(e));
+  }
+
+  double getConvertedOverallBudget() {
+    return _overallBudget;
+  }
+
+  String formatCurrencySimple(double amount) {
+    final symbol = _currencyService.getCurrencySymbol(_currency);
+    return '$symbol${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r"(\d)(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")}';
+  }
+
   double getTotalInCurrentCurrency() {
     double total = 0;
     final to = _currencyService.cleanCurrencyCode(_currency);

@@ -879,36 +879,6 @@ IconData _categoryIcon(String icon) {
   }
 }
 
-class _RangeToggle extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _RangeToggle(
-      {required this.label, required this.isSelected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
-          border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.border),
-        ),
-        child: Text(label,
-            style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : AppColors.mutedForeground)),
-      ),
-    );
-  }
-}
 
 class _CurrencyConverterCard extends StatelessWidget {
   final bool isDark;
