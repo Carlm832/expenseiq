@@ -380,17 +380,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                               ]),
                               const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: budgetPercent,
-                                  minHeight: 8,
-                                  backgroundColor: mutedBg,
-                                  valueColor: AlwaysStoppedAnimation(
-                                      budgetPercent >= 0.9
-                                          ? AppColors.destructive
-                                          : AppColors.primary),
-                                ),
+                              Builder(
+                                builder: (context) {
+                                  Color progressColor;
+                                  if (budgetPercent >= 0.9) {
+                                    progressColor = AppColors.destructive;
+                                  } else if (budgetPercent >= 0.75) {
+                                    progressColor = AppColors.chartAmber;
+                                  } else if (budgetPercent >= 0.5) {
+                                    progressColor = const Color(0xFFF5A623).withValues(alpha: 0.8); // Yellow/Gold
+                                  } else {
+                                    progressColor = AppColors.secondary; // Green
+                                  }
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value: budgetPercent,
+                                      minHeight: 8,
+                                      backgroundColor: mutedBg,
+                                      valueColor: AlwaysStoppedAnimation(progressColor),
+                                    ),
+                                  );
+                                },
                               ),
                               const SizedBox(height: 6),
                               Row(children: [
