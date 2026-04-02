@@ -15,17 +15,30 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final TextEditingController _convertController = TextEditingController(text: '1.0');
+  String _fromCurrency = 'USD';
+  String _toCurrency = 'TRY';
+  double _convertedValue = 0.0;
+
+  void _updateConvertedValue() {
+    final state = context.read<AppState>();
+    final amount = double.tryParse(_convertController.text) ?? 0.0;
+    setState(() {
+      _convertedValue = state.currencyService.convert(amount, _fromCurrency, _toCurrency);
+    });
+  }
   void _checkAndShowAlert() {
     final state = context.read<AppState>();
     final isCurrentMonth =
         state.selectedMonth == DateTime.now().toIso8601String().substring(0, 7);
 
     if (state.overallBudget > 0 && isCurrentMonth) {
-      final total = state.expenses
+      final total = state.sumExpenses(state.expenses
           .where((e) => e.date.startsWith(state.selectedMonth))
-          .fold(0.0, (s, e) => s + e.amount);
+          .toList());
 
-      final percent = (total / state.overallBudget) * 100;
+      final convertedOverallBudget = state.getConvertedOverallBudget();
+      final percent = (convertedOverallBudget > 0) ? (total / convertedOverallBudget) * 100 : 0.0;
 
       int? highestCrossed;
       for (var threshold in state.budgetWarningIntervals) {
@@ -121,10 +134,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final lang = state.language;
     final selectedMonthStr = state.selectedMonth;
     final allExpenses = state.expenses;
-    final expenses =
-        allExpenses.where((e) => e.date.startsWith(selectedMonthStr)).toList();
+    final expenses = allExpenses.where((e) => e.date.startsWith(selectedMonthStr)).toList();
 
-    final totalSpending = expenses.fold(0.0, (s, e) => s + e.amount);
+    final totalSpending = state.sumExpenses(expenses);
     final hour = DateTime.now().hour;
     final greeting = hour < 12
         ? Translations.t('greeting_morning', lang)
@@ -135,7 +147,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Category summary
     final Map<String, double> categoryMap = {};
     for (final e in expenses) {
-      categoryMap[e.category] = (categoryMap[e.category] ?? 0) + e.amount;
+      final convertedAmount = state.getConvertedExpenseAmount(e);
+      categoryMap[e.category] = (categoryMap[e.category] ?? 0) + convertedAmount;
     }
 
     final categorySummary = kCategories
@@ -148,7 +161,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .toList();
 
     // Budget progress
-    final overallBudget = state.overallBudget;
+    final overallBudget = state.getConvertedOverallBudget();
     final isCurrentMonth =
         selectedMonthStr == DateTime.now().toIso8601String().substring(0, 7);
     final budgetPercent = (overallBudget > 0)
@@ -157,7 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final maxExpense = expenses.isEmpty
         ? 0.0
-        : expenses.map((e) => e.amount).reduce((a, b) => a > b ? a : b);
+        : expenses.map((e) => state.getConvertedExpenseAmount(e)).reduce((a, b) => a > b ? a : b);
 
     int daysInMonth =
         DateTime(DateTime.now().year, DateTime.now().month + 1, 0).day;
@@ -227,6 +240,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                   ]),
+                  const SizedBox(height: 16),
                   const SizedBox(height: 16),
 
                   // Total spending card
@@ -381,16 +395,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 6),
                               Row(children: [
                                 Text(
-                                    '${state.formatCurrency(totalSpending)} ${Translations.t('spent', lang)}',
+                                    '${state.formatCurrencySimple(totalSpending)} ${Translations.t('spent', lang)}',
                                     style: GoogleFonts.inter(
                                         fontSize: 10, color: mutedColor)),
                                 const Spacer(),
                                 Text(
-                                    '${state.formatCurrency(overallBudget)} ${Translations.t('limit', lang)}',
+                                    '${state.formatCurrencySimple(overallBudget)} ${Translations.t('limit', lang)}',
                                     style: GoogleFonts.inter(
                                         fontSize: 10, color: mutedColor)),
                               ]),
                             ])),
+                    const SizedBox(height: 16),
                     const SizedBox(height: 16),
                   ],
 
@@ -532,6 +547,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           color: fgColor)),
                                 ]))),
                   ]),
+                  const SizedBox(height: 24),
+
+                  const SizedBox(height: 24),
+                  _CurrencyConverterCard(
+                    isDark: isDark,
+                    amountController: _convertController,
+                    fromCurrency: _fromCurrency,
+                    toCurrency: _toCurrency,
+                    convertedValue: _convertedValue,
+                    onFromChanged: (v) {
+                      setState(() => _fromCurrency = v!);
+                      _updateConvertedValue();
+                    },
+                    onToChanged: (v) {
+                      setState(() => _toCurrency = v!);
+                      _updateConvertedValue();
+                    },
+                    onAmountChanged: (v) => _updateConvertedValue(),
+                  ),
                   const SizedBox(height: 24),
 
                   // Recent expenses section
@@ -801,7 +835,7 @@ class _ExpenseItem extends StatelessWidget {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Text(
-                  '-${context.read<AppState>().formatCurrency(expense.amount, expense.currency)}',
+                  '-${context.read<AppState>().formatCurrency(context.read<AppState>().getConvertedExpenseAmount(expense))}',
                   style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -842,5 +876,214 @@ IconData _categoryIcon(String icon) {
       return Icons.shopping_bag;
     default:
       return Icons.restaurant;
+  }
+}
+
+class _RangeToggle extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RangeToggle(
+      {required this.label, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(
+              color: isSelected ? AppColors.primary : AppColors.border),
+        ),
+        child: Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.white : AppColors.mutedForeground)),
+      ),
+    );
+  }
+}
+
+class _CurrencyConverterCard extends StatelessWidget {
+  final bool isDark;
+  final TextEditingController amountController;
+  final String fromCurrency;
+  final String toCurrency;
+  final double convertedValue;
+  final void Function(String?) onFromChanged;
+  final void Function(String?) onToChanged;
+  final void Function(String) onAmountChanged;
+
+  const _CurrencyConverterCard({
+    required this.isDark,
+    required this.amountController,
+    required this.fromCurrency,
+    required this.toCurrency,
+    required this.convertedValue,
+    required this.onFromChanged,
+    required this.onToChanged,
+    required this.onAmountChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cardColor = isDark ? AppColors.darkCard : AppColors.card;
+    final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+
+    final currencies = ['USD', 'EUR', 'GBP', 'TRY', 'JPY', 'AUD', 'CAD', 'CNY'];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.currency_exchange,
+                  size: 18, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text('Currency Converter',
+                  style: GoogleFonts.dmSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: fgColor)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Amount',
+                        style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
+                    TextField(
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      style: GoogleFonts.inter(fontSize: 14, color: fgColor),
+                      onChanged: onAmountChanged,
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(vertical: 8),
+                        border: UnderlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              _CurrencyDropdown(
+                label: 'From',
+                value: fromCurrency,
+                items: currencies,
+                onChanged: onFromChanged,
+                isDark: isDark,
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(Icons.arrow_forward,
+                    size: 14, color: AppColors.mutedForeground),
+              ),
+              _CurrencyDropdown(
+                label: 'To',
+                value: toCurrency,
+                items: currencies,
+                onChanged: onToChanged,
+                isDark: isDark,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Result',
+                    style:
+                        GoogleFonts.inter(fontSize: 12, color: AppColors.primary)),
+                Text(
+                  '${convertedValue.toStringAsFixed(2)} $toCurrency',
+                  style: GoogleFonts.dmSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CurrencyDropdown extends StatelessWidget {
+  final String label;
+  final String value;
+  final List<String> items;
+  final void Function(String?) onChanged;
+  final bool isDark;
+
+  const _CurrencyDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final cardColor = isDark ? AppColors.darkCard : AppColors.card;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
+        DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: value,
+            isDense: true,
+            dropdownColor: cardColor,
+            style: GoogleFonts.inter(
+                fontSize: 14, color: fgColor, fontWeight: FontWeight.w600),
+            items:
+                items.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+            onChanged: onChanged,
+          ),
+        ),
+      ],
+    );
   }
 }
