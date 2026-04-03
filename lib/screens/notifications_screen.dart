@@ -50,14 +50,23 @@ class NotificationsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(Translations.t('notifications_title', state.language),
-                  style: GoogleFonts.dmSans(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: fgColor)),
-              const Spacer(),
+              Expanded(
+                child: Text(Translations.t('notifications_title', state.language),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.dmSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: fgColor)),
+              ),
               if (state.notifications.isNotEmpty) ...[
+                const SizedBox(width: 4),
                 TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   onPressed: () => state.markAllNotificationsRead(),
                   child: Text(Translations.t('mark_all_read', state.language),
                       style: GoogleFonts.inter(
@@ -65,7 +74,13 @@ class NotificationsScreen extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           color: AppColors.primary)),
                 ),
+                const SizedBox(width: 4),
                 TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   onPressed: () => state.clearAllNotifications(),
                   child: Text(Translations.t('clear_all', state.language),
                       style: GoogleFonts.inter(
