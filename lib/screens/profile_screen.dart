@@ -188,19 +188,6 @@ class ProfileScreen extends StatelessWidget {
                           size: 18, color: mutedColor),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => state.setCurrentScreen('settings'),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkMuted : AppColors.muted,
-                          borderRadius: BorderRadius.circular(10)),
-                      child: Icon(Icons.settings_outlined,
-                          size: 18, color: mutedColor),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -288,7 +275,28 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: state.logout,
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(Translations.t('sign_out', lang)),
+                      content: const Text('Are you sure you want to sign out?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text(Translations.t('cancel', lang)),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            state.logout();
+                          },
+                          child: Text(Translations.t('sign_out', lang), style: const TextStyle(color: AppColors.destructive)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.logout,
                     size: 18, color: AppColors.destructive),
                 label: Text(Translations.t('sign_out', lang),
