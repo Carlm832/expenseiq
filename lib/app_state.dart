@@ -65,8 +65,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   final CurrencyService _currencyService = CurrencyService();
   final BioService _bioService = BioService();
 
-  // Initializing flag — true until Firebase auth state has resolved
-  bool _isInitializing = true;
+  // Initializing flags
+  bool _authResolved = false;
+  bool _splashDelayComplete = false;
 
   // Firestore DB
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -98,7 +99,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   double get overallBudget => _overallBudget;
   String get currencySymbol =>
       _currency.contains('(') ? _currency.split('(')[1].split(')')[0] : '₺';
-  bool get isInitializing => _isInitializing;
+  bool get isInitializing => !(_authResolved && _splashDelayComplete);
   bool get isPinLocked => _isPinLocked;
   bool get hasPin => _pin.isNotEmpty;
   String get pin => _pin;
@@ -117,6 +118,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     await _currencyService.init();
     // Ensure splash screen is visible for at least 3 seconds
     await Future.delayed(const Duration(seconds: 3));
+    _splashDelayComplete = true;
     notifyListeners();
   }
 
@@ -167,7 +169,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
           }
         } else {
           // If PIN is set, lock the app for PIN entry on every fresh start
-          if (_isInitializing && _pin.isNotEmpty) {
+          if (!_authResolved && _pin.isNotEmpty) {
             _isPinLocked = true;
           } else if (_screenHistory.last == 'login' ||
               _screenHistory.last == 'register' ||
@@ -187,7 +189,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
           _screenHistory = ['login'];
         }
       }
-      _isInitializing = false;
+      _authResolved = true;
       notifyListeners();
     });
   }
