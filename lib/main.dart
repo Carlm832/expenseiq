@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -30,12 +31,32 @@ void main() async {
   );
 }
 
+/// Maps a language name to its BCP-47 locale tag.
+Locale _localeFor(String language) {
+  switch (language) {
+    case 'Arabic':
+      return const Locale('ar');
+    case 'French':
+      return const Locale('fr');
+    case 'Korean':
+      return const Locale('ko');
+    case 'Russian':
+      return const Locale('ru');
+    case 'Turkish':
+      return const Locale('tr');
+    default:
+      return const Locale('en');
+  }
+}
+
 class ExpenseIQApp extends StatelessWidget {
   const ExpenseIQApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final locale = _localeFor(state.language);
+    final isRtl = state.language == 'Arabic';
 
     return MaterialApp(
       title: 'ExpenseIQ',
@@ -43,6 +64,26 @@ class ExpenseIQApp extends StatelessWidget {
       theme: buildLightTheme(),
       darkTheme: buildDarkTheme(),
       themeMode: state.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      locale: locale,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('tr'),
+        Locale('ar'),
+        Locale('fr'),
+        Locale('ko'),
+        Locale('ru'),
+      ],
+      builder: (context, child) {
+        return Directionality(
+          textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+          child: child!,
+        );
+      },
       home: const AppRouter(),
     );
   }

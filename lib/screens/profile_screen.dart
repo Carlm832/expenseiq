@@ -164,17 +164,7 @@ class ProfileScreen extends StatelessWidget {
                       Text(state.userEmail,
                           style: GoogleFonts.inter(
                               fontSize: 13, color: mutedColor)),
-                      const SizedBox(height: 4),
-                      Row(children: [
-                        const Icon(Icons.account_balance_wallet,
-                            size: 12, color: AppColors.secondary),
-                        const SizedBox(width: 4),
-                        Text('Premium Member',
-                            style: GoogleFonts.inter(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.secondary)),
-                      ]),
+
                     ])),
                   GestureDetector(
                     onTap: () => state.setCurrentScreen('edit_profile'),

@@ -94,18 +94,32 @@ class SettingsScreen extends StatelessWidget {
                   builder: (ctx) => AlertDialog(
                     title:
                         Text(Translations.t('select_language', state.language)),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: ['English', 'Turkish']
-                          .map((lang) => ListTile(
-                                title: Text(lang),
-                                selected: state.language == lang,
-                                onTap: () {
-                                  state.setLanguage(lang);
-                                  Navigator.pop(ctx);
-                                },
-                              ))
-                          .toList(),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ('English', 'English'),
+                          ('Turkish', 'Türkçe'),
+                          ('Arabic', 'العربية'),
+                          ('French', 'Français'),
+                          ('Korean', '한국어'),
+                          ('Russian', 'Русский'),
+                        ]
+                            .map((entry) => ListTile(
+                                  title: Text(entry.$1),
+                                  subtitle: entry.$1 != entry.$2
+                                      ? Text(entry.$2,
+                                          style: TextStyle(
+                                              color: mutedColor, fontSize: 12))
+                                      : null,
+                                  selected: state.language == entry.$1,
+                                  onTap: () {
+                                    state.setLanguage(entry.$1);
+                                    Navigator.pop(ctx);
+                                  },
+                                ))
+                            .toList(),
+                      ),
                     ),
                   ),
                 );
