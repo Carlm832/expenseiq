@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpenseIQ Official — The Smartest Way to Track Expenses</title>
+    <meta name="description" content="The official website for ExpenseIQ. Take control of your finances with smart receipt scanning, detailed analytics, and budget management.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-logo">
+            <img src="assets/logo.png" alt="ExpenseIQ Logo">
+            <span>ExpenseIQ</span>
+        </div>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#download" class="nav-link">Download</a>
+            <a href="#developer" class="nav-link">Developer</a>
+        </div>
+        <a href="#download" class="btn-nav">Get the App</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero container">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <div class="hero-content">
+            <span class="badge">Version 1.0.0 Now Available</span>
+            <h1>Smart Finance for the Modern Age.</h1>
+            <p>ExpenseIQ combines powerful receipt scanning with intelligent analytics to help you save more and spend smarter. No more manual entries — just scan and go.</p>
+            
+            <div class="hero-actions">
+                <a href="#download" class="btn-primary">
+                    <i data-lucide="download"></i>
+                    <span>Install Now</span>
+                </a>
+                <a href="#features" class="btn-secondary">
+                    <i data-lucide="eye"></i>
+                    <span>Explore Features</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-mockup">
+            <img src="assets/hero_mockup.png" alt="ExpenseIQ App Mockup">
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section-padding container">
+        <div style="text-align: center; margin-bottom: 60px;">
+            <h2 style="font-size: 2.5rem; margin-bottom: 12px;">Everything you need to master your money.</h2>
+            <p style="color: var(--fg-muted);">Built with the latest OCR technology and sleek visualizations.</p>
+        </div>
+
+        <div class="features-grid">
+            <!-- Smart Scan -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i data-lucide="scan" style="color: var(--primary);"></i>
+                </div>
+                <h3>Smart Scan OCR</h3>
+                <p>Never type a receipt again. Our advanced ML-powered scanner extracts merchant, date, and amount in seconds.</p>
+            </div>
+
+            <!-- Analytics -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i data-lucide="pie-chart" style="color: var(--secondary);"></i>
+                </div>
+                <h3>Deep Analytics</h3>
+                <p>Visualize your spending habits with stunning charts. Identify trends and find ways to save more every month.</p>
+            </div>
+
+            <!-- Budgets -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i data-lucide="target" style="color: var(--accent);"></i>
+                </div>
+                <h3>Budget Goals</h3>
+                <p>Set custom limits for categories and receive smart notifications before you overspend.</p>
+            </div>
+
+            <!-- Security -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i data-lucide="fingerprint" style="color: var(--primary);"></i>
+                </div>
+                <h3>Biometric Lock</h3>
+                <p>Your financial data is sensitive. Keep it safe with industry-standard Fingerprint and FaceID protection.</p>
+            </div>
+
+            <!-- Currency -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i data-lucide="globe" style="color: var(--secondary);"></i>
+                </div>
+                <h3>Global Currencies</h3>
+                <p>Travel without boundaries. Support for over 100 currencies with real-time conversion and tracking.</p>
+            </div>
+
+            <!-- Reports -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i data-lucide="file-text" style="color: var(--accent);"></i>
+                </div>
+                <h3>PDF/CSV Reports</h3>
+                <p>Taking care of taxes? Export your yearly or monthly spending into clean, professional PDF or CSV files.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="download container">
+        <h2>Ready to take control?</h2>
+        <p>Get ExpenseIQ today. Since we are in early access, you can download the latest builds directly for Android and iOS.</p>
+        
+        <div class="download-btns">
+            <!-- Android -->
+            <a href="downloads/expense_iq.apk" class="download-btn">
+                <i data-lucide="smartphone"></i>
+                <div class="subtext">
+                    <span class="small">Download for</span>
+                    <span>Android (APK)</span>
+                </div>
+            </a>
+            
+            <!-- iOS -->
+            <div class="download-btn coming-soon">
+                <i data-lucide="apple"></i>
+                <div class="subtext">
+                    <span class="small">iOS Version</span>
+                    <span>Coming Soon</span>
+                </div>
+            </div>
+        </div>
+        <p style="margin-top: 24px; font-size: 0.8rem; opacity: 0.6;">* App Store and Play Store releases coming soon!</p>
+    </section>
+
+    <!-- Developer Section -->
+    <section id="developer" class="section-padding container developer">
+        <h2>Meet the Visionaries</h2>
+        <p style="color: var(--fg-muted);">The talented team behind ExpenseIQ.</p>
+        
+        <div class="team-layout">
+            <!-- Lead Person -->
+            <div class="lead-row">
+                <div class="dev-card">
+                    <div class="dev-avatar">
+                        <i data-lucide="user"></i>
+                    </div>
+                    <div class="dev-content">
+                        <span class="dev-role">Project Manager & Lead Developer</span>
+                        <h3>Alex Rivera</h3>
+                        <p>Expert in Flutter and mobile architecture, leading the vision and technical direction of ExpenseIQ.</p>
+                        <div class="dev-socials">
+                            <a href="#"><i data-lucide="github"></i></a>
+                            <a href="#"><i data-lucide="linkedin"></i></a>
+                            <a href="#"><i data-lucide="mail"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other Team Members -->
+            <div class="team-grid">
+                <!-- Developer 2 -->
+                <div class="dev-card">
+                    <div class="dev-avatar">
+                        <i data-lucide="user"></i>
+                    </div>
+                    <div class="dev-content">
+                        <span class="dev-role">Backend Architect</span>
+                        <h3>Sarah Chen</h3>
+                        <p>Passionate about cloud systems and serverless architecture. Sarah keeps our data sync fast and reliable.</p>
+                        <div class="dev-socials">
+                            <a href="#"><i data-lucide="github"></i></a>
+                            <a href="#"><i data-lucide="linkedin"></i></a>
+                            <a href="#"><i data-lucide="mail"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Developer 3 -->
+                <div class="dev-card">
+                    <div class="dev-avatar">
+                        <i data-lucide="user"></i>
+                    </div>
+                    <div class="dev-content">
+                        <span class="dev-role">AI/OCR Specialist</span>
+                        <h3>Elena Vance</h3>
+                        <p>Machine learning expert dedicated to refining our OCR engines for 99.9% scanning accuracy.</p>
+                        <div class="dev-socials">
+                            <a href="#"><i data-lucide="github"></i></a>
+                            <a href="#"><i data-lucide="linkedin"></i></a>
+                            <a href="#"><i data-lucide="mail"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Developer 4 -->
+                <div class="dev-card">
+                    <div class="dev-avatar">
+                        <i data-lucide="user"></i>
+                    </div>
+                    <div class="dev-content">
+                        <span class="dev-role">UI/UX Designer</span>
+                        <h3>Marcus Thorne</h3>
+                        <p>Creating beautiful, intuitive interfaces that make financial management feel like a breeze.</p>
+                        <div class="dev-socials">
+                            <a href="#"><i data-lucide="github"></i></a>
+                            <a href="#"><i data-lucide="linkedin"></i></a>
+                            <a href="#"><i data-lucide="mail"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="container">
+        <p>&copy; 2026 ExpenseIQ. All rights reserved.</p>
+        <div style="margin-top: 12px; display: flex; justify-content: center; gap: 24px;">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
