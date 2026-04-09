@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "238458552267-nofbqbno9r14tdpkesfpjn8etd25mce6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.expenseiq.expense_iq_flutter",
+            "certificate_hash": "cf21b17f51dacd9d14d417d085f11b522ceeb5b5"
+          }
+        },
+        {
           "client_id": "238458552267-oh805j97c64hg0jp0supg3h0jf1ftkro.apps.googleusercontent.com",
           "client_type": 3
         }
