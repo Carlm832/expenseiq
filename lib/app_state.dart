@@ -839,6 +839,39 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> clearAllData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final uid = user.uid;
+      try {
+        // 1. Delete Firestore expenses sub-collection
+        final expensesRef =
+            _db.collection('users').doc(uid).collection('expenses');
+        final expensesSnapshot = await expensesRef.get();
+        for (var doc in expensesSnapshot.docs) {
+          await doc.reference.delete();
+        }
+
+        // 2. Delete Firestore user document (profile, settings etc)
+        await _db.collection('users').doc(uid).delete();
+
+        // 3. Delete the Firebase Auth account itself
+        await user.delete();
+        
+        // 4. Also sign out from Google if applicable
+        await GoogleSignIn().signOut();
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'requires-recent-login') {
+          // This must be handle by the UI: re-login needed
+          rethrow;
+        }
+        // Log other errors
+        debugPrint('Error deleting account: ${e.message}');
+      } catch (e) {
+        debugPrint('General error in clearAllData: $e');
+      }
+    }
+
+    // Local Cleanup
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
@@ -855,6 +888,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _currency = 'TRY (₺)';
     _pushNotificationsEnabled = true;
     _isDarkMode = false;
+    _pin = '';
+    _pin = '';
+    _isBiometricEnabled = false;
 
     _screenHistory = ['login'];
     notifyListeners();

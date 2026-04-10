@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../services/translations.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -125,7 +126,7 @@ class ProfileScreen extends StatelessWidget {
                         child: state.profileImage.isNotEmpty
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
-                                child: state.profileImage.startsWith('http')
+                                child: (kIsWeb || state.profileImage.startsWith('http'))
                                     ? Image.network(state.profileImage,
                                         fit: BoxFit.cover)
                                     : Image.file(File(state.profileImage),

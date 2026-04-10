@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../services/translations.dart';
@@ -217,9 +218,42 @@ class SettingsScreen extends StatelessWidget {
                         child: Text(Translations.t('cancel', state.language)),
                       ),
                       TextButton(
-                        onPressed: () {
-                          state.clearAllData();
-                          Navigator.pop(ctx);
+                        onPressed: () async {
+                          try {
+                            // Show initial snackbar to indicate progress
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(Translations.t('deleting_data', state.language))),
+                            );
+                            
+                            await state.clearAllData();
+                            
+                            if (ctx.mounted) {
+                              Navigator.pop(ctx);
+                            }
+                          } on FirebaseAuthException catch (e) {
+                            if (ctx.mounted) {
+                              Navigator.pop(ctx);
+                              if (e.code == 'requires-recent-login') {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Security Check: Please sign out and sign in again before deleting your account.'),
+                                    duration: Duration(seconds: 4),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: ${e.message}')),
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            if (ctx.mounted) {
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('An unexpected error occurred: $e')),
+                              );
+                            }
+                          }
                         },
                         child: Text(Translations.t('delete', state.language),
                             style:
