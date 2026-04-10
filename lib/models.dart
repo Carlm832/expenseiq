@@ -129,9 +129,6 @@ final List<Budget> kDefaultBudgets = [
   Budget(category: 'Utilities', limit: 200),
 ];
 
-String formatCurrency(double amount) {
-  return '₺${amount.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}';
-}
 
 String formatDate(String dateStr, String lang) {
   final date = DateTime.parse(dateStr);

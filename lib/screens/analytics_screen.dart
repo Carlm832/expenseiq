@@ -99,7 +99,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
     final Map<String, double> categoryMap = {};
     for (final e in expenses) {
-      final amount = state.convertToCurrent(e.amount, e.currency);
+      final amount = state.getConvertedExpenseAmount(e);
       categoryMap[e.category] = (categoryMap[e.category] ?? 0) + amount;
     }
     final categorySummary = kCategories
@@ -118,7 +118,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       final Map<int, double> dayTotals = {};
       for (final e in expenses) {
         final d = DateTime.parse(e.date);
-        final amount = state.convertToCurrent(e.amount, e.currency);
+        final amount = state.getConvertedExpenseAmount(e);
         dayTotals[d.weekday] = (dayTotals[d.weekday] ?? 0) + amount;
       }
       final days = [
@@ -138,7 +138,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         for (final e in expenses) {
           final d = DateTime.parse(e.date);
           final label = DateFormat('MM/dd').format(d);
-          dayTotals[label] = (dayTotals[label] ?? 0) + e.amount;
+          final amount = state.getConvertedExpenseAmount(e);
+          dayTotals[label] = (dayTotals[label] ?? 0) + amount;
         }
         for (int i = 0; i <= duration; i++) {
           final d = _customRange!.start.add(Duration(days: i));
@@ -150,7 +151,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         for (final e in expenses) {
           final d = DateTime.parse(e.date);
           final label = DateFormat('MMM yyyy').format(d);
-          final amount = state.convertToCurrent(e.amount, e.currency);
+          final amount = state.getConvertedExpenseAmount(e);
           monthTotals[label] = (monthTotals[label] ?? 0) + amount;
         }
         chartData = monthTotals.entries.map((e) => (e.key, e.value)).toList();
@@ -173,7 +174,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       final Map<int, double> monthTotals = {};
       for (final e in state.expenses) {
         final d = DateTime.parse(e.date);
-        final amount = state.convertToCurrent(e.amount, e.currency);
+        final amount = state.getConvertedExpenseAmount(e);
         monthTotals[d.month - 1] = (monthTotals[d.month - 1] ?? 0) + amount;
       }
       chartData = List.generate(6, (i) {
@@ -185,7 +186,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     // Insights Calculations
     final maxExpense = expenses.isEmpty
         ? null
-        : expenses.reduce((a, b) => a.amount > b.amount ? a : b);
+        : expenses.reduce((a, b) =>
+            state.getConvertedExpenseAmount(a) > state.getConvertedExpenseAmount(b) ? a : b);
 
     int mostActiveDayIdx = -1;
     if (expenses.isNotEmpty) {
@@ -691,7 +693,7 @@ class _CalendarView extends StatelessWidget {
   final Color cardColor;
   final Color borderColor;
   final Color mutedBg;
-  final String Function(double) formatCurrency;
+  final String Function(double, [String?]) formatCurrency;
   final void Function(DateTime) onMonthChanged;
   final void Function(DateTime) onDayTapped;
 
@@ -724,7 +726,7 @@ class _CalendarView extends StatelessWidget {
       return d.year == firstDay.year && d.month == firstDay.month;
     }).toList();
 
-    final totalMonthSpend = monthExpenses.fold(0.0, (s, e) => s + e.amount);
+    final totalMonthSpend = state.sumExpenses(monthExpenses);
     final busyDay = monthExpenses.isEmpty
         ? '-'
         : () {
@@ -738,7 +740,7 @@ class _CalendarView extends StatelessWidget {
 
     for (final e in monthExpenses) {
       final day = DateTime.parse(e.date).day;
-      dayTotals[day] = (dayTotals[day] ?? 0) + e.amount;
+      dayTotals[day] = (dayTotals[day] ?? 0) + state.getConvertedExpenseAmount(e);
     }
 
     final categoryCols = <String, Color>{};
@@ -969,7 +971,7 @@ class _DayDetailSheet extends StatelessWidget {
   final Color mutedColor;
   final Color borderColor;
   final Color cardColor;
-  final String Function(double) formatCurrency;
+  final String Function(double, [String?]) formatCurrency;
 
   const _DayDetailSheet({
     required this.day,
@@ -983,7 +985,8 @@ class _DayDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = expenses.fold(0.0, (s, e) => s + e.amount);
+    final state = context.read<AppState>();
+    final total = state.sumExpenses(expenses);
     final lang = context.read<AppState>().language;
     return DraggableScrollableSheet(
       initialChildSize: 0.45,
@@ -1033,7 +1036,7 @@ class _DayDetailSheet extends StatelessWidget {
                             style: GoogleFonts.inter(
                                 fontSize: 11, color: mutedColor)),
                       ])),
-                  Text(formatCurrency(e.amount),
+                  Text(formatCurrency(e.amount, e.currency),
                       style: GoogleFonts.dmSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,

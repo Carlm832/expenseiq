@@ -79,44 +79,40 @@ class CurrencyService {
     return amountInBase * currentRates[to]!;
   }
   
-  String getCurrencySymbol(String currency) {
-    switch (currency) {
-      case 'TRY (₺)':
-      case 'TRY':
-        return '₺';
-      case 'USD (\$)':
+  String getCurrencySymbol(String curr) {
+    if (curr.isEmpty) return '₺';
+    // If it's a full string like "USD ($)", extract within parens
+    if (curr.contains('(') && curr.contains(')')) {
+      final startIndex = curr.indexOf('(') + 1;
+      final endIndex = curr.indexOf(')');
+      if (endIndex > startIndex) {
+        return curr.substring(startIndex, endIndex);
+      }
+    }
+    // Fallback based on known codes
+    final code = cleanCurrencyCode(curr);
+    switch (code) {
       case 'USD':
         return '\$';
-      case 'EUR (€)':
       case 'EUR':
         return '€';
-      case 'GBP (£)':
       case 'GBP':
         return '£';
-      case 'JPY (¥)':
       case 'JPY':
         return '¥';
-      case 'AUD (\$)':
-      case 'AUD':
-        return 'A\$';
-      case 'CAD (\$)':
-      case 'CAD':
-        return 'C\$';
-      case 'CHF (Fr)':
-      case 'CHF':
-        return 'Fr';
-      case 'CNY (¥)':
-      case 'CNY':
-        return '¥';
+      case 'TRY':
+        return '₺';
       default:
-        return currency;
+        return code;
     }
   }
 
-  String cleanCurrencyCode(String currency) {
-    if (currency.contains('(')) {
-      return currency.split('(')[0].trim();
+  String cleanCurrencyCode(String curr) {
+    if (curr.isEmpty) return 'TRY';
+    // Handle formats like "USD ($)" or "TRY (₺)"
+    if (curr.contains('(')) {
+      return curr.split('(')[0].trim().toUpperCase();
     }
-    return currency;
+    return curr.trim().toUpperCase();
   }
 }

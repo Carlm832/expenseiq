@@ -148,8 +148,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _initAuthListener() {
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) async {
       if (user != null) {
+        final bool wasGuest = !_isLoggedIn;
         _isLoggedIn = true;
         _userName = user.displayName ?? '';
         _userEmail = user.email ?? '';
@@ -157,6 +158,10 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         // Only prioritize photoURL if we don't have a local one already
         if (_profileImage.isEmpty) {
           _profileImage = user.photoURL ?? '';
+        }
+
+        if (wasGuest) {
+          await _migrateLocalDataToFirestore(user.uid);
         }
 
         _syncDataFromFirestore(user.uid);
@@ -178,15 +183,22 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
           }
         }
       } else {
-        _isLoggedIn = false;
-        _userName = '';
-        _userEmail = '';
-        _profileImage = '';
-        _expenses = [];
-        _budgets = [];
-        if (_screenHistory.last != 'login' &&
-            _screenHistory.last != 'register') {
-          _screenHistory = ['login'];
+        // If we were previously logged in, this is a logout - clear data
+        if (_isLoggedIn) {
+          _isLoggedIn = false;
+          _userName = '';
+          _userEmail = '';
+          _profileImage = '';
+          _expenses = List.from(kDefaultExpenses);
+          _budgets = List.from(kDefaultBudgets);
+          _saveExpensesLocally();
+          if (_screenHistory.last != 'login' &&
+              _screenHistory.last != 'register') {
+            _screenHistory = ['login'];
+          }
+        } else {
+          // Starting as guest - keep loaded local data
+          _isLoggedIn = false;
         }
       }
       _authResolved = true;
@@ -230,7 +242,26 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     }
     _isBiometricEnabled = prefs.getBool('isBiometricEnabled') ?? false;
     _is2faEnabled = prefs.getBool('is2faEnabled') ?? false;
+    
+    // Load persisted expenses
+    final expJson = prefs.getString('expenses');
+    if (expJson != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(expJson);
+        _expenses = decoded.map((e) => Expense.fromJson(e)).toList();
+      } catch (_) {}
+    } else {
+      // If no expenses stored, use defaults
+      _expenses = List.from(kDefaultExpenses);
+    }
+    
     notifyListeners();
+  }
+
+  Future<void> _saveExpensesLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    final expData = _expenses.map((e) => e.toJson()).toList();
+    prefs.setString('expenses', jsonEncode(expData));
   }
 
 
@@ -266,6 +297,17 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         'is2faEnabled': _is2faEnabled,
       }, SetOptions(merge: true));
     }
+  }
+
+  Future<void> _migrateLocalDataToFirestore(String uid) async {
+    if (_expenses.isEmpty) return;
+    
+    final batch = _db.batch();
+    for (var expense in _expenses) {
+      final ref = _db.collection('users').doc(uid).collection('expenses').doc(expense.id);
+      batch.set(ref, expense.toJson());
+    }
+    await batch.commit();
   }
 
   void _syncDataFromFirestore(String uid) {
@@ -402,7 +444,11 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       } else {
         // On Android/iOS, use the native GoogleSignIn package
         // Note: Client ID is usually picked up from google-services.json/Info.plist automatically
-        final GoogleSignIn googleSignIn = GoogleSignIn();
+        // serverClientId (web client ID) is required so that an idToken is returned,
+        // which Firebase needs for signInWithCredential to succeed.
+        final GoogleSignIn googleSignIn = GoogleSignIn(
+          serverClientId: '238458552267-oh805j97c64hg0jp0supg3h0jf1ftkro.apps.googleusercontent.com',
+        );
         final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
         
         if (googleUser == null) {
@@ -605,11 +651,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     if (user != null) {
       _db.collection('users').doc(user.uid).collection('expenses').doc(expense.id).set(expense.toJson());
     }
+    _saveExpensesLocally();
     
     pushNotification(
       title: 'expense_saved',
       message:
-          '${expense.merchant} (${formatCurrency(expense.amount)}) was saved successfully.',
+          '${expense.merchant} (${formatCurrency(expense.amount, expense.currency)}) was saved successfully.',
       type: 'success',
     );
     notifyListeners();
@@ -622,11 +669,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     if (user != null) {
       _db.collection('users').doc(user.uid).collection('expenses').doc(updated.id).set(updated.toJson());
     }
+    _saveExpensesLocally();
 
     pushNotification(
       title: 'expense_saved',
       message:
-          '${updated.merchant} (${formatCurrency(updated.amount)}) was updated successfully.',
+          '${updated.merchant} (${formatCurrency(updated.amount, updated.currency)}) was updated successfully.',
       type: 'info',
     );
     notifyListeners();
@@ -639,6 +687,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     if (user != null) {
       _db.collection('users').doc(user.uid).collection('expenses').doc(id).delete();
     }
+    _saveExpensesLocally();
     
     notifyListeners();
   }
@@ -735,10 +784,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> setCurrency(String curr) async {
+    if (_currency == curr) return;
     _currency = curr;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('currency', curr);
     await _savePreferences();
+    // After changing currency, we notify listeners so all dashboard stats recalculate
     notifyListeners();
   }
 
@@ -769,7 +820,8 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> setOverallBudget(double amount) async {
-    _overallBudget = amount;
+    // Store budget as TRY (base)
+    _overallBudget = convertFromCurrent(amount, 'TRY');
     _hasSeenBudgetWarningThisMonth = false;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('overallBudget', amount);
@@ -823,19 +875,25 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   String formatCurrencyWithSymbol(double amount, [String? originalCurrency]) {
+    final cleanCurrent = _currencyService.cleanCurrencyCode(_currency);
     final symbol = _currencyService.getCurrencySymbol(_currency);
     double convertedAmount = amount;
     
-    // Make sure we only convert if the currencies differ 
+    // If originalCurrency is provided and different from current, convert it
     if (originalCurrency != null && originalCurrency.isNotEmpty) {
       final cleanOriginal = _currencyService.cleanCurrencyCode(originalCurrency);
-      final cleanCurrent = _currencyService.cleanCurrencyCode(_currency);
-      
       if (cleanOriginal != cleanCurrent) {
-        convertedAmount = convertToCurrent(amount, cleanOriginal);
+        convertedAmount = _currencyService.convert(amount, cleanOriginal, cleanCurrent);
       }
     }
-    return '$symbol${convertedAmount.toStringAsFixed(2).replaceAllMapped(RegExp(r"(\d)(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")}';
+    
+    // Format with thousands separator
+    final formattedValue = convertedAmount.toStringAsFixed(2).replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'), 
+      (Match m) => '${m[1]},'
+    );
+    
+    return '$symbol$formattedValue';
   }
 
   double convertToCurrent(double amount, String fromCurrency) {
@@ -845,30 +903,52 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     return _currencyService.convert(amount, from, to);
   }
 
-  double getConvertedExpenseAmount(Expense e) {
-    return convertToCurrent(e.amount, e.currency);
+  double getConvertedExpenseAmount(Expense expense) {
+    return convertToCurrent(expense.amount, expense.currency);
+  }
+
+  double convertFromCurrent(double amount, String targetCurrency) {
+    if (amount == 0) return 0;
+    final from = _currencyService.cleanCurrencyCode(_currency);
+    final to = _currencyService.cleanCurrencyCode(targetCurrency);
+    return _currencyService.convert(amount, from, to);
   }
 
   double sumExpenses(List<Expense> list) {
-    return list.fold(0.0, (totalSum, e) => totalSum + getConvertedExpenseAmount(e));
-  }
-
-  double getConvertedOverallBudget() {
-    return _overallBudget;
-  }
-
-  String formatCurrencySimple(double amount) {
-    final symbol = _currencyService.getCurrencySymbol(_currency);
-    return '$symbol${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r"(\d)(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")}';
+    if (list.isEmpty) return 0.0;
+    return list.fold(0.0, (acc, e) => acc + getConvertedExpenseAmount(e));
   }
 
   double getTotalInCurrentCurrency() {
-    double total = 0;
-    final to = _currencyService.cleanCurrencyCode(_currency);
-    for (var e in _expenses) {
-      total += _currencyService.convert(e.amount, e.currency, to);
-    }
-    return total;
+    return sumExpenses(_expenses);
+  }
+
+  double getConvertedOverallBudget() {
+    // Assuming budgets are stored in TRY for consistency
+    return convertToCurrent(_overallBudget, 'TRY');
+  }
+
+  List<Expense> getExpensesForMonth(String monthStr) {
+    return _expenses.where((e) => e.date.startsWith(monthStr)).toList();
+  }
+
+  List<Expense> getExpensesForWeek() {
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final startStr = weekStart.toIso8601String().substring(0, 10);
+    return _expenses.where((e) => e.date.compareTo(startStr) >= 0).toList();
+  }
+
+  double getConvertedCategoryBudget(String category) {
+    final b = _budgets.firstWhere((b) => b.category == category,
+        orElse: () => Budget(category: category, limit: 0));
+    return convertToCurrent(b.limit, 'TRY');
+  }
+
+  String formatCurrencySimple(double amount) {
+    // Formats an already-converted amount with the current currency symbol
+    final symbol = _currencyService.getCurrencySymbol(_currency);
+    return '$symbol${amount.toStringAsFixed(2).replaceAllMapped(RegExp(r"(\d)(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")}';
   }
 
   /// Set or update the PIN. Persists to SharedPreferences.

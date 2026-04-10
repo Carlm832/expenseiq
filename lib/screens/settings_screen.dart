@@ -292,8 +292,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
   void initState() {
     super.initState();
     final state = context.read<AppState>();
+    final overallBudget = state.getConvertedOverallBudget();
     _ctrl.text =
-        state.overallBudget > 0 ? state.overallBudget.toStringAsFixed(0) : '';
+        overallBudget > 0 ? overallBudget.toStringAsFixed(0) : '';
   }
 
   @override

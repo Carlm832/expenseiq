@@ -53,7 +53,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       }
     });
 
-    final total = expenses.fold(0.0, (s, e) => s + e.amount);
+    final total = state.sumExpenses(expenses);
 
     return Scaffold(
       backgroundColor: bgColor,
