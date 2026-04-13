@@ -205,13 +205,33 @@ class SettingsScreen extends StatelessWidget {
               borderColor: borderColor,
               isDestructive: true,
               onTap: () {
+                final user = FirebaseAuth.instance.currentUser;
+                final isPasswordUser = user != null && user.providerData.any((p) => p.providerId == 'password');
+                final passwordCtrl = TextEditingController();
+
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
                     title: Text(Translations.t(
                         'clear_data_confirm_title', state.language)),
-                    content: Text(Translations.t(
-                        'clear_data_confirm_msg', state.language)),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(Translations.t(
+                            'clear_data_confirm_msg', state.language)),
+                        if (isPasswordUser) ...[
+                          const SizedBox(height: 16),
+                          Text('Enter Password to Confirm:', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: fgColor)),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: passwordCtrl,
+                            obscureText: true,
+                            decoration: const InputDecoration(hintText: 'Your password'),
+                          ),
+                        ],
+                      ],
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
@@ -220,12 +240,11 @@ class SettingsScreen extends StatelessWidget {
                       TextButton(
                         onPressed: () async {
                           try {
-                            // Show initial snackbar to indicate progress
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text(Translations.t('deleting_data', state.language))),
                             );
                             
-                            await state.clearAllData();
+                            await state.clearAllData(password: isPasswordUser ? passwordCtrl.text : null);
                             
                             if (ctx.mounted) {
                               Navigator.pop(ctx);
@@ -233,24 +252,15 @@ class SettingsScreen extends StatelessWidget {
                           } on FirebaseAuthException catch (e) {
                             if (ctx.mounted) {
                               Navigator.pop(ctx);
-                              if (e.code == 'requires-recent-login') {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Security Check: Please sign out and sign in again before deleting your account.'),
-                                    duration: Duration(seconds: 4),
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error: ${e.message}')),
-                                );
-                              }
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Authentication Error: ${e.message}')),
+                              );
                             }
                           } catch (e) {
                             if (ctx.mounted) {
                               Navigator.pop(ctx);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('An unexpected error occurred: $e')),
+                                SnackBar(content: Text('Error: ${e.toString().replaceAll("Exception: ", "")}')),
                               );
                             }
                           }
@@ -684,8 +694,31 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   }
 }
 
-class PrivacyScreen extends StatelessWidget {
+class PrivacyScreen extends StatefulWidget {
   const PrivacyScreen({super.key});
+
+  @override
+  State<PrivacyScreen> createState() => _PrivacyScreenState();
+}
+
+class _PrivacyScreenState extends State<PrivacyScreen> {
+  bool _isPasswordUser = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPasswordUser();
+  }
+
+  void _checkPasswordUser() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        _isPasswordUser = user.providerData.any((p) => p.providerId == 'password');
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
@@ -770,6 +803,65 @@ class PrivacyScreen extends StatelessWidget {
               onTap: () {
                 state.setCurrentScreen('setup_2fa');
               }),
+          if (!_isPasswordUser)
+            _SettingsTile(
+                icon: Icons.vpn_key_outlined,
+                label: 'Set Account Password',
+                value: 'Not Set',
+                fgColor: fgColor,
+                mutedColor: mutedColor,
+                borderColor: borderColor,
+                onTap: () {
+                  final passwordCtrl = TextEditingController();
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Set Password'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Setting a password allows you to log in with your email directly.'),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: passwordCtrl,
+                            obscureText: true,
+                            decoration: const InputDecoration(hintText: 'New password'),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            try {
+                              if (passwordCtrl.text.isEmpty) return;
+                              await state.linkPassword(passwordCtrl.text);
+                              if (ctx.mounted) {
+                                Navigator.pop(ctx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Password securely linked!')),
+                                );
+                                _checkPasswordUser();
+                              }
+                            } catch (e) {
+                              if (ctx.mounted) {
+                                Navigator.pop(ctx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: ${e.toString().replaceAll("Exception: ", "")}')),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text('Set Password'),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
         ]),
       ),
       const SizedBox(height: 24),
@@ -795,7 +887,10 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _nameCtrl;
   late TextEditingController _emailCtrl;
+  final TextEditingController _currentPasswordCtrl = TextEditingController();
+  final TextEditingController _newPasswordCtrl = TextEditingController();
   bool _isSaving = false;
+  bool _isPasswordUser = false;
 
   @override
   void initState() {
@@ -803,6 +898,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final state = context.read<AppState>();
     _nameCtrl = TextEditingController(text: state.userName);
     _emailCtrl = TextEditingController(text: state.userEmail);
+    
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _isPasswordUser = user.providerData.any((p) => p.providerId == 'password');
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _currentPasswordCtrl.dispose();
+    _newPasswordCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -840,6 +949,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(hintText: 'you@example.com')),
+          
+          if (_isPasswordUser) ...[
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
+            Text('Change Password', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: fgColor)),
+            const SizedBox(height: 16),
+            Text('Current Password',
+                style: GoogleFonts.inter(
+                    fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
+            const SizedBox(height: 6),
+            TextField(
+                controller: _currentPasswordCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(hintText: 'Current password')),
+            const SizedBox(height: 16),
+            Text('New Password',
+                style: GoogleFonts.inter(
+                    fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
+            const SizedBox(height: 6),
+            TextField(
+                controller: _newPasswordCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(hintText: 'New password')),
+          ],
         ]),
       ),
       const SizedBox(height: 16),
@@ -849,14 +983,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onPressed: _isSaving ? null : () async {
             setState(() => _isSaving = true);
             try {
-              await state.setUserName(_nameCtrl.text.trim());
-              await state.setUserEmail(_emailCtrl.text.trim());
+              if (_isPasswordUser && _currentPasswordCtrl.text.isNotEmpty && _newPasswordCtrl.text.isNotEmpty) {
+                await state.updatePassword(_currentPasswordCtrl.text, _newPasswordCtrl.text);
+              }
+              
+              if (_nameCtrl.text != state.userName) {
+                await state.setUserName(_nameCtrl.text.trim());
+              }
+              if (_emailCtrl.text != state.userEmail) {
+                await state.setUserEmail(_emailCtrl.text.trim());
+              }
               if (!mounted) return;
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Profile updated successfully!')),
+              );
               state.goBack();
             } catch (e) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error saving changes: $e')),
+                  SnackBar(content: Text('Error: ${e.toString().replaceAll("Exception: ", "")}')),
                 );
               }
             } finally {

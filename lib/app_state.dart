@@ -105,6 +105,16 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   String get pin => _pin;
   bool get isBiometricEnabled => _isBiometricEnabled;
   bool get is2faEnabled => _is2faEnabled;
+  
+  int get accountAgeMonths {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.metadata.creationTime == null) return 1;
+    final creation = user.metadata.creationTime!;
+    final now = DateTime.now();
+    int months = (now.year - creation.year) * 12 + now.month - creation.month;
+    return months < 1 ? 1 : months;
+  }
+
   CurrencyService get currencyService => _currencyService;
 
   AppState() {
@@ -838,10 +848,61 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  Future<void> clearAllData() async {
+  Future<void> updatePassword(String currentPassword, String newPassword) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('No user logged in.');
+
+    bool isPasswordUser = user.providerData.any((p) => p.providerId == 'password');
+    if (!isPasswordUser) {
+      throw Exception('Your account uses an external provider (e.g. Google). Password changes are not applicable.');
+    }
+
+    try {
+      final cred = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(newPassword);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
+  Future<void> linkPassword(String newPassword) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('No user logged in.');
+
+    bool isPasswordUser = user.providerData.any((p) => p.providerId == 'password');
+    if (isPasswordUser) {
+      throw Exception('Your account already has a password set.');
+    }
+
+    try {
+      final cred = EmailAuthProvider.credential(email: user.email!, password: newPassword);
+      await user.linkWithCredential(cred);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> clearAllData({String? password}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final uid = user.uid;
+      
+      bool isPasswordUser = user.providerData.any((p) => p.providerId == 'password');
+      if (isPasswordUser) {
+        if (password == null || password.isEmpty) {
+          throw Exception('Password is required to delete your account.');
+        }
+        try {
+          final cred = EmailAuthProvider.credential(email: user.email!, password: password);
+          await user.reauthenticateWithCredential(cred);
+        } catch (e) {
+          debugPrint('Reauthentication failed inside clearAllData: $e');
+          rethrow;
+        }
+      }
+
       try {
         // 1. Delete Firestore expenses sub-collection
         final expensesRef =
@@ -861,13 +922,15 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         await GoogleSignIn().signOut();
       } on FirebaseAuthException catch (e) {
         if (e.code == 'requires-recent-login') {
-          // This must be handle by the UI: re-login needed
+          // This must be handled by the UI: re-login needed
           rethrow;
         }
         // Log other errors
         debugPrint('Error deleting account: ${e.message}');
+        rethrow;
       } catch (e) {
         debugPrint('General error in clearAllData: $e');
+        rethrow;
       }
     }
 

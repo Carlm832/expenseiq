@@ -194,7 +194,7 @@ class ProfileScreen extends StatelessWidget {
                   borderColor: borderColor),
               const SizedBox(width: 12),
               _StatCard(
-                  value: '6',
+                  value: state.accountAgeMonths.toString(),
                   label: Translations.t('months', lang),
                   fgColor: fgColor,
                   mutedColor: mutedColor,
