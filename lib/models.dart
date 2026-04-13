@@ -106,16 +106,7 @@ const List<Category> kCategories = [
   Category(name: 'Utilities', icon: 'zap', color: 0xFF0EA5E9),
 ];
 
-const List<Expense> kDefaultExpenses = [
-  Expense(
-      id: '1',
-      merchant: 'Whole Foods Market',
-      date: '2026-02-10',
-      amount: 67.43,
-      currency: 'USD',
-      category: 'Food & Dining',
-      icon: 'utensils'),
-];
+const List<Expense> kDefaultExpenses = [];
 
 final List<AppNotification> kDefaultNotifications = [];
 

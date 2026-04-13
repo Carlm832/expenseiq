@@ -259,6 +259,13 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       try {
         final List<dynamic> decoded = jsonDecode(expJson);
         _expenses = decoded.map((e) => Expense.fromJson(e)).toList();
+        // One-time cleanup: remove the old hardcoded mock receipt
+        final before = _expenses.length;
+        _expenses.removeWhere((e) => e.id == '1' && e.merchant == 'Whole Foods Market');
+        if (_expenses.length != before) {
+          // Re-persist so it won't come back on next launch
+          prefs.setString('expenses', jsonEncode(_expenses.map((e) => e.toJson()).toList()));
+        }
       } catch (_) {}
     } else {
       // If no expenses stored, use defaults
@@ -416,7 +423,17 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         .collection('expenses')
         .snapshots()
         .listen((snapshot) {
-      _expenses = snapshot.docs.map((doc) => Expense.fromJson(doc.data())).toList();
+      // One-time cleanup: delete the old hardcoded mock receipt from Firestore
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        if (data['id'] == '1' && data['merchant'] == 'Whole Foods Market') {
+          doc.reference.delete();
+        }
+      }
+      _expenses = snapshot.docs
+          .map((doc) => Expense.fromJson(doc.data()))
+          .where((e) => !(e.id == '1' && e.merchant == 'Whole Foods Market'))
+          .toList();
       // Sort by date descending
       _expenses.sort((a, b) => b.date.compareTo(a.date));
       notifyListeners();
