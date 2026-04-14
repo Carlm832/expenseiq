@@ -427,21 +427,30 @@ nav {
 }
 
 .dev-avatar {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  background: rgba(79, 142, 247, 0.1);
+  background: rgba(79, 142, 247, 0.05);
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   transition: var(--transition);
+  overflow: hidden;
+  border: 4px solid white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.dev-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .dev-card:hover .dev-avatar {
-  background: var(--primary);
-  color: white;
+  transform: scale(1.05);
+  border-color: var(--primary);
 }
 
 .dev-socials {
