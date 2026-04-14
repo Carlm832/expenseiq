@@ -6,6 +6,7 @@ import '../app_state.dart';
 import '../theme.dart';
 import '../models.dart';
 import '../services/translations.dart';
+import '../services/update_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -241,6 +242,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ]),
                   const SizedBox(height: 16),
+                  if (state.updateManifest != null) _buildUpdateAlert(context, state.updateManifest!),
                   const SizedBox(height: 16),
 
                   // Total spending card
@@ -734,6 +736,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+  Widget _buildUpdateAlert(BuildContext context, UpdateManifest manifest) {
+    final state = context.read<AppState>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
+    final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.secondary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.system_update, color: AppColors.secondary, size: 20),
+              const SizedBox(width: 8),
+              Text('Update Available!',
+                  style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.bold, color: fgColor)),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => state.dismissUpdate(),
+                child: Icon(Icons.close, size: 18, color: mutedColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(manifest.releaseNotes,
+              style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => state.launchUpdate(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text('Update Now'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _DetailRow extends StatelessWidget {
@@ -949,6 +1002,18 @@ class _CurrencyConverterCard extends StatelessWidget {
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: fgColor)),
+              const Spacer(),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () async {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(Translations.t('updating_rates', context.read<AppState>().language))),
+                  );
+                  await context.read<AppState>().refreshRates();
+                },
+                icon: const Icon(Icons.refresh, size: 18, color: AppColors.primary),
+              ),
             ],
           ),
           const SizedBox(height: 16),

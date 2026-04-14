@@ -9,6 +9,8 @@ import 'models.dart';
 import 'services/currency_service.dart';
 import 'services/bio_service.dart';
 import 'services/translations.dart';
+import 'services/update_service.dart';
+import 'package:share_plus/share_plus.dart';
 import 'dart:async';
 
 class AppState extends ChangeNotifier with WidgetsBindingObserver {
@@ -61,13 +63,15 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   bool _is2faEnabled = false;
   DateTime? _lastPausedTime;
 
-  // Services
-  final CurrencyService _currencyService = CurrencyService();
-  final BioService _bioService = BioService();
-
   // Initializing flags
   bool _authResolved = false;
   bool _splashDelayComplete = false;
+  UpdateManifest? _updateManifest;
+
+  // Services
+  final CurrencyService _currencyService = CurrencyService();
+  final BioService _bioService = BioService();
+  final UpdateService _updateService = UpdateService();
 
   // Firestore DB
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -105,6 +109,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   String get pin => _pin;
   bool get isBiometricEnabled => _isBiometricEnabled;
   bool get is2faEnabled => _is2faEnabled;
+  UpdateManifest? get updateManifest => _updateManifest;
   
   int get accountAgeMonths {
     final user = FirebaseAuth.instance.currentUser;
@@ -126,6 +131,15 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     await _loadFromPrefs();
     _initAuthListener();
     await _currencyService.init();
+    
+    // Check for updates in background
+    _updateService.checkForUpdate().then((manifest) {
+      if (manifest != null) {
+        _updateManifest = manifest;
+        notifyListeners();
+      }
+    });
+
     // Ensure splash screen is visible for at least 3 seconds
     await Future.delayed(const Duration(seconds: 3));
     _splashDelayComplete = true;
@@ -1131,6 +1145,61 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     await prefs.setInt('lastWarningThreshold', threshold);
     
     await _savePreferences();
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Backup & Update
+  // ---------------------------------------------------------------------------
+
+  Future<void> backupData() async {
+    try {
+      final Map<String, dynamic> data = {
+        'expenses': _expenses.map((e) => e.toJson()).toList(),
+        'budgets': _budgets.map((b) => b.toJson()).toList(),
+        'settings': {
+          'language': _language,
+          'currency': _currency,
+          'isDarkMode': _isDarkMode,
+          'overallBudget': _overallBudget,
+          'pushNotificationsEnabled': _pushNotificationsEnabled,
+          'isBiometricEnabled': _isBiometricEnabled,
+        },
+        'backupDate': DateTime.now().toIso8601String(),
+        'app': 'ExpenseIQ',
+      };
+      
+      final String jsonString = jsonEncode(data);
+      
+      await Share.share(
+        jsonString,
+        subject: 'ExpenseIQ Data Backup',
+      );
+      
+      pushNotification(
+        title: 'backup_success',
+        message: 'Your data backup is ready and shared.',
+        type: 'success',
+      );
+    } catch (e) {
+      pushNotification(
+        title: 'backup_error',
+        message: 'Failed to create backup: $e',
+        type: 'warning',
+      );
+    }
+  }
+
+  Future<void> launchUpdate() async {
+    if (_updateManifest != null) {
+      await _updateService.launchUpdateUrl(_updateManifest!.apkUrl);
+      _updateManifest = null; // Clear so popup doesn't reappear until next restart
+      notifyListeners();
+    }
+  }
+
+  void dismissUpdate() {
+    _updateManifest = null;
     notifyListeners();
   }
 }

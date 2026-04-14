@@ -189,13 +189,7 @@ class SettingsScreen extends StatelessWidget {
               fgColor: fgColor,
               mutedColor: mutedColor,
               borderColor: borderColor,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text(Translations.t(
-                          'data_backup_unavailable', state.language))),
-                );
-              }),
+              onTap: () => state.backupData()),
           _SettingsTile(
               icon: Icons.delete_outline,
               label: Translations.t('clear_all_data', state.language),
@@ -803,15 +797,17 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               onTap: () {
                 state.setCurrentScreen('setup_2fa');
               }),
-          if (!_isPasswordUser)
-            _SettingsTile(
-                icon: Icons.vpn_key_outlined,
-                label: 'Set Account Password',
-                value: 'Not Set',
-                fgColor: fgColor,
-                mutedColor: mutedColor,
-                borderColor: borderColor,
-                onTap: () {
+          _SettingsTile(
+              icon: Icons.vpn_key_outlined,
+              label: _isPasswordUser ? 'Account Password' : 'Set Account Password',
+              value: _isPasswordUser ? 'Enabled' : 'Not Set',
+              fgColor: fgColor,
+              mutedColor: mutedColor,
+              borderColor: borderColor,
+              onTap: () {
+                if (_isPasswordUser) {
+                  state.setCurrentScreen('edit_profile');
+                } else {
                   final passwordCtrl = TextEditingController();
                   showDialog(
                     context: context,
@@ -821,12 +817,14 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Setting a password allows you to log in with your email directly.'),
+                          const Text(
+                              'Setting a password allows you to log in with your email directly.'),
                           const SizedBox(height: 16),
                           TextField(
                             controller: passwordCtrl,
                             obscureText: true,
-                            decoration: const InputDecoration(hintText: 'New password'),
+                            decoration:
+                                const InputDecoration(hintText: 'New password'),
                           ),
                         ],
                       ),
@@ -843,7 +841,9 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                               if (ctx.mounted) {
                                 Navigator.pop(ctx);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Password securely linked!')),
+                                  const SnackBar(
+                                      content:
+                                          Text('Password securely linked!')),
                                 );
                                 _checkPasswordUser();
                               }
@@ -851,7 +851,9 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                               if (ctx.mounted) {
                                 Navigator.pop(ctx);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error: ${e.toString().replaceAll("Exception: ", "")}')),
+                                  SnackBar(
+                                      content: Text(
+                                          'Error: ${e.toString().replaceAll("Exception: ", "")}')),
                                 );
                               }
                             }
@@ -861,7 +863,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                       ],
                     ),
                   );
-                }),
+                }
+              }),
         ]),
       ),
       const SizedBox(height: 24),
