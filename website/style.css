@@ -1,6 +1,7 @@
 /* 
   ExpenseIQ - Premium Landing Page Design System
   Colors derived from Flutter App's theme.dart
+  v2.1.0 - 2026-04-15
 */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
@@ -339,6 +340,14 @@ nav {
   flex-wrap: wrap;
   gap: 20px;
   justify-content: center;
+}
+
+.download-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .download-btn {
