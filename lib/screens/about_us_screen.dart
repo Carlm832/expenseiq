@@ -40,7 +40,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final lang = state.language;
-    final primaryColor = AppColors.primary;
+    const primaryColor = AppColors.primary;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -56,7 +56,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: primaryColor),
+          icon: const Icon(Icons.arrow_back_ios_new, color: primaryColor),
           onPressed: () => state.setCurrentScreen('profile'),
         ),
       ),
@@ -71,7 +71,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: primaryColor.withOpacity(0.08),
+                color: primaryColor.withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -83,7 +83,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.secondary.withOpacity(0.05),
+                color: AppColors.secondary.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -117,10 +117,10 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: primaryColor.withOpacity(0.15),
+                            color: primaryColor.withValues(alpha: 0.15),
                             blurRadius: 30,
                             spreadRadius: 5,
                           ),
@@ -130,7 +130,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
                         'assets/logo.png',
                         height: 80,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => Icon(
+                        errorBuilder: (context, error, stackTrace) => const Icon(
                           Icons.account_balance_wallet,
                           size: 50,
                           color: primaryColor,
@@ -221,7 +221,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
                         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                         elevation: 8,
-                        shadowColor: primaryColor.withOpacity(0.5),
+                        shadowColor: primaryColor.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -253,6 +253,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
             child: _PremiumMemberCard(
               name: Translations.t('member_${m.key}_name', lang),
               role: Translations.t('member_${m.key}_role', lang),
+              bio: Translations.t('member_${m.key}_bio', lang),
               email: Translations.t('member_${m.key}_email', lang),
               imagePath: m.img,
               primaryColor: primaryColor,
@@ -278,10 +279,10 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          border: Border.all(color: primaryColor.withOpacity(0.2)),
+          border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.4 : 0.05),
+              color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.05),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -301,7 +302,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.amber.withOpacity(isDark ? 0.3 : 0.2),
+                        color: Colors.amber.withValues(alpha: isDark ? 0.3 : 0.2),
                         blurRadius: 20,
                         spreadRadius: 2,
                       ),
@@ -361,7 +362,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
               ),
             ),
             const SizedBox(height: 20),
-            Divider(color: primaryColor.withOpacity(0.1)),
+            Divider(color: primaryColor.withValues(alpha: 0.1)),
             const SizedBox(height: 16),
             Text(
               Translations.t('special_thanks_dean', lang),
@@ -418,12 +419,12 @@ class _PremiumCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withOpacity(0.05) : Colors.white.withOpacity(0.7),
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -439,6 +440,7 @@ class _PremiumCard extends StatelessWidget {
 class _PremiumMemberCard extends StatelessWidget {
   final String name;
   final String role;
+  final String bio;
   final String email;
   final String imagePath;
   final Color primaryColor;
@@ -447,6 +449,7 @@ class _PremiumMemberCard extends StatelessWidget {
   const _PremiumMemberCard({
     required this.name,
     required this.role,
+    required this.bio,
     required this.email,
     required this.imagePath,
     required this.primaryColor,
@@ -464,7 +467,7 @@ class _PremiumMemberCard extends StatelessWidget {
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: primaryColor.withOpacity(0.3), width: 2),
+              border: Border.all(color: primaryColor.withValues(alpha: 0.3), width: 2),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(35),
@@ -510,6 +513,15 @@ class _PremiumMemberCard extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: isDark ? Colors.white54 : Colors.black45,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  bio,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    color: isDark ? Colors.white70 : Colors.black87,
+                    height: 1.4,
                   ),
                 ),
               ],

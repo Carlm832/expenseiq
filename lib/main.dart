@@ -18,19 +18,15 @@ import 'screens/about_us_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
-  print('DEBUG: App started (main.dart)');
   WidgetsFlutterBinding.ensureInitialized();
-  print('DEBUG: Initializing Firebase...');
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print('DEBUG: Firebase initialized successfully');
   } catch (e) {
-    print('DEBUG: Firebase initialization error: $e');
+    // Optionally log error via a framework here later
   }
   await initializeDateFormatting();
-  print('DEBUG: Date formatting initialized');
 
   runApp(
     ChangeNotifierProvider(

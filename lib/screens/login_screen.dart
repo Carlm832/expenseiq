@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 30,
             offset: const Offset(0, 15),
           ),
@@ -176,9 +176,9 @@ class _LoginScreenState extends State<LoginScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.destructive.withOpacity(0.1),
+                color: AppColors.destructive.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.destructive.withOpacity(0.2)),
+                border: Border.all(color: AppColors.destructive.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -300,7 +300,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 side: BorderSide(color: borderColor),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                backgroundColor: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -471,7 +471,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                         blurRadius: 30, offset: const Offset(0, 15),
                       ),
                     ],
@@ -493,7 +493,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: AppColors.secondary.withOpacity(0.1),
+            color: AppColors.secondary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.mark_email_read_rounded, color: AppColors.secondary, size: 40),
@@ -538,7 +538,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.destructive.withOpacity(0.1),
+              color: AppColors.destructive.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(_error!, style: GoogleFonts.inter(color: AppColors.destructive, fontSize: 13, fontWeight: FontWeight.w500)),

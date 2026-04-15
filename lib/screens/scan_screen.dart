@@ -144,7 +144,7 @@ class _ScanScreenState extends State<ScanScreen>
                       border: Border.all(
                           color: _scanFailed
                               ? AppColors.destructive
-                              : AppColors.primary.withOpacity(0.5),
+                              : AppColors.primary.withValues(alpha: 0.5),
                           width: 2),
                     ),
                     clipBehavior: Clip.antiAlias,
@@ -212,7 +212,7 @@ class _ScanScreenState extends State<ScanScreen>
                   decoration:
                       BoxDecoration(color: AppColors.primary, boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.5),
+                      color: AppColors.primary.withValues(alpha: 0.5),
                       blurRadius: 10,
                       spreadRadius: 2,
                     )
@@ -229,7 +229,7 @@ class _ScanScreenState extends State<ScanScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor.withOpacity(0.8),
+                  color: Theme.of(context).cardColor.withValues(alpha: 0.8),
                   shape: BoxShape.circle,
                 ),
                 child: const CircularProgressIndicator(strokeWidth: 3),
@@ -239,7 +239,7 @@ class _ScanScreenState extends State<ScanScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor.withOpacity(0.8),
+                    color: Theme.of(context).cardColor.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(20)),
                 child: Text(_statusMessage,
                     style: GoogleFonts.inter(
@@ -262,7 +262,7 @@ class _ScanScreenState extends State<ScanScreen>
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-                color: AppColors.destructive.withOpacity(0.1),
+                color: AppColors.destructive.withValues(alpha: 0.1),
                 shape: BoxShape.circle),
             child: const Icon(Icons.error_outline,
                 size: 36, color: AppColors.destructive),
@@ -286,7 +286,7 @@ class _ScanScreenState extends State<ScanScreen>
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle),
           child: const Icon(Icons.document_scanner,
               size: 36, color: AppColors.primary),
