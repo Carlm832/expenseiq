@@ -310,7 +310,7 @@ class AppearanceScreen extends StatelessWidget {
           Switch(
               value: state.isDarkMode,
               onChanged: (_) => state.toggleDarkMode(),
-              activeThumbColor: AppColors.primary),
+              activeColor: AppColors.primary),
         ]),
       ),
     ]);
@@ -395,7 +395,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
         Center(child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(Translations.t('no_data', lang), 
-            style: GoogleFonts.inter(color: fgColor.withValues(alpha: 0.5))),
+            style: GoogleFonts.inter(color: fgColor.withOpacity(0.5))),
         ))
       else
         Wrap(
@@ -403,7 +403,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           runSpacing: 8,
           children: state.budgetWarningIntervals.map((t) => Chip(
             label: Text('$t%'),
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            backgroundColor: AppColors.primary.withOpacity(0.1),
             labelStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
             onDeleted: () {
                final newList = List<int>.from(state.budgetWarningIntervals)..remove(t);
@@ -616,7 +616,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               }
             });
           },
-          selectedColor: AppColors.primary.withValues(alpha: 0.1),
+          selectedColor: AppColors.primary.withOpacity(0.1),
           checkmarkColor: AppColors.primary,
         )).toList(),
       ),
@@ -626,9 +626,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.secondary.withValues(alpha: 0.1),
+            color: AppColors.secondary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
+            border: Border.all(color: AppColors.secondary.withOpacity(0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

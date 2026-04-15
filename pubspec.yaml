@@ -14,7 +14,7 @@ dependencies:
   google_fonts: ^6.2.1
   provider: ^6.1.2
   fl_chart: ^0.69.0
-  intl: ^0.20.2
+  intl: ^0.19.0
   shared_preferences: ^2.3.2
   cupertino_icons: ^1.0.8
   firebase_core: ^4.5.0
@@ -47,6 +47,12 @@ flutter:
   assets:
     - assets/logo.png
     - assets/google_logo.png
+    - assets/eric.jpg
+    - assets/carlton.jpg
+    - assets/abdoulie.jpg
+    - assets/nynthia.jpg
+    - assets/dean.jpg
+
 
 flutter_launcher_icons:
   android: true

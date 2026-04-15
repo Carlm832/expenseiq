@@ -94,6 +94,12 @@ class ProfileScreen extends StatelessWidget {
         'App preferences',
         'settings'
       ),
+      (
+        Icons.info_outline,
+        Translations.t('about_us_nav', lang),
+        'Who we are',
+        'about_us'
+      ),
     ];
 
     final totalSaved =
@@ -121,7 +127,7 @@ class ProfileScreen extends StatelessWidget {
                         width: 64,
                         height: 64,
                         decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
+                            color: AppColors.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16)),
                         child: state.profileImage.isNotEmpty
                             ? ClipRRect(
@@ -296,7 +302,7 @@ class ProfileScreen extends StatelessWidget {
                         fontWeight: FontWeight.w500)),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
-                      color: AppColors.destructive.withValues(alpha: 0.4)),
+                      color: AppColors.destructive.withOpacity(0.4)),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),

@@ -198,12 +198,12 @@ class _ViewfinderShape extends ShapeBorder {
   @override
   void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
     final paint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.6)
+      ..color = Colors.black.withOpacity(0.6)
       ..style = PaintingStyle.fill;
     canvas.drawPath(getOuterPath(rect), paint);
 
     final borderPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.8)
+      ..color = Colors.white.withOpacity(0.8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 

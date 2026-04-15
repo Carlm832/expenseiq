@@ -143,7 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 30, offset: const Offset(0, 15),
           ),
         ],
@@ -162,7 +162,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.destructive.withValues(alpha: 0.1),
+                color: AppColors.destructive.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(_errors['form']!, style: GoogleFonts.inter(color: AppColors.destructive, fontSize: 13, fontWeight: FontWeight.w500)),

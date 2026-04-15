@@ -69,7 +69,7 @@ ThemeData buildLightTheme() {
         color: AppColors.mutedForeground,
       ),
     ),
-    cardTheme: CardThemeData(
+    cardTheme: CardTheme(
       color: AppColors.card,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -140,7 +140,7 @@ ThemeData buildDarkTheme() {
       bodyMedium: GoogleFonts.inter(color: AppColors.darkForeground),
       bodySmall: GoogleFonts.inter(color: AppColors.darkMutedForeground),
     ),
-    cardTheme: CardThemeData(
+    cardTheme: CardTheme(
       color: AppColors.darkCard,
       elevation: 0,
       shape: RoundedRectangleBorder(

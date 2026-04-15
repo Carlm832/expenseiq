@@ -14,6 +14,7 @@ import 'screens/add_expense_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/email_verification_screen.dart';
+import 'screens/about_us_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
@@ -148,6 +149,8 @@ class AppRouter extends StatelessWidget {
         child = const PinSetupScreen();
       case 'setup_2fa':
         child = const TwoFactorSetupScreen();
+      case 'about_us':
+        child = const AboutUsScreen();
       default:
         child = MainScaffold(currentScreen: screen);
     }
