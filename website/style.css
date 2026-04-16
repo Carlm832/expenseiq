@@ -508,6 +508,139 @@ nav {
   display: block;
 }
 
+/* Mentorship Section */
+.mentorship-section {
+    text-align: center;
+    background: linear-gradient(to bottom, transparent, rgba(79, 142, 247, 0.03));
+}
+
+.mentorship-header {
+    margin-bottom: 50px;
+}
+
+.mentorship-header h2 {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.mentorship-header p {
+    color: var(--fg-muted);
+}
+
+.mentorship-card {
+    position: relative;
+    max-width: 850px;
+    margin: 0 auto;
+    background: white;
+    padding: 60px 40px;
+    border-radius: 32px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+}
+
+.mentorship-glow {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+    z-index: 0;
+}
+
+.mentorship-content-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.mentorship-avatar {
+    position: relative;
+    width: 140px;
+    height: 140px;
+}
+
+.avatar-ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    padding: 2px;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+}
+
+.mentorship-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 6px solid white;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.mentorship-text {
+    max-width: 600px;
+}
+
+.dean-title {
+    color: var(--primary);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.mentorship-text h3 {
+    font-size: 2rem;
+    margin-bottom: 4px;
+}
+
+.university {
+    color: var(--fg-muted);
+    font-weight: 500;
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 24px;
+}
+
+.mentorship-quote {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--fg-dark);
+    font-style: italic;
+    opacity: 0.9;
+    position: relative;
+}
+
+.mentorship-quote::before {
+    content: '"';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    font-size: 4rem;
+    color: var(--primary);
+    opacity: 0.1;
+    font-family: serif;
+}
+
+@media (max-width: 768px) {
+    .mentorship-card {
+        padding: 40px 20px;
+    }
+    
+    .mentorship-text h3 {
+        font-size: 1.5rem;
+    }
+}
+
 /* Footer */
 footer {
   border-top: 1px solid var(--border);

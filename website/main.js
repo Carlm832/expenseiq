@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 2. Reveal on Scroll Animation
-    const revealElements = document.querySelectorAll('.feature-card, .hero-content, .hero-mockup, .download, .dev-card');
+    const revealElements = document.querySelectorAll('.feature-card, .hero-content, .hero-mockup, .download, .dev-card, .mentorship-card, .mentorship-header');
     
     const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "buildNumber": 5,
-  "releaseNotes": "New: Backup & Data Export (JSON), Dashboard Currency Refresh shortcut, and improved Privacy & Security UI.",
-  "apkUrl": "https://expenseiq-official.netlify.app/downloads/ExpenseIQ.apk"
+  "buildNumber": 7,
+  "releaseNotes": "New: Added About Us page to app settings.",
+  "apkUrl": "https://expenseiqapp.netlify.app/downloads/ExpenseIQ.apk"
 }
