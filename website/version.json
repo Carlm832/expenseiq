@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "buildNumber": 7,
-  "releaseNotes": "New: Added About Us page to app settings.",
+  "buildNumber": 8,
+  "releaseNotes": "New: Auto-refreshing currency rates, improved About Us page, and UI enhancements.",
   "apkUrl": "https://expenseiqapp.netlify.app/downloads/ExpenseIQ.apk"
 }

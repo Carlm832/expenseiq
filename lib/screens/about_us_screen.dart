@@ -172,9 +172,112 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
                   ),
                   const SizedBox(height: 48),
 
-                  // Team Members
+                  // Main Features Section (Moved here)
                   _buildAnimatedItem(
                     index: 3,
+                    child: Text(
+                      Translations.t('main_features', lang),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  _buildAnimatedItem(
+                    index: 4,
+                    child: _PremiumCard(
+                      isDark: isDark,
+                      primaryColor: primaryColor,
+                      child: Column(
+                        children: [
+                          _buildFeatureItem(
+                            icon: Icons.document_scanner_outlined,
+                            title: Translations.t('scan_receipts', lang),
+                            description: Translations.t('scan_receipts_desc', lang),
+                            primaryColor: primaryColor,
+                            isDark: isDark,
+                            onTap: () => _showFeatureDialog(
+                              context,
+                              Translations.t('scan_receipts', lang),
+                              Translations.t('scan_receipts_details', lang),
+                              Icons.document_scanner_outlined,
+                              primaryColor,
+                              isDark,
+                            ),
+                          ),
+                          _buildFeatureItem(
+                            icon: Icons.analytics_outlined,
+                            title: Translations.t('track_spending', lang),
+                            description: Translations.t('track_spending_desc', lang),
+                            primaryColor: primaryColor,
+                            isDark: isDark,
+                            onTap: () => _showFeatureDialog(
+                              context,
+                              Translations.t('track_spending', lang),
+                              Translations.t('track_spending_details', lang),
+                              Icons.analytics_outlined,
+                              primaryColor,
+                              isDark,
+                            ),
+                          ),
+                          _buildFeatureItem(
+                            icon: Icons.account_balance_wallet_outlined,
+                            title: Translations.t('budget_manager', lang),
+                            description: Translations.t('budget_manager_desc', lang),
+                            primaryColor: primaryColor,
+                            isDark: isDark,
+                            onTap: () => _showFeatureDialog(
+                              context,
+                              Translations.t('budget_manager', lang),
+                              Translations.t('budget_manager_details', lang),
+                              Icons.account_balance_wallet_outlined,
+                              primaryColor,
+                              isDark,
+                            ),
+                          ),
+                          _buildFeatureItem(
+                            icon: Icons.savings_outlined,
+                            title: Translations.t('save_more', lang),
+                            description: Translations.t('save_more_desc', lang),
+                            primaryColor: primaryColor,
+                            isDark: isDark,
+                            onTap: () => _showFeatureDialog(
+                              context,
+                              Translations.t('save_more', lang),
+                              Translations.t('save_more_details', lang),
+                              Icons.savings_outlined,
+                              primaryColor,
+                              isDark,
+                            ),
+                          ),
+                          _buildFeatureItem(
+                            icon: Icons.ios_share_outlined,
+                            title: Translations.t('export_data', lang),
+                            description: Translations.t('export_data_desc', lang),
+                            primaryColor: primaryColor,
+                            isDark: isDark,
+                            isLast: true,
+                            onTap: () => _showFeatureDialog(
+                              context,
+                              Translations.t('export_data', lang),
+                              Translations.t('export_data_details', lang),
+                              Icons.ios_share_outlined,
+                              primaryColor,
+                              isDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 56),
+
+                  // Team Members
+                  _buildAnimatedItem(
+                    index: 5,
                     child: Text(
                       Translations.t('meet_our_team', lang),
                       style: GoogleFonts.dmSans(
@@ -185,14 +288,14 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   _buildTeamList(lang, primaryColor, isDark),
-                  
+
                   const SizedBox(height: 56),
 
                   // Dean Academic Mentorship Spotlight
                   _buildAnimatedItem(
-                    index: 8,
+                    index: 10,
                     child: Text(
                       Translations.t('academic_mentorship', lang),
                       style: GoogleFonts.dmSans(
@@ -203,14 +306,13 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   _buildDeanSpotlight(lang, primaryColor, isDark),
-                  
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 56),
 
                   // Contact Button (Integrated Theme Style)
                   _buildAnimatedItem(
-                    index: 10,
+                    index: 12,
                     child: ElevatedButton.icon(
                       onPressed: () => state.setCurrentScreen('contact_us'),
                       icon: const Icon(Icons.mail_outline),
@@ -375,6 +477,134 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showFeatureDialog(
+    BuildContext context,
+    String title,
+    String details,
+    IconData icon,
+    Color primaryColor,
+    bool isDark,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: primaryColor, size: 40),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: GoogleFonts.dmSans(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              details,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                color: isDark ? Colors.white70 : Colors.black54,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 32),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: primaryColor,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: primaryColor.withValues(alpha: 0.2)),
+                ),
+              ),
+              child: Text(
+                'Got it',
+                style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem({
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color primaryColor,
+    required bool isDark,
+    VoidCallback? onTap,
+    bool isLast = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          child: Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: primaryColor, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

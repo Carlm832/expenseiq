@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:async';
 import '../app_state.dart';
 import '../theme.dart';
 import '../models.dart';
@@ -944,7 +945,7 @@ IconData _categoryIcon(String icon) {
 }
 
 
-class _CurrencyConverterCard extends StatelessWidget {
+class _CurrencyConverterCard extends StatefulWidget {
   final bool isDark;
   final TextEditingController amountController;
   final String fromCurrency;
@@ -966,11 +967,76 @@ class _CurrencyConverterCard extends StatelessWidget {
   });
 
   @override
+  State<_CurrencyConverterCard> createState() => _CurrencyConverterCardState();
+}
+
+class _CurrencyConverterCardState extends State<_CurrencyConverterCard> {
+  Timer? _autoRefreshTimer;
+  DateTime? _lastRefreshed;
+  DateTime? _nextRefresh;
+
+  @override
+  void initState() {
+    super.initState();
+    // Set initial times
+    _lastRefreshed = DateTime.now();
+    _nextRefresh = _lastRefreshed!.add(const Duration(hours: 1));
+    // Schedule auto-refresh every hour
+    _autoRefreshTimer = Timer.periodic(const Duration(hours: 1), (_) async {
+      if (!mounted) return;
+      await context.read<AppState>().refreshRates();
+      setState(() {
+        _lastRefreshed = DateTime.now();
+        _nextRefresh = _lastRefreshed!.add(const Duration(hours: 1));
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  String _formatTime(DateTime? dt) {
+    if (dt == null) return '--:--';
+    final h = dt.hour.toString().padLeft(2, '0');
+    final m = dt.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  Future<void> _manualRefresh() async {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(Translations.t('updating_rates', context.read<AppState>().language)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    await context.read<AppState>().refreshRates();
+    if (!mounted) return;
+    setState(() {
+      _lastRefreshed = DateTime.now();
+      _nextRefresh = _lastRefreshed!.add(const Duration(hours: 1));
+      // Reset the periodic timer so it counts from now
+      _autoRefreshTimer?.cancel();
+      _autoRefreshTimer = Timer.periodic(const Duration(hours: 1), (_) async {
+        if (!mounted) return;
+        await context.read<AppState>().refreshRates();
+        setState(() {
+          _lastRefreshed = DateTime.now();
+          _nextRefresh = _lastRefreshed!.add(const Duration(hours: 1));
+        });
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = widget.isDark;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
-    final mutedColor =
-        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
     final currencies = ['USD', 'EUR', 'GBP', 'TRY', 'JPY', 'AUD', 'CAD', 'CNY'];
@@ -992,29 +1058,54 @@ class _CurrencyConverterCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header row: title + refresh button
           Row(
             children: [
-              const Icon(Icons.currency_exchange,
-                  size: 18, color: AppColors.primary),
+              const Icon(Icons.currency_exchange, size: 18, color: AppColors.primary),
               const SizedBox(width: 8),
               Text('Currency Converter',
                   style: GoogleFonts.dmSans(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: fgColor)),
+                      fontSize: 15, fontWeight: FontWeight.w600, color: fgColor)),
               const Spacer(),
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-                onPressed: () async {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(Translations.t('updating_rates', context.read<AppState>().language))),
-                  );
-                  await context.read<AppState>().refreshRates();
-                },
+                onPressed: _manualRefresh,
                 icon: const Icon(Icons.refresh, size: 18, color: AppColors.primary),
+                tooltip: 'Refresh rates',
               ),
             ],
+          ),
+          const SizedBox(height: 6),
+          // Auto-refresh timestamps
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.schedule, size: 13, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Last updated: ${_formatTime(_lastRefreshed)}',
+                    style: GoogleFonts.inter(
+                        fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.autorenew, size: 13, color: AppColors.primary),
+                const SizedBox(width: 4),
+                Text(
+                  'Next: ${_formatTime(_nextRefresh)}',
+                  style: GoogleFonts.inter(
+                      fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -1026,10 +1117,10 @@ class _CurrencyConverterCard extends StatelessWidget {
                     Text('Amount',
                         style: GoogleFonts.inter(fontSize: 11, color: mutedColor)),
                     TextField(
-                      controller: amountController,
+                      controller: widget.amountController,
                       keyboardType: TextInputType.number,
                       style: GoogleFonts.inter(fontSize: 14, color: fgColor),
-                      onChanged: onAmountChanged,
+                      onChanged: widget.onAmountChanged,
                       decoration: const InputDecoration(
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -1042,21 +1133,20 @@ class _CurrencyConverterCard extends StatelessWidget {
               const SizedBox(width: 16),
               _CurrencyDropdown(
                 label: 'From',
-                value: fromCurrency,
+                value: widget.fromCurrency,
                 items: currencies,
-                onChanged: onFromChanged,
+                onChanged: widget.onFromChanged,
                 isDark: isDark,
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Icon(Icons.arrow_forward,
-                    size: 14, color: AppColors.mutedForeground),
+                child: Icon(Icons.arrow_forward, size: 14, color: AppColors.mutedForeground),
               ),
               _CurrencyDropdown(
                 label: 'To',
-                value: toCurrency,
+                value: widget.toCurrency,
                 items: currencies,
-                onChanged: onToChanged,
+                onChanged: widget.onToChanged,
                 isDark: isDark,
               ),
             ],
@@ -1073,10 +1163,9 @@ class _CurrencyConverterCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Result',
-                    style:
-                        GoogleFonts.inter(fontSize: 12, color: AppColors.primary)),
+                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.primary)),
                 Text(
-                  '${convertedValue.toStringAsFixed(2)} $toCurrency',
+                  '${widget.convertedValue.toStringAsFixed(2)} ${widget.toCurrency}',
                   style: GoogleFonts.dmSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -1109,8 +1198,7 @@ class _CurrencyDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
-    final mutedColor =
-        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
     final cardColor = isDark ? AppColors.darkCard : AppColors.card;
 
     return Column(
@@ -1124,8 +1212,7 @@ class _CurrencyDropdown extends StatelessWidget {
             dropdownColor: cardColor,
             style: GoogleFonts.inter(
                 fontSize: 14, color: fgColor, fontWeight: FontWeight.w600),
-            items:
-                items.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+            items: items.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
             onChanged: onChanged,
           ),
         ),
@@ -1133,3 +1220,4 @@ class _CurrencyDropdown extends StatelessWidget {
     );
   }
 }
+
