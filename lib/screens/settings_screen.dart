@@ -488,40 +488,36 @@ class HelpScreen extends StatelessWidget {
     final state = context.read<AppState>();
     final lang = state.language;
 
-    final faqs = [
-      ('How do I capture a receipt?', 'Tap the floating "+" button on the dashboard and select the camera or gallery icon.'),
-      ('Can I export my data?', 'Yes! Go to the Analytics screen and use the Export PDF or Export CSV buttons at the top.'),
-      ('How does currency conversion work?', 'ExpenseIQ fetches real-time rates. You can change your display currency in Settings.'),
-      ('Is my data stored online?', 'Your data is saved locally and synced to your secure Firebase account if you are signed in.'),
-    ];
-
     return _buildSimpleScreen(
         context,
         Translations.t('help_support_title', lang),
         Translations.t('get_assistance', lang), [
-      ...faqs.map((faq) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
-              decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: borderColor)),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(faq.$1,
-                        style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: fgColor)),
-                    const SizedBox(height: 6),
-                    Text(faq.$2,
-                        style:
-                            GoogleFonts.inter(fontSize: 12, color: mutedColor)),
-                  ]),
-            ),
-          )),
+      ...List.generate(4, (i) {
+        final index = i + 1;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Container(
+            decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: borderColor)),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(Translations.t('faq_q$index', lang),
+                      style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: fgColor)),
+                  const SizedBox(height: 6),
+                  Text(Translations.t('faq_a$index', lang),
+                      style:
+                          GoogleFonts.inter(fontSize: 12, color: mutedColor)),
+                ]),
+          ),
+        );
+      }),
       const SizedBox(height: 24),
       SizedBox(
         width: double.infinity,

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "buildNumber": 8,
-  "releaseNotes": "New: Auto-refreshing currency rates, improved About Us page, and UI enhancements.",
+  "buildNumber": 9,
+  "releaseNotes": "New: Interactive team contact links in About Us, updated documentation, and localized FAQ.",
   "apkUrl": "https://expenseiqapp.com/downloads/ExpenseIQ.apk"
 }
