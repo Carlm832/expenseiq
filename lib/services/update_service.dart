@@ -27,7 +27,7 @@ class UpdateManifest {
 }
 
 class UpdateService {
-  static const String _manifestUrl = 'https://expenseiqapp.netlify.app/version.json';
+  static const String _manifestUrl = 'https://expenseiqapp.com/version.json';
 
   Future<UpdateManifest?> checkForUpdate() async {
     try {
