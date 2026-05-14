@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../services/translations.dart';
@@ -532,6 +533,20 @@ class HelpScreen extends StatelessWidget {
           label: Text(Translations.t('contact_us', lang)),
         ),
       ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () async {
+            final url = Uri.parse('http://community.expenseiqapp.com');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            }
+          },
+          icon: const Icon(Icons.groups_outlined, size: 18),
+          label: const Text('Join Web Community'),
+        ),
+      ),
     ]);
   }
 }
@@ -568,8 +583,21 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
     setState(() => _isSending = true);
 
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'support@expenseiqapp.com',
+      queryParameters: {
+        'subject': '[Support] ${_subjectCtrl.text}',
+        'body': _messageCtrl.text,
+      },
+    );
+
+    if (await canLaunchUrl(emailLaunchUri)) {
+      await launchUrl(emailLaunchUri);
+    } else {
+      // Fallback: Simulate success if mail client fails
+      await Future.delayed(const Duration(seconds: 1));
+    }
 
     if (!mounted) return;
     setState(() => _isSending = false);

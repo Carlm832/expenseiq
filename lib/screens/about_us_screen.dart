@@ -563,7 +563,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> with SingleTickerProvider
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           child: Padding(
             padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
             child: Row(
