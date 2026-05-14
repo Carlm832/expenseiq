@@ -538,13 +538,13 @@ class HelpScreen extends StatelessWidget {
         width: double.infinity,
         child: OutlinedButton.icon(
           onPressed: () async {
-            final url = Uri.parse('http://community.expenseiqapp.com');
+            final url = Uri.parse('http://expenseiqapp.com/blog.html');
             if (await canLaunchUrl(url)) {
               await launchUrl(url, mode: LaunchMode.externalApplication);
             }
           },
-          icon: const Icon(Icons.groups_outlined, size: 18),
-          label: const Text('Join Web Community'),
+          icon: const Icon(Icons.article_outlined, size: 18),
+          label: const Text('Read our Blog'),
         ),
       ),
     ]);
