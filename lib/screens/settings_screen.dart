@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../app_state.dart';
 import '../theme.dart';
@@ -179,9 +180,27 @@ class SettingsScreen extends StatelessWidget {
               fgColor: fgColor,
               mutedColor: mutedColor,
               borderColor: borderColor,
-              onTap: () {
-                state.setPushNotificationsEnabled(
-                    !state.pushNotificationsEnabled);
+              onTap: () async {
+                if (!state.pushNotificationsEnabled) {
+                  FirebaseMessaging messaging = FirebaseMessaging.instance;
+                  NotificationSettings settings = await messaging.requestPermission(
+                    alert: true,
+                    badge: true,
+                    sound: true,
+                  );
+                  if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+                      settings.authorizationStatus == AuthorizationStatus.provisional) {
+                    state.setPushNotificationsEnabled(true);
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Notification permissions denied.')),
+                      );
+                    }
+                  }
+                } else {
+                  state.setPushNotificationsEnabled(false);
+                }
               }),
           _SettingsTile(
               icon: Icons.backup_outlined,
@@ -214,7 +233,13 @@ class SettingsScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(Translations.t(
-                            'clear_data_confirm_msg', state.language)),
+                            'clear_data_confirm_msg', state.language),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.destructive,
+                          ),
+                        ),
                         if (isPasswordUser) ...[
                           const SizedBox(height: 16),
                           Text('Enter Password to Confirm:', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: fgColor)),
@@ -763,6 +788,29 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               mutedColor: mutedColor,
               borderColor: borderColor,
               onTap: () async {
+                if (!state.isBiometricEnabled && !state.hasPin) {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('App PIN Required'),
+                      content: const Text('You must set up an App PIN before enabling biometric security.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            state.setCurrentScreen('setup_pin');
+                          },
+                          child: const Text('Set PIN'),
+                        ),
+                      ],
+                    ),
+                  );
+                  return;
+                }
                 final success = await BioService().authenticate();
                 if (success) {
                   state.setBiometricEnabled(!state.isBiometricEnabled);

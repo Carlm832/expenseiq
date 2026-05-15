@@ -693,28 +693,44 @@ class _PremiumMemberCard extends StatelessWidget {
       isDark: isDark,
       primaryColor: primaryColor,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: primaryColor.withValues(alpha: 0.3), width: 2),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(35),
-              child: Image.asset(
-                imagePath,
-                width: 70,
-                height: 70,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: 70,
-                  height: 70,
-                  color: Colors.grey[200],
-                  child: Icon(Icons.person, size: 30, color: primaryColor),
+          Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: primaryColor.withValues(alpha: 0.3), width: 2),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(35),
+                  child: Image.asset(
+                    imagePath,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 70,
+                      height: 70,
+                      color: Colors.grey[200],
+                      child: Icon(Icons.person, size: 30, color: primaryColor),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () async {
+                  final uri = Uri.parse('mailto:$email');
+                  try {
+                    await launchUrl(uri);
+                  } catch (_) {}
+                },
+                child: Icon(Icons.email_outlined, size: 22, color: primaryColor),
+              ),
+            ],
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -736,23 +752,6 @@ class _PremiumMemberCard extends StatelessWidget {
                     fontSize: 13,
                     color: primaryColor,
                     fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                GestureDetector(
-                  onTap: () async {
-                    final uri = Uri.parse('mailto:$email');
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri);
-                    }
-                  },
-                  child: Text(
-                    email,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: primaryColor,
-                      decoration: TextDecoration.underline,
-                    ),
                   ),
                 ),
                 const SizedBox(height: 8),

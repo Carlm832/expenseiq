@@ -974,6 +974,7 @@ class _CurrencyConverterCardState extends State<_CurrencyConverterCard> {
   Timer? _autoRefreshTimer;
   DateTime? _lastRefreshed;
   DateTime? _nextRefresh;
+  double _turns = 0.0;
 
   @override
   void initState() {
@@ -1138,9 +1139,29 @@ class _CurrencyConverterCardState extends State<_CurrencyConverterCard> {
                 onChanged: widget.onFromChanged,
                 isDark: isDark,
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Icon(Icons.arrow_forward, size: 14, color: AppColors.mutedForeground),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() => _turns += 0.5);
+                    final temp = widget.fromCurrency;
+                    widget.onFromChanged(widget.toCurrency);
+                    widget.onToChanged(temp);
+                  },
+                  child: AnimatedRotation(
+                    turns: _turns,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.swap_horiz, size: 18, color: AppColors.primary),
+                    ),
+                  ),
+                ),
               ),
               _CurrencyDropdown(
                 label: 'To',
