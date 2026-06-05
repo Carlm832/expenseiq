@@ -273,7 +273,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         color: Colors.white
                                             .withValues(alpha: 0.75))),
                                 const SizedBox(height: 4),
-                                Text(state.formatCurrency(totalSpending),
+                                 Text(state.hideAmounts ? '${state.currencySymbol} ••••' : state.formatCurrency(totalSpending),
                                     style: GoogleFonts.dmSans(
                                         fontSize: 30,
                                         fontWeight: FontWeight.w700,
@@ -301,56 +301,80 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ]),
                                 ),
                               ])),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(100)),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: selectedMonthStr,
-                                icon: const Icon(Icons.arrow_drop_down,
-                                    color: Colors.white, size: 16),
-                                isDense: true,
-                                dropdownColor: cardColor,
-                                style: GoogleFonts.inter(
-                                    fontSize: 11,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              GestureDetector(
+                                onTap: () => state.toggleHideAmounts(),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    state.hideAmounts
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
                                     color: Colors.white,
-                                    fontWeight: FontWeight.w500),
-                                onChanged: (newValue) {
-                                  if (newValue != null) {
-                                    state.setSelectedMonth(newValue);
-                                    if (newValue ==
-                                        DateTime.now()
-                                            .toIso8601String()
-                                            .substring(0, 7)) {
-                                      _checkAndShowAlert();
-                                    }
-                                  }
-                                },
-                                items: _getAvailableMonths(allExpenses)
-                                    .map((month) {
-                                  return DropdownMenuItem<String>(
-                                    value: month.$1,
-                                    child: Text(month.$2,
-                                        style: TextStyle(
-                                          color: selectedMonthStr == month.$1
-                                              ? AppColors.primary
-                                              : fgColor,
-                                        )),
-                                  );
-                                }).toList(),
-                                selectedItemBuilder: (BuildContext context) {
-                                  return _getAvailableMonths(allExpenses)
-                                      .map((month) {
-                                    return Text(month.$2,
-                                        style: const TextStyle(
-                                            color: Colors.white));
-                                  }).toList();
-                                },
+                                    size: 16,
+                                  ),
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: selectedMonthStr,
+                                    icon: const Icon(Icons.arrow_drop_down,
+                                        color: Colors.white, size: 16),
+                                    isDense: true,
+                                    dropdownColor: cardColor,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500),
+                                    onChanged: (newValue) {
+                                      if (newValue != null) {
+                                        state.setSelectedMonth(newValue);
+                                        if (newValue ==
+                                            DateTime.now()
+                                                .toIso8601String()
+                                                .substring(0, 7)) {
+                                          _checkAndShowAlert();
+                                        }
+                                      }
+                                    },
+                                    items: _getAvailableMonths(allExpenses)
+                                        .map((month) {
+                                      return DropdownMenuItem<String>(
+                                        value: month.$1,
+                                        child: Text(month.$2,
+                                            style: TextStyle(
+                                              color: selectedMonthStr == month.$1
+                                                  ? AppColors.primary
+                                                  : fgColor,
+                                            )),
+                                      );
+                                    }).toList(),
+                                    selectedItemBuilder: (BuildContext context) {
+                                      return _getAvailableMonths(allExpenses)
+                                          .map((month) {
+                                        return Text(month.$2,
+                                            style: const TextStyle(
+                                                color: Colors.white));
+                                      }).toList();
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ]),
                   ),
@@ -409,12 +433,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 6),
                               Row(children: [
                                 Text(
-                                    '${state.formatCurrencySimple(totalSpending)} ${Translations.t('spent', lang)}',
+                                    '${state.hideAmounts ? '${state.currencySymbol} ••••' : state.formatCurrencySimple(totalSpending)} ${Translations.t('spent', lang)}',
                                     style: GoogleFonts.inter(
                                         fontSize: 10, color: mutedColor)),
                                 const Spacer(),
                                 Text(
-                                    '${state.formatCurrencySimple(overallBudget)} ${Translations.t('limit', lang)}',
+                                    '${state.hideAmounts ? '${state.currencySymbol} ••••' : state.formatCurrencySimple(overallBudget)} ${Translations.t('limit', lang)}',
                                     style: GoogleFonts.inter(
                                         fontSize: 10, color: mutedColor)),
                               ]),
@@ -490,11 +514,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                   style: GoogleFonts.inter(
                                                       fontSize: 11,
                                                       color: mutedColor))),
-                                          Text(state.formatCurrency(cat.value),
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: fgColor)),
+                                            Text(state.hideAmounts ? '••••' : state.formatCurrency(cat.value),
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: fgColor)),
                                         ]),
                                       ))
                                   .toList(),
@@ -526,7 +550,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   Text(Translations.t('highest_expense', lang),
                                       style: GoogleFonts.inter(
                                           fontSize: 11, color: mutedColor)),
-                                  Text(state.formatCurrency(maxExpense),
+                                  Text(state.hideAmounts ? '${state.currencySymbol} ••••' : state.formatCurrency(maxExpense),
                                       style: GoogleFonts.dmSans(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
@@ -554,7 +578,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   Text(Translations.t('daily_average', lang),
                                       style: GoogleFonts.inter(
                                           fontSize: 11, color: mutedColor)),
-                                  Text(state.formatCurrency(dailyAvg),
+                                  Text(state.hideAmounts ? '${state.currencySymbol} ••••' : state.formatCurrency(dailyAvg),
                                       style: GoogleFonts.dmSans(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
@@ -900,7 +924,9 @@ class _ExpenseItem extends StatelessWidget {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Text(
-                  '-${context.read<AppState>().formatCurrency(context.read<AppState>().getConvertedExpenseAmount(expense))}',
+                  context.read<AppState>().hideAmounts
+                      ? '-${context.read<AppState>().currencySymbol} ••••'
+                      : '-${context.read<AppState>().formatCurrency(context.read<AppState>().getConvertedExpenseAmount(expense))}',
                   style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

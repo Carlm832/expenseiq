@@ -56,6 +56,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   // Syncing logic for Dashboard month selection (added by collaborator)
   String _selectedMonth = DateTime.now().toString().substring(0, 7);
 
+  // Balance obscuring
+  bool _hideAmounts = false;
+
   // PIN & Biometric Security
   String _pin = '';      // empty = no PIN set
   bool _isPinLocked = false; // true after app resumes if PIN is set
@@ -95,6 +98,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   List<int> get budgetWarningIntervals => _budgetWarningIntervals;
   int get lastWarningThreshold => _lastWarningThreshold;
   String get selectedMonth => _selectedMonth;
+  bool get hideAmounts => _hideAmounts;
 
   String get language => _language;
   String get currency => _currency;
@@ -238,6 +242,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _pushNotificationsEnabled =
         prefs.getBool('pushNotificationsEnabled') ?? true;
     _overallBudget = prefs.getDouble('overallBudget') ?? 2500.0;
+    _hideAmounts = prefs.getBool('hideAmounts') ?? false;
     
     final String currentMonth = DateTime.now().toIso8601String().substring(0, 7);
     final String lastMonthOpened = prefs.getString('lastMonthOpened') ?? currentMonth;
@@ -326,6 +331,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         'displayName': _userName,
         'profileImage': _profileImage,
         'is2faEnabled': _is2faEnabled,
+        'hideAmounts': _hideAmounts,
       }, SetOptions(merge: true));
     }
   }
@@ -421,6 +427,10 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
           final List<dynamic> notifs = data['notifications'];
           _notifications = notifs.map((n) => AppNotification.fromJson(n)).toList();
           await prefs.setString('notifications', jsonEncode(notifs));
+        }
+        if (data.containsKey('hideAmounts')) {
+          _hideAmounts = data['hideAmounts'];
+          await prefs.setBool('hideAmounts', _hideAmounts);
         }
 
         notifyListeners();
@@ -985,6 +995,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _pin = '';
     _pin = '';
     _isBiometricEnabled = false;
+    _hideAmounts = false;
 
     _screenHistory = ['login'];
     notifyListeners();
@@ -1001,6 +1012,14 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   void setScreenArgs(Map<String, dynamic>? args) {
     _screenArgs = args;
+    notifyListeners();
+  }
+
+  Future<void> toggleHideAmounts() async {
+    _hideAmounts = !_hideAmounts;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hideAmounts', _hideAmounts);
+    await _savePreferences();
     notifyListeners();
   }
 
