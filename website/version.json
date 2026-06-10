@@ -1,6 +1,6 @@
 {
-  "version": "1.1.1",
-  "buildNumber": 12,
-  "releaseNotes": "In-app update downloads, Monthly Spending label, analytics chart values toggle, and support form improvements.",
+  "version": "1.1.2",
+  "buildNumber": 13,
+  "releaseNotes": "Settings app update page, improved receipt currency detection (symbols and ISO codes), plus in-app update and analytics improvements.",
   "apkUrl": "https://expenseiqapp.com/downloads/ExpenseIQ.apk"
 }

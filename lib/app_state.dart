@@ -72,6 +72,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   UpdateManifest? _updateManifest;
   bool _isDownloadingUpdate = false;
   double _updateDownloadProgress = 0;
+  bool _isCheckingForUpdate = false;
 
   // Services
   final CurrencyService _currencyService = CurrencyService();
@@ -118,6 +119,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   UpdateManifest? get updateManifest => _updateManifest;
   bool get isDownloadingUpdate => _isDownloadingUpdate;
   double get updateDownloadProgress => _updateDownloadProgress;
+  bool get isCheckingForUpdate => _isCheckingForUpdate;
 
   int get accountAgeMonths {
     final user = FirebaseAuth.instance.currentUser;
@@ -1211,6 +1213,25 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         type: 'warning',
       );
     }
+  }
+
+  Future<bool> checkForUpdatesManually() async {
+    if (_isCheckingForUpdate || _isDownloadingUpdate) return false;
+
+    _isCheckingForUpdate = true;
+    notifyListeners();
+
+    final manifest = await _updateService.checkForUpdate();
+
+    _isCheckingForUpdate = false;
+    if (manifest != null) {
+      _updateManifest = manifest;
+      notifyListeners();
+      return true;
+    }
+
+    notifyListeners();
+    return false;
   }
 
   Future<void> launchUpdate() async {

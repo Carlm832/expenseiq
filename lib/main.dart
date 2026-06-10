@@ -129,6 +129,8 @@ class AppRouter extends StatelessWidget {
         child = const NotificationsScreen();
       case 'settings':
         child = const SettingsScreen();
+      case 'app_update':
+        child = const AppUpdateScreen();
       case 'appearance':
         child = const AppearanceScreen();
       case 'budget':

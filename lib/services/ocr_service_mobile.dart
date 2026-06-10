@@ -26,6 +26,16 @@ class OcrResult {
 class OcrService {
   final _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
 
+  static final RegExp _currencyCodePattern = RegExp(
+    r'\b(TRY|USD|EUR|GBP|JPY|AUD|CAD|CHF|CNY|TL)\b',
+    caseSensitive: false,
+  );
+
+  static final RegExp _currencyMarkerPattern = RegExp(
+    r'[\$€£₺]|\b(TL|TRY|USD|EUR|GBP|JPY|AUD|CAD|CHF|CNY)\b',
+    caseSensitive: false,
+  );
+
   Future<XFile?> scanReceipt() async {
     try {
       if (Platform.isIOS) {
@@ -311,7 +321,10 @@ class OcrService {
     
     // 1. Pre-cleaning: remove currency symbols and whitespace between digits
     String cleaned = line.toUpperCase().trim();
-    cleaned = cleaned.replaceAll(RegExp(r'[\$€£₺]|TL|TRY'), '');
+    cleaned = cleaned.replaceAll(
+        RegExp(r'[\$€£₺]|\b(TL|TRY|USD|EUR|GBP|JPY|AUD|CAD|CHF|CNY)\b',
+            caseSensitive: false),
+        '');
     cleaned = cleaned.replaceAllMapped(RegExp(r'(\d)\s+(\d)'), (m) => '${m[1]}${m[2]}');
 
     // 2. OCR character substitution (Apply only if it helps form a number)
@@ -354,8 +367,7 @@ class OcrService {
     // STRICT VALIDATION: If there is no separator, it MUST contain a currency 
     // symbol in the raw line to be considered a valid monetary price.
     // This prevents random IDs, zip codes, or quantites from being extracted.
-    final hasCurrency = RegExp(r'[\$€£₺]|TL|TRY', caseSensitive: false).hasMatch(line);
-    if (!hasCurrency) return null;
+    if (!_lineHasCurrencyMarker(line)) return null;
 
     final digitsOnly = cleaned.replaceAll(RegExp(r'\D'), '');
     if (digitsOnly.length > 7) return null; 
@@ -471,31 +483,84 @@ class OcrService {
     }).join(' ');
   }
 
+  bool _lineHasCurrencyMarker(String line) {
+    return _currencyMarkerPattern.hasMatch(line);
+  }
+
+  String? _currencyFromCodeMatch(String text) {
+    final match = _currencyCodePattern.firstMatch(text.toUpperCase());
+    if (match == null) return null;
+    final code = match.group(1)!.toUpperCase();
+    return code == 'TL' ? 'TRY' : code;
+  }
+
+  String? _currencyFromAliases(String lower) {
+    if (RegExp(r'\b(usd|dolar|dollar|us dollar)\b').hasMatch(lower)) {
+      return 'USD';
+    }
+    if (RegExp(r'\b(eur|euro|avro)\b').hasMatch(lower)) return 'EUR';
+    if (RegExp(r'\b(gbp|pound|sterling)\b').hasMatch(lower)) return 'GBP';
+    if (RegExp(r'\b(jpy|yen)\b').hasMatch(lower)) return 'JPY';
+    if (RegExp(r'\b(aud|australian dollar)\b').hasMatch(lower)) return 'AUD';
+    if (RegExp(r'\b(cad|canadian dollar)\b').hasMatch(lower)) return 'CAD';
+    if (RegExp(r'\b(chf|swiss franc|franc)\b').hasMatch(lower)) return 'CHF';
+    if (RegExp(r'\b(cny|rmb|yuan|renminbi)\b').hasMatch(lower)) return 'CNY';
+    if (RegExp(r'\b(try|tl|turkish lira|lira)\b').hasMatch(lower)) {
+      return 'TRY';
+    }
+    return null;
+  }
+
   String? _extractCurrency(List<String> lines) {
+    final joined = lines.join('\n');
+
+    // 1. Currency symbols (highest confidence)
+    if (joined.contains('\$')) return 'USD';
+    if (joined.contains('€')) return 'EUR';
+    if (joined.contains('£')) return 'GBP';
+    if (joined.contains('₺')) return 'TRY';
+    if (RegExp(r'\bTL\b', caseSensitive: false).hasMatch(joined)) {
+      return 'TRY';
+    }
+
+    // 2. Bank receipt labels with currency code or name on same line
+    final labelPatterns = [
+      RegExp(r'(?:currency|ccy|curr|para cinsi|doviz|döviz|islem para|işlem para)\s*[:#]?\s*(.+)',
+          caseSensitive: false),
+    ];
     for (final line in lines) {
-      final lower = line.toLowerCase();
-      if (line.contains('\$')) return 'USD';
-      if (line.contains('€')) return 'EUR';
-      if (line.contains('£')) return 'GBP';
-      if (line.contains('₺') || line.contains('TL')) return 'TRY';
-      
-      // Explicit labels
-      if (lower.contains('para cinsi')) {
-        if (line.contains('EUR') || line.contains('Avro') || line.contains('Euro')) return 'EUR';
-        if (line.contains('USD') || line.contains('Dolar')) return 'USD';
-        if (line.contains('TL') || line.contains('TRY')) return 'TRY';
+      for (final pattern in labelPatterns) {
+        final match = pattern.firstMatch(line);
+        if (match != null) {
+          final value = match.group(1)!;
+          final fromCode = _currencyFromCodeMatch(value);
+          if (fromCode != null) return fromCode;
+          final fromAlias = _currencyFromAliases(value.toLowerCase());
+          if (fromAlias != null) return fromAlias;
+        }
       }
     }
-    
-    // Inference from keywords
+
+    // 3. Standalone ISO currency codes anywhere on the receipt
     for (final line in lines) {
-      final lower = line.toLowerCase();
-      if (lower.contains('toplam') || lower.contains('kasa') || 
-          lower.contains('girne') || lower.contains('lefkosa') || 
-          lower.contains('lefkoşa') || lower.contains('caddesi')) {
-        return 'TRY';
+      final fromCode = _currencyFromCodeMatch(line);
+      if (fromCode != null) return fromCode;
+    }
+
+    // 4. Spelled-out currency names
+    for (final line in lines) {
+      final fromAlias = _currencyFromAliases(line.toLowerCase());
+      if (fromAlias != null) return fromAlias;
+    }
+
+    // 5. Amount lines that include a code next to the value (e.g. "150.00 USD")
+    for (final line in lines) {
+      if (_parsePriceAggr(line) != null) {
+        final fromCode = _currencyFromCodeMatch(line);
+        if (fromCode != null) return fromCode;
       }
     }
+
     return null;
   }
 

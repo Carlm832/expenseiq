@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../services/translations.dart';
@@ -185,6 +186,16 @@ class SettingsScreen extends StatelessWidget {
                 await state.refreshRates();
               }),
           _SettingsTile(
+              icon: Icons.system_update_alt,
+              label: Translations.t('app_update', state.language),
+              value: state.updateManifest != null
+                  ? Translations.t('update_available_short', state.language)
+                  : '',
+              fgColor: fgColor,
+              mutedColor: mutedColor,
+              borderColor: borderColor,
+              onTap: () => state.setCurrentScreen('app_update')),
+          _SettingsTile(
               icon: Icons.notifications_outlined,
               label: Translations.t('push_notifications', state.language),
               value: state.pushNotificationsEnabled
@@ -328,6 +339,247 @@ class SettingsScreen extends StatelessWidget {
         ]),
       ),
     ]);
+  }
+}
+
+class AppUpdateScreen extends StatefulWidget {
+  const AppUpdateScreen({super.key});
+
+  @override
+  State<AppUpdateScreen> createState() => _AppUpdateScreenState();
+}
+
+class _AppUpdateScreenState extends State<AppUpdateScreen> {
+  String _currentVersion = '';
+  String _currentBuild = '';
+  bool _hasChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initialize());
+  }
+
+  Future<void> _initialize() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() {
+      _currentVersion = info.version;
+      _currentBuild = info.buildNumber;
+    });
+
+    final state = context.read<AppState>();
+    if (state.updateManifest == null) {
+      await state.checkForUpdatesManually();
+    }
+    if (mounted) setState(() => _hasChecked = true);
+  }
+
+  Future<void> _checkForUpdates(AppState state) async {
+    final hasUpdate = await state.checkForUpdatesManually();
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(hasUpdate
+            ? Translations.t('update_found', state.language)
+            : Translations.t('up_to_date', state.language)),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final lang = state.language;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final cardColor = isDark ? AppColors.darkCard : AppColors.card;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final manifest = state.updateManifest;
+    final downloading = state.isDownloadingUpdate;
+    final checking = state.isCheckingForUpdate;
+
+    return _buildSimpleScreen(
+      context,
+      Translations.t('app_update_title', lang),
+      Translations.t('app_update_subtitle', lang),
+      [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.system_update,
+                        color: AppColors.secondary),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          Translations.t('current_version', lang),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: mutedColor,
+                          ),
+                        ),
+                        Text(
+                          _currentVersion.isEmpty
+                              ? '...'
+                              : 'v$_currentVersion (${Translations.t('build', lang)} $_currentBuild)',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: fgColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: (checking || downloading)
+                      ? null
+                      : () => _checkForUpdates(state),
+                  icon: checking
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.refresh, size: 18),
+                  label: Text(checking
+                      ? Translations.t('checking_for_updates', lang)
+                      : Translations.t('check_for_updates', lang)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (manifest != null) ...[
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                  color: AppColors.secondary.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${Translations.t('update_available', lang)} v${manifest.version}',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: fgColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  manifest.releaseNotes,
+                  style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
+                ),
+                if (downloading) ...[
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: state.updateDownloadProgress > 0
+                          ? state.updateDownloadProgress
+                          : null,
+                      minHeight: 8,
+                      backgroundColor:
+                          AppColors.secondary.withValues(alpha: 0.15),
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${Translations.t('downloading_update', lang)} ${(state.updateDownloadProgress * 100).clamp(0, 100).toStringAsFixed(0)}%',
+                    style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: downloading ? null : () => state.launchUpdate(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(downloading
+                        ? Translations.t('downloading_update', lang)
+                        : Translations.t('update_now', lang)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ] else if (_hasChecked && !checking && _currentVersion.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: borderColor),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle_outline,
+                    color: AppColors.secondary, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    Translations.t('up_to_date', lang),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: fgColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        const SizedBox(height: 16),
+        Text(
+          Translations.t('app_update_help', lang),
+          style: GoogleFonts.inter(fontSize: 12, color: mutedColor, height: 1.5),
+        ),
+      ],
+    );
   }
 }
 
@@ -676,8 +928,22 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
     setState(() => _isSending = true);
 
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(Translations.t(
+                'fill_all_fields', context.read<AppState>().language)),
+          ),
+        );
+        setState(() => _isSending = false);
+      }
+      return;
+    }
+
     final supportRequest = {
-      'userId': FirebaseAuth.instance.currentUser?.uid ?? '',
+      'userId': userId,
       'userEmail': userEmail,
       'userName': _nameCtrl.text.trim().isEmpty
           ? context.read<AppState>().userName
