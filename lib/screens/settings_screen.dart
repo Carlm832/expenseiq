@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../app_state.dart';
 import '../theme.dart';
@@ -143,7 +144,17 @@ class SettingsScreen extends StatelessWidget {
                     content: SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        children: ['TRY (₺)', 'USD (\$)', 'EUR (€)', 'GBP (£)', 'JPY (¥)', 'AUD (\$)', 'CAD (\$)', 'CHF (Fr)', 'CNY (¥)']
+                        children: [
+                          'TRY (₺)',
+                          'USD (\$)',
+                          'EUR (€)',
+                          'GBP (£)',
+                          'JPY (¥)',
+                          'AUD (\$)',
+                          'CAD (\$)',
+                          'CHF (Fr)',
+                          'CNY (¥)'
+                        ]
                             .map((curr) => ListTile(
                                   title: Text(curr),
                                   selected: state.currency == curr,
@@ -167,7 +178,9 @@ class SettingsScreen extends StatelessWidget {
               borderColor: borderColor,
               onTap: () async {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(Translations.t('updating_rates', state.language))),
+                  SnackBar(
+                      content: Text(
+                          Translations.t('updating_rates', state.language))),
                 );
                 await state.refreshRates();
               }),
@@ -183,18 +196,22 @@ class SettingsScreen extends StatelessWidget {
               onTap: () async {
                 if (!state.pushNotificationsEnabled) {
                   FirebaseMessaging messaging = FirebaseMessaging.instance;
-                  NotificationSettings settings = await messaging.requestPermission(
+                  NotificationSettings settings =
+                      await messaging.requestPermission(
                     alert: true,
                     badge: true,
                     sound: true,
                   );
-                  if (settings.authorizationStatus == AuthorizationStatus.authorized ||
-                      settings.authorizationStatus == AuthorizationStatus.provisional) {
+                  if (settings.authorizationStatus ==
+                          AuthorizationStatus.authorized ||
+                      settings.authorizationStatus ==
+                          AuthorizationStatus.provisional) {
                     state.setPushNotificationsEnabled(true);
                   } else {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Notification permissions denied.')),
+                        const SnackBar(
+                            content: Text('Notification permissions denied.')),
                       );
                     }
                   }
@@ -220,7 +237,8 @@ class SettingsScreen extends StatelessWidget {
               isDestructive: true,
               onTap: () {
                 final user = FirebaseAuth.instance.currentUser;
-                final isPasswordUser = user != null && user.providerData.any((p) => p.providerId == 'password');
+                final isPasswordUser = user != null &&
+                    user.providerData.any((p) => p.providerId == 'password');
                 final passwordCtrl = TextEditingController();
 
                 showDialog(
@@ -232,8 +250,9 @@ class SettingsScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(Translations.t(
-                            'clear_data_confirm_msg', state.language),
+                        Text(
+                          Translations.t(
+                              'clear_data_confirm_msg', state.language),
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -242,12 +261,17 @@ class SettingsScreen extends StatelessWidget {
                         ),
                         if (isPasswordUser) ...[
                           const SizedBox(height: 16),
-                          Text('Enter Password to Confirm:', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: fgColor)),
+                          Text('Enter Password to Confirm:',
+                              style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: fgColor)),
                           const SizedBox(height: 8),
                           TextField(
                             controller: passwordCtrl,
                             obscureText: true,
-                            decoration: const InputDecoration(hintText: 'Your password'),
+                            decoration: const InputDecoration(
+                                hintText: 'Your password'),
                           ),
                         ],
                       ],
@@ -261,11 +285,15 @@ class SettingsScreen extends StatelessWidget {
                         onPressed: () async {
                           try {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(Translations.t('deleting_data', state.language))),
+                              SnackBar(
+                                  content: Text(Translations.t(
+                                      'deleting_data', state.language))),
                             );
-                            
-                            await state.clearAllData(password: isPasswordUser ? passwordCtrl.text : null);
-                            
+
+                            await state.clearAllData(
+                                password:
+                                    isPasswordUser ? passwordCtrl.text : null);
+
                             if (ctx.mounted) {
                               Navigator.pop(ctx);
                             }
@@ -273,14 +301,18 @@ class SettingsScreen extends StatelessWidget {
                             if (ctx.mounted) {
                               Navigator.pop(ctx);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Authentication Error: ${e.message}')),
+                                SnackBar(
+                                    content: Text(
+                                        'Authentication Error: ${e.message}')),
                               );
                             }
                           } catch (e) {
                             if (ctx.mounted) {
                               Navigator.pop(ctx);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error: ${e.toString().replaceAll("Exception: ", "")}')),
+                                SnackBar(
+                                    content: Text(
+                                        'Error: ${e.toString().replaceAll("Exception: ", "")}')),
                               );
                             }
                           }
@@ -357,8 +389,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     super.initState();
     final state = context.read<AppState>();
     final overallBudget = state.getConvertedOverallBudget();
-    _ctrl.text =
-        overallBudget > 0 ? overallBudget.toStringAsFixed(0) : '';
+    _ctrl.text = overallBudget > 0 ? overallBudget.toStringAsFixed(0) : '';
   }
 
   @override
@@ -405,40 +436,51 @@ class _BudgetScreenState extends State<BudgetScreen> {
         ]),
       ),
       const SizedBox(height: 24),
-      
+
       // Warning Thresholds
       Row(children: [
-        Expanded(child: Text(Translations.t('warning_thresholds', lang),
-          style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w700, color: fgColor))),
+        Expanded(
+            child: Text(Translations.t('warning_thresholds', lang),
+                style: GoogleFonts.dmSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: fgColor))),
         IconButton(
           onPressed: () => _showAddThresholdDialog(context),
           icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
         ),
       ]),
       const SizedBox(height: 12),
-      
+
       if (state.budgetWarningIntervals.isEmpty)
-        Center(child: Padding(
+        Center(
+            child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Text(Translations.t('no_data', lang), 
-            style: GoogleFonts.inter(color: fgColor.withValues(alpha: 0.5))),
+          child: Text(Translations.t('no_data', lang),
+              style: GoogleFonts.inter(color: fgColor.withValues(alpha: 0.5))),
         ))
       else
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: state.budgetWarningIntervals.map((t) => Chip(
-            label: Text('$t%'),
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-            labelStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
-            onDeleted: () {
-               final newList = List<int>.from(state.budgetWarningIntervals)..remove(t);
-               state.setBudgetWarningIntervals(newList);
-            },
-            deleteIconColor: AppColors.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-            side: BorderSide.none,
-          )).toList(),
+          children: state.budgetWarningIntervals
+              .map((t) => Chip(
+                    label: Text('$t%'),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    labelStyle: const TextStyle(
+                        color: AppColors.primary, fontWeight: FontWeight.w600),
+                    onDeleted: () {
+                      final newList =
+                          List<int>.from(state.budgetWarningIntervals)
+                            ..remove(t);
+                      state.setBudgetWarningIntervals(newList);
+                    },
+                    deleteIconColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    side: BorderSide.none,
+                  ))
+              .toList(),
         ),
 
       const SizedBox(height: 32),
@@ -472,7 +514,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(Translations.t('cancel', state.language))),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(Translations.t('cancel', state.language))),
           TextButton(
             onPressed: () {
               final val = int.tryParse(ctrl.text);
@@ -482,14 +526,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   state.setBudgetWarningIntervals(newList);
                   Navigator.pop(ctx);
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(Translations.t('threshold_already_exists', state.language)))
-                  );
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(Translations.t(
+                          'threshold_already_exists', state.language))));
                 }
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(Translations.t('invalid_threshold', state.language)))
-                );
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        Translations.t('invalid_threshold', state.language))));
               }
             },
             child: Text(Translations.t('save', state.language)),
@@ -527,19 +571,17 @@ class HelpScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: borderColor)),
             padding: const EdgeInsets.all(16),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(Translations.t('faq_q$index', lang),
-                      style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: fgColor)),
-                  const SizedBox(height: 6),
-                  Text(Translations.t('faq_a$index', lang),
-                      style:
-                          GoogleFonts.inter(fontSize: 12, color: mutedColor)),
-                ]),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(Translations.t('faq_q$index', lang),
+                  style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: fgColor)),
+              const SizedBox(height: 6),
+              Text(Translations.t('faq_a$index', lang),
+                  style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
+            ]),
           ),
         );
       }),
@@ -582,17 +624,47 @@ class ContactUsScreen extends StatefulWidget {
 class _ContactUsScreenState extends State<ContactUsScreen> {
   final _subjectCtrl = TextEditingController();
   final _messageCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
   bool _isSending = false;
   String? _selectedSuggestion;
 
   final List<(String, String)> _suggestions = [
-    ('How to add an expense?', 'Tap the floating "+" button on the dashboard to quickly add any expense.'),
-    ('Currency update frequency?', 'Exchange rates are updated every 24 hours automatically.'),
-    ('Exporting reports?', 'You can export PDF/CSV from the top of the Analytics screen.'),
-    ('Changing language?', 'Go to Profile -> Settings -> Language to switch between English and Turkish.'),
+    (
+      'How to add an expense?',
+      'Tap the floating "+" button on the dashboard to quickly add any expense.'
+    ),
+    (
+      'Currency update frequency?',
+      'Exchange rates are updated every 24 hours automatically.'
+    ),
+    (
+      'Exporting reports?',
+      'You can export PDF/CSV from the top of the Analytics screen.'
+    ),
+    (
+      'Changing language?',
+      'Go to Profile -> Settings -> Language to switch between English and Turkish.'
+    ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl.text = context.read<AppState>().userName;
+  }
+
   Future<void> _sendMessage() async {
+    final userEmail = context.read<AppState>().userEmail;
+    if (userEmail.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(Translations.t(
+              'fill_all_fields', context.read<AppState>().language)),
+        ),
+      );
+      return;
+    }
+
     if (_subjectCtrl.text.trim().isEmpty || _messageCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -604,38 +676,50 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
     setState(() => _isSending = true);
 
-    final Uri emailLaunchUri = Uri(
-      scheme: 'mailto',
-      path: 'support@expenseiqapp.com',
-      queryParameters: {
-        'subject': '[Support] ${_subjectCtrl.text}',
-        'body': _messageCtrl.text,
-      },
-    );
+    final supportRequest = {
+      'userId': FirebaseAuth.instance.currentUser?.uid ?? '',
+      'userEmail': userEmail,
+      'userName': _nameCtrl.text.trim().isEmpty
+          ? context.read<AppState>().userName
+          : _nameCtrl.text.trim(),
+      'subject': _subjectCtrl.text.trim(),
+      'message': _messageCtrl.text.trim(),
+      'status': 'open',
+      'source': 'mobile_app',
+      'createdAt': FieldValue.serverTimestamp(),
+    };
 
-    if (await canLaunchUrl(emailLaunchUri)) {
-      await launchUrl(emailLaunchUri);
-    } else {
-      // Fallback: Simulate success if mail client fails
-      await Future.delayed(const Duration(seconds: 1));
+    try {
+      await FirebaseFirestore.instance
+          .collection('support_requests')
+          .add(supportRequest);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(Translations.t(
+                'message_sent_success', context.read<AppState>().language))),
+      );
+      context.read<AppState>().goBack();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(Translations.t(
+                  'message_send_failed', context.read<AppState>().language))),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSending = false);
+      }
     }
-
-    if (!mounted) return;
-    setState(() => _isSending = false);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(Translations.t(
-              'message_sent_success', context.read<AppState>().language))),
-    );
-
-    context.read<AppState>().goBack();
   }
 
   @override
   void dispose() {
     _subjectCtrl.dispose();
     _messageCtrl.dispose();
+    _nameCtrl.dispose();
     super.dispose();
   }
 
@@ -649,25 +733,29 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     final lang = context.read<AppState>().language;
     return _buildSimpleScreen(context, Translations.t('contact_us_title', lang),
         Translations.t('send_message_subtitle', lang), [
-      Text('Suggested Solutions', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: fgColor)),
+      Text('Suggested Solutions',
+          style: GoogleFonts.inter(
+              fontSize: 13, fontWeight: FontWeight.w600, color: fgColor)),
       const SizedBox(height: 12),
       Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: _suggestions.map((s) => ChoiceChip(
-          label: Text(s.$1, style: GoogleFonts.inter(fontSize: 11)),
-          selected: _selectedSuggestion == s.$1,
-          onSelected: (selected) {
-            setState(() {
-              _selectedSuggestion = selected ? s.$1 : null;
-              if (selected) {
-                _subjectCtrl.text = s.$1;
-              }
-            });
-          },
-          selectedColor: AppColors.primary.withValues(alpha: 0.1),
-          checkmarkColor: AppColors.primary,
-        )).toList(),
+        children: _suggestions
+            .map((s) => ChoiceChip(
+                  label: Text(s.$1, style: GoogleFonts.inter(fontSize: 11)),
+                  selected: _selectedSuggestion == s.$1,
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedSuggestion = selected ? s.$1 : null;
+                      if (selected) {
+                        _subjectCtrl.text = s.$1;
+                      }
+                    });
+                  },
+                  selectedColor: AppColors.primary.withValues(alpha: 0.1),
+                  checkmarkColor: AppColors.primary,
+                ))
+            .toList(),
       ),
       if (_selectedSuggestion != null) ...[
         const SizedBox(height: 16),
@@ -677,14 +765,22 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           decoration: BoxDecoration(
             color: AppColors.secondary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
+            border:
+                Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Instant Solution:', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.secondary)),
+              Text('Instant Solution:',
+                  style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.secondary)),
               const SizedBox(height: 4),
-              Text(_suggestions.firstWhere((s) => s.$1 == _selectedSuggestion).$2,
+              Text(
+                  _suggestions
+                      .firstWhere((s) => s.$1 == _selectedSuggestion)
+                      .$2,
                   style: GoogleFonts.inter(fontSize: 12, color: fgColor)),
             ],
           ),
@@ -698,6 +794,37 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             border: Border.all(color: borderColor)),
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(Translations.t('full_name', lang),
+              style: GoogleFonts.inter(
+                  fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _nameCtrl,
+            decoration: InputDecoration(
+              hintText: Translations.t('full_name', lang),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(Translations.t('email', lang),
+              style: GoogleFonts.inter(
+                  fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
+          const SizedBox(height: 6),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkBackground : AppColors.background,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: borderColor),
+            ),
+            child: Text(
+              context.read<AppState>().userEmail.isNotEmpty
+                  ? context.read<AppState>().userEmail
+                  : Translations.t('email', lang),
+              style: GoogleFonts.inter(fontSize: 14, color: fgColor),
+            ),
+          ),
+          const SizedBox(height: 16),
           Text(Translations.t('subject', lang),
               style: GoogleFonts.inter(
                   fontSize: 13, fontWeight: FontWeight.w500, color: fgColor)),
@@ -757,7 +884,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       setState(() {
-        _isPasswordUser = user.providerData.any((p) => p.providerId == 'password');
+        _isPasswordUser =
+            user.providerData.any((p) => p.providerId == 'password');
       });
     }
   }
@@ -793,7 +921,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                     context: context,
                     builder: (ctx) => AlertDialog(
                       title: const Text('App PIN Required'),
-                      content: const Text('You must set up an App PIN before enabling biometric security.'),
+                      content: const Text(
+                          'You must set up an App PIN before enabling biometric security.'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx),
@@ -849,8 +978,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                             Navigator.pop(ctx);
                           },
                           child: const Text('Remove PIN',
-                              style: TextStyle(
-                                  color: AppColors.destructive)),
+                              style: TextStyle(color: AppColors.destructive)),
                         ),
                       ],
                     ),
@@ -871,7 +999,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               }),
           _SettingsTile(
               icon: Icons.vpn_key_outlined,
-              label: _isPasswordUser ? 'Account Password' : 'Set Account Password',
+              label:
+                  _isPasswordUser ? 'Account Password' : 'Set Account Password',
               value: _isPasswordUser ? 'Enabled' : 'Not Set',
               fgColor: fgColor,
               mutedColor: mutedColor,
@@ -944,7 +1073,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: Text(
           Translations.t('privacy_policy_text', lang),
-          style: GoogleFonts.inter(fontSize: 13, color: mutedColor, height: 1.6),
+          style:
+              GoogleFonts.inter(fontSize: 13, color: mutedColor, height: 1.6),
         ),
       ),
     ]);
@@ -973,10 +1103,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final state = context.read<AppState>();
     _nameCtrl = TextEditingController(text: state.userName);
     _emailCtrl = TextEditingController(text: state.userEmail);
-    
+
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      _isPasswordUser = user.providerData.any((p) => p.providerId == 'password');
+      _isPasswordUser =
+          user.providerData.any((p) => p.providerId == 'password');
     }
   }
 
@@ -1024,12 +1155,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(hintText: 'you@example.com')),
-          
           if (_isPasswordUser) ...[
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
-            Text('Change Password', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: fgColor)),
+            Text('Change Password',
+                style: GoogleFonts.inter(
+                    fontSize: 14, fontWeight: FontWeight.bold, color: fgColor)),
             const SizedBox(height: 16),
             Text('Current Password',
                 style: GoogleFonts.inter(
@@ -1038,7 +1170,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             TextField(
                 controller: _currentPasswordCtrl,
                 obscureText: true,
-                decoration: const InputDecoration(hintText: 'Current password')),
+                decoration:
+                    const InputDecoration(hintText: 'Current password')),
             const SizedBox(height: 16),
             Text('New Password',
                 style: GoogleFonts.inter(
@@ -1055,40 +1188,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: _isSaving ? null : () async {
-            setState(() => _isSaving = true);
-            try {
-              if (_isPasswordUser && _currentPasswordCtrl.text.isNotEmpty && _newPasswordCtrl.text.isNotEmpty) {
-                await state.updatePassword(_currentPasswordCtrl.text, _newPasswordCtrl.text);
-              }
-              
-              if (_nameCtrl.text != state.userName) {
-                await state.setUserName(_nameCtrl.text.trim());
-              }
-              if (_emailCtrl.text != state.userEmail) {
-                await state.setUserEmail(_emailCtrl.text.trim());
-              }
-              if (!context.mounted) return;
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile updated successfully!')),
-              );
-              state.goBack();
-            } catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: ${e.toString().replaceAll("Exception: ", "")}')),
-                );
-              }
-            } finally {
-              if (context.mounted) setState(() => _isSaving = false);
-            }
-          },
+          onPressed: _isSaving
+              ? null
+              : () async {
+                  setState(() => _isSaving = true);
+                  try {
+                    if (_isPasswordUser &&
+                        _currentPasswordCtrl.text.isNotEmpty &&
+                        _newPasswordCtrl.text.isNotEmpty) {
+                      await state.updatePassword(
+                          _currentPasswordCtrl.text, _newPasswordCtrl.text);
+                    }
+
+                    if (_nameCtrl.text != state.userName) {
+                      await state.setUserName(_nameCtrl.text.trim());
+                    }
+                    if (_emailCtrl.text != state.userEmail) {
+                      await state.setUserEmail(_emailCtrl.text.trim());
+                    }
+                    if (!context.mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Profile updated successfully!')),
+                    );
+                    state.goBack();
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(
+                                'Error: ${e.toString().replaceAll("Exception: ", "")}')),
+                      );
+                    }
+                  } finally {
+                    if (context.mounted) setState(() => _isSaving = false);
+                  }
+                },
           child: _isSaving
               ? const SizedBox(
                   height: 18,
                   width: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
                 )
               : Text(Translations.t('save_changes', lang)),
         ),
