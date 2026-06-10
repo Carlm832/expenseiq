@@ -19,6 +19,7 @@ class AnalyticsScreen extends StatefulWidget {
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   String _timeRange = 'month'; // 'week', 'month', 'custom'
   DateTimeRange? _customRange;
+  bool _showChartValues = false;
 
   // Calendar tab state
   String _activeTab = 'overview'; // 'overview' or 'calendar'
@@ -434,6 +435,55 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                     : Translations.t('last_six_months', lang),
                             style: GoogleFonts.inter(
                                 fontSize: 11, color: mutedColor)),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () =>
+                              setState(() => _showChartValues = !_showChartValues),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _showChartValues
+                                  ? AppColors.primary.withValues(alpha: 0.12)
+                                  : mutedBg,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _showChartValues
+                                    ? AppColors.primary.withValues(alpha: 0.35)
+                                    : borderColor,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _showChartValues
+                                      ? Icons.visibility
+                                      : Icons.visibility_outlined,
+                                  size: 13,
+                                  color: _showChartValues
+                                      ? AppColors.primary
+                                      : mutedColor,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _showChartValues
+                                      ? Translations.t(
+                                          'hide_chart_values', lang)
+                                      : Translations.t(
+                                          'show_chart_values', lang),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: _showChartValues
+                                        ? AppColors.primary
+                                        : mutedColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ]),
                       const SizedBox(height: 16),
                       SizedBox(
@@ -448,8 +498,22 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           ),
                           borderData: FlBorderData(show: false),
                           titlesData: FlTitlesData(
-                            leftTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: _showChartValues,
+                                reservedSize: _showChartValues ? 44 : 0,
+                                getTitlesWidget: (value, meta) {
+                                  if (value <= 0) return const SizedBox();
+                                  return Text(
+                                    state.formatCurrencySimple(value),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 9,
+                                      color: mutedColor,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
                             rightTitles: const AxisTitles(
                                 sideTitles: SideTitles(showTitles: false)),
                             topTitles: const AxisTitles(
@@ -520,6 +584,35 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           ],
                         )),
                       ),
+                      if (_showChartValues) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: chartData
+                              .where((point) => point.$2 > 0)
+                              .map(
+                                (point) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: mutedBg,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: borderColor),
+                                  ),
+                                  child: Text(
+                                    '${point.$1}: ${state.hideAmounts ? '${state.currencySymbol} ••••' : state.formatCurrencySimple(point.$2)}',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: fgColor,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
                     ]),
               ),
               const SizedBox(height: 16),

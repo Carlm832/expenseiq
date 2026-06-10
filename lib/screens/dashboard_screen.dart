@@ -267,7 +267,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                Text(Translations.t('total_spending', lang),
+                                Text(Translations.t('monthly_spending', lang),
                                     style: GoogleFonts.inter(
                                         fontSize: 13,
                                         color: Colors.white
@@ -763,10 +763,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildUpdateAlert(BuildContext context, UpdateManifest manifest) {
-    final state = context.read<AppState>();
+    final state = context.watch<AppState>();
+    final lang = state.language;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
     final mutedColor = isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+    final downloading = state.isDownloadingUpdate;
+    final progress = state.updateDownloadProgress;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -783,29 +786,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               const Icon(Icons.system_update, color: AppColors.secondary, size: 20),
               const SizedBox(width: 8),
-              Text('Update Available!',
+              Text(Translations.t('update_available', lang),
                   style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.bold, color: fgColor)),
               const Spacer(),
-              GestureDetector(
-                onTap: () => state.dismissUpdate(),
-                child: Icon(Icons.close, size: 18, color: mutedColor),
-              ),
+              if (!downloading)
+                GestureDetector(
+                  onTap: () => state.dismissUpdate(),
+                  child: Icon(Icons.close, size: 18, color: mutedColor),
+                ),
             ],
           ),
           const SizedBox(height: 8),
           Text(manifest.releaseNotes,
               style: GoogleFonts.inter(fontSize: 12, color: mutedColor)),
+          if (downloading) ...[
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progress > 0 ? progress : null,
+                minHeight: 8,
+                backgroundColor: AppColors.secondary.withValues(alpha: 0.15),
+                color: AppColors.secondary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${Translations.t('downloading_update', lang)} ${(progress * 100).clamp(0, 100).toStringAsFixed(0)}%',
+              style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
+            ),
+          ],
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => state.launchUpdate(),
+              onPressed: downloading ? null : () => state.launchUpdate(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: const Text('Update Now'),
+              child: Text(downloading
+                  ? Translations.t('downloading_update', lang)
+                  : Translations.t('update_now', lang)),
             ),
           ),
         ],

@@ -70,6 +70,8 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   bool _authResolved = false;
   bool _splashDelayComplete = false;
   UpdateManifest? _updateManifest;
+  bool _isDownloadingUpdate = false;
+  double _updateDownloadProgress = 0;
 
   // Services
   final CurrencyService _currencyService = CurrencyService();
@@ -114,7 +116,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   bool get isBiometricEnabled => _isBiometricEnabled;
   bool get is2faEnabled => _is2faEnabled;
   UpdateManifest? get updateManifest => _updateManifest;
-  
+  bool get isDownloadingUpdate => _isDownloadingUpdate;
+  double get updateDownloadProgress => _updateDownloadProgress;
+
   int get accountAgeMonths {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || user.metadata.creationTime == null) return 1;
@@ -1210,14 +1214,43 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> launchUpdate() async {
-    if (_updateManifest != null) {
-      await _updateService.launchUpdateUrl(_updateManifest!.apkUrl);
-      _updateManifest = null; // Clear so popup doesn't reappear until next restart
+    if (_updateManifest == null || _isDownloadingUpdate) return;
+
+    final apkUrl = _updateManifest!.apkUrl;
+    _isDownloadingUpdate = true;
+    _updateDownloadProgress = 0;
+    notifyListeners();
+
+    final installed = await _updateService.downloadAndInstallApk(
+      apkUrl,
+      onProgress: (progress) {
+        _updateDownloadProgress = progress;
+        notifyListeners();
+      },
+    );
+
+    _isDownloadingUpdate = false;
+    notifyListeners();
+
+    if (installed) {
+      _updateManifest = null;
       notifyListeners();
+      return;
     }
+
+    final opened = await _updateService.launchUpdateUrl(apkUrl);
+    if (opened) return;
+
+    pushNotification(
+      title: 'update_failed',
+      message:
+          'Could not download the update. Visit expenseiqapp.com to get the latest APK.',
+      type: 'warning',
+    );
   }
 
   void dismissUpdate() {
+    if (_isDownloadingUpdate) return;
     _updateManifest = null;
     notifyListeners();
   }

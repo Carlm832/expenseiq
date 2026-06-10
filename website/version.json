@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "buildNumber": 11,
-  "releaseNotes": "New: In-app support request submission with user context, plus UI improvements and update notifications.",
+  "version": "1.1.1",
+  "buildNumber": 12,
+  "releaseNotes": "In-app update downloads, Monthly Spending label, analytics chart values toggle, and support form improvements.",
   "apkUrl": "https://expenseiqapp.com/downloads/ExpenseIQ.apk"
 }
