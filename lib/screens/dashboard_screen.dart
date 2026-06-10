@@ -243,6 +243,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ]),
                   const SizedBox(height: 16),
+                  if (state.needsSigningMigration)
+                    _buildMigrationNotice(context),
                   if (state.updateManifest != null) _buildUpdateAlert(context, state.updateManifest!),
                   const SizedBox(height: 16),
 
@@ -758,6 +760,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ]),
               const SizedBox(height: 8),
             ]),
+      ),
+    );
+  }
+
+  Widget _buildMigrationNotice(BuildContext context) {
+    final lang = context.read<AppState>().language;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fgColor = isDark ? AppColors.darkForeground : AppColors.foreground;
+    final mutedColor =
+        isDark ? AppColors.darkMutedForeground : AppColors.mutedForeground;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.info_outline, color: Colors.orange, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  Translations.t('migration_notice_title', lang),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: fgColor,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  Translations.t('migration_notice_body', lang),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    height: 1.45,
+                    color: mutedColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

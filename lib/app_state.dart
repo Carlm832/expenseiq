@@ -10,10 +10,12 @@ import 'services/currency_service.dart';
 import 'services/bio_service.dart';
 import 'services/translations.dart';
 import 'services/update_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:async';
 
 class AppState extends ChangeNotifier with WidgetsBindingObserver {
+  static const int releaseSigningBuildNumber = 14;
   // Auth
   bool _isLoggedIn = false;
   String _userName = '';
@@ -73,6 +75,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   bool _isDownloadingUpdate = false;
   double _updateDownloadProgress = 0;
   bool _isCheckingForUpdate = false;
+  int _currentBuildNumber = 0;
 
   // Services
   final CurrencyService _currencyService = CurrencyService();
@@ -120,6 +123,10 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   bool get isDownloadingUpdate => _isDownloadingUpdate;
   double get updateDownloadProgress => _updateDownloadProgress;
   bool get isCheckingForUpdate => _isCheckingForUpdate;
+  int get currentBuildNumber => _currentBuildNumber;
+  bool get needsSigningMigration =>
+      _currentBuildNumber > 0 &&
+      _currentBuildNumber < releaseSigningBuildNumber;
 
   int get accountAgeMonths {
     final user = FirebaseAuth.instance.currentUser;
@@ -141,7 +148,10 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     await _loadFromPrefs();
     _initAuthListener();
     await _currencyService.init();
-    
+
+    final packageInfo = await PackageInfo.fromPlatform();
+    _currentBuildNumber = int.tryParse(packageInfo.buildNumber) ?? 0;
+
     // Check for updates in background
     _updateService.checkForUpdate().then((manifest) {
       if (manifest != null) {

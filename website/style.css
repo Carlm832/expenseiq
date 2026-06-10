@@ -335,6 +335,46 @@ nav {
   margin-right: auto;
 }
 
+.migration-notice {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  text-align: left;
+  max-width: 720px;
+  margin: 0 auto 32px;
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 167, 38, 0.14);
+  border: 1px solid rgba(255, 167, 38, 0.45);
+}
+
+.migration-notice-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 167, 38, 0.2);
+  color: #ffb74d;
+}
+
+.migration-notice strong {
+  color: #fff;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.migration-notice p {
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  max-width: none;
+}
+
 .download-grid {
   display: flex;
   flex-wrap: wrap;

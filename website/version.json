@@ -1,6 +1,6 @@
 {
-  "version": "1.1.3",
-  "buildNumber": 14,
-  "releaseNotes": "Important: uninstall your current ExpenseIQ once, then install this update. Future updates will install in-app without uninstalling. Also fixes in-app update install flow and signing.",
+  "version": "1.1.4",
+  "buildNumber": 15,
+  "releaseNotes": "Clearer one-time update guidance for users moving to release-signed builds. If you are on 1.1.3 already, this is a normal in-app update.",
   "apkUrl": "https://expenseiqapp.com/downloads/ExpenseIQ.apk"
 }

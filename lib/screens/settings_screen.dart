@@ -407,6 +407,49 @@ class _AppUpdateScreenState extends State<AppUpdateScreen> {
       Translations.t('app_update_title', lang),
       Translations.t('app_update_subtitle', lang),
       [
+        if (state.needsSigningMigration) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange.withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.info_outline, color: Colors.orange, size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        Translations.t('migration_notice_title', lang),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: fgColor,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        Translations.t('migration_notice_body', lang),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          height: 1.45,
+                          color: mutedColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),

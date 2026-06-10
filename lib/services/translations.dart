@@ -100,6 +100,9 @@ class Translations {
       'update_found': 'A new update is available.',
       'app_update_help':
           'If you dismissed the home screen update banner, you can check and install updates here without leaving the app.',
+      'migration_notice_title': 'One-time update required',
+      'migration_notice_body':
+          'To move to version 1.1.3, uninstall ExpenseIQ from your phone, then install the latest APK from expenseiqapp.com. After that, future updates will install inside the app.',
       'expense_history': 'Expense History',
       'total': 'Total',
       'count': 'Count',
@@ -460,6 +463,9 @@ class Translations {
       'update_found': 'Yeni bir güncelleme mevcut.',
       'app_update_help':
           'Ana ekrandaki güncelleme bildirimini kapattıysanız, uygulamadan çıkmadan buradan güncellemeyi kontrol edip yükleyebilirsiniz.',
+      'migration_notice_title': 'Tek seferlik güncelleme gerekli',
+      'migration_notice_body':
+          '1.1.3 sürümüne geçmek için ExpenseIQ uygulamasını telefonunuzdan kaldırın, ardından expenseiqapp.com adresinden en son APK dosyasını yükleyin. Bundan sonra güncellemeler uygulama içinden yapılacaktır.',
       'expense_history': 'Harcama Geçmişi',
       'total': 'Toplam',
       'count': 'Sayı',
@@ -818,6 +824,9 @@ class Translations {
       'update_found': 'يتوفر تحديث جديد.',
       'app_update_help':
           'إذا أغلقتَ تنبيه التحديث في الشاشة الرئيسية، يمكنك التحقق من التحديث وتثبيته هنا دون مغادرة التطبيق.',
+      'migration_notice_title': 'تحديث لمرة واحدة مطلوب',
+      'migration_notice_body':
+          'للانتقال إلى الإصدار 1.1.3، أزل ExpenseIQ من هاتفك ثم ثبّت أحدث APK من expenseiqapp.com. بعد ذلك، ستتم التحديثات المستقبلية داخل التطبيق.',
       'expense_history': 'سجل المصروفات',
       'total': 'الإجمالي',
       'count': 'العدد',
@@ -1166,6 +1175,9 @@ class Translations {
       'update_found': 'Une nouvelle mise à jour est disponible.',
       'app_update_help':
           'Si vous avez fermé la bannière de mise à jour sur l\'accueil, vous pouvez vérifier et installer la mise à jour ici sans quitter l\'application.',
+      'migration_notice_title': 'Mise à jour unique requise',
+      'migration_notice_body':
+          'Pour passer à la version 1.1.3, désinstallez ExpenseIQ de votre téléphone, puis installez le dernier APK depuis expenseiqapp.com. Ensuite, les futures mises à jour se feront dans l\'application.',
       'expense_history': 'Historique des dépenses',
       'total': 'Total',
       'count': 'Nombre',
@@ -1464,6 +1476,9 @@ class Translations {
       'update_found': '새 업데이트가 있습니다.',
       'app_update_help':
           '홈 화면 업데이트 배너를 닫았다면, 앱을 나가지 않고 여기에서 업데이트를 확인하고 설치할 수 있습니다.',
+      'migration_notice_title': '1회 업데이트 필요',
+      'migration_notice_body':
+          '1.1.3으로 이동하려면 휴대폰에서 ExpenseIQ를 삭제한 후 expenseiqapp.com에서 최신 APK를 설치하세요. 이후 업데이트는 앱 내에서 진행됩니다.',
       'expense_history': '지출 내역',
       'total': '합계',
       'count': '건수',
@@ -1754,6 +1769,9 @@ class Translations {
       'update_found': 'Доступно новое обновление.',
       'app_update_help':
           'Если вы закрыли баннер обновления на главном экране, здесь можно проверить и установить обновление, не выходя из приложения.',
+      'migration_notice_title': 'Требуется разовое обновление',
+      'migration_notice_body':
+          'Чтобы перейти на версию 1.1.3, удалите ExpenseIQ с телефона и установите последний APK с expenseiqapp.com. После этого будущие обновления будут устанавливаться внутри приложения.',
       'expense_history': 'История расходов',
       'total': 'Итого',
       'count': 'Количество',
