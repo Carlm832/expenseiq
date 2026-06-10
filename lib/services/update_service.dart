@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -31,9 +32,23 @@ class UpdateManifest {
   }
 }
 
+class UpdateDownloadResult {
+  final bool downloaded;
+  final bool installLaunched;
+  final bool needsInstallPermission;
+
+  const UpdateDownloadResult({
+    required this.downloaded,
+    this.installLaunched = false,
+    this.needsInstallPermission = false,
+  });
+}
+
 class UpdateService {
   static const String _manifestUrl = 'https://expenseiqapp.com/version.json';
   static const String _fallbackDownloadPage = 'https://expenseiqapp.com/#download';
+  static const MethodChannel _installChannel =
+      MethodChannel('com.expenseiq/expense_iq/installer');
 
   Future<UpdateManifest?> checkForUpdate() async {
     try {
@@ -54,17 +69,21 @@ class UpdateService {
     return null;
   }
 
-  /// Downloads the APK in-app, then opens the system installer.
-  Future<bool> downloadAndInstallApk(
+  /// Downloads the APK in-app, then opens the Android package installer.
+  Future<UpdateDownloadResult> downloadAndInstallApk(
     String url, {
     void Function(double progress)? onProgress,
   }) async {
-    if (kIsWeb || !Platform.isAndroid) return false;
+    if (kIsWeb || !Platform.isAndroid) {
+      return const UpdateDownloadResult(downloaded: false);
+    }
 
     try {
       final request = http.Request('GET', Uri.parse(url));
       final streamed = await http.Client().send(request);
-      if (streamed.statusCode != 200) return false;
+      if (streamed.statusCode != 200) {
+        return const UpdateDownloadResult(downloaded: false);
+      }
 
       final totalBytes = streamed.contentLength ?? 0;
       final bytes = <int>[];
@@ -80,20 +99,64 @@ class UpdateService {
 
       onProgress?.call(1.0);
 
+      final canInstall = await _installChannel.invokeMethod<bool>(
+            'canInstallPackages',
+          ) ??
+          true;
+      if (!canInstall) {
+        return const UpdateDownloadResult(
+          downloaded: true,
+          needsInstallPermission: true,
+        );
+      }
+
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/ExpenseIQ-update.apk');
       await file.writeAsBytes(bytes, flush: true);
 
-      final result = await OpenFilex.open(file.path);
-      return result.type == ResultType.done;
+      final installLaunched = await _launchInstaller(file.path);
+      return UpdateDownloadResult(
+        downloaded: true,
+        installLaunched: installLaunched,
+      );
     } catch (e) {
       // ignore: avoid_print
       print('In-app update failed: $e');
+      return const UpdateDownloadResult(downloaded: false);
+    }
+  }
+
+  Future<bool> _launchInstaller(String filePath) async {
+    try {
+      final launched = await _installChannel.invokeMethod<bool>(
+        'installApk',
+        {'path': filePath},
+      );
+      if (launched == true) return true;
+    } catch (e) {
+      // ignore: avoid_print
+      print('Native installer failed: $e');
+    }
+
+    final result = await OpenFilex.open(
+      filePath,
+      type: 'application/vnd.android.package-archive',
+    );
+    return result.type == ResultType.done;
+  }
+
+  Future<bool> openInstallPermissionSettings() async {
+    try {
+      return await _installChannel.invokeMethod<bool>(
+            'openInstallPermissionSettings',
+          ) ??
+          false;
+    } catch (_) {
       return false;
     }
   }
 
-  /// Browser fallback when in-app download/install fails.
+  /// Browser fallback only when the in-app download itself fails.
   Future<bool> launchUpdateUrl(String url) async {
     try {
       final uri = Uri.parse(url.isNotEmpty ? url : _fallbackDownloadPage);

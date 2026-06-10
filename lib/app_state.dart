@@ -1242,7 +1242,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _updateDownloadProgress = 0;
     notifyListeners();
 
-    final installed = await _updateService.downloadAndInstallApk(
+    final result = await _updateService.downloadAndInstallApk(
       apkUrl,
       onProgress: (progress) {
         _updateDownloadProgress = progress;
@@ -1253,9 +1253,30 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _isDownloadingUpdate = false;
     notifyListeners();
 
-    if (installed) {
-      _updateManifest = null;
-      notifyListeners();
+    if (result.downloaded) {
+      if (result.installLaunched) {
+        _updateManifest = null;
+        notifyListeners();
+        return;
+      }
+
+      if (result.needsInstallPermission) {
+        await _updateService.openInstallPermissionSettings();
+        pushNotification(
+          title: 'update_install_permission',
+          message:
+              'Allow ExpenseIQ to install updates, then tap Update Now again.',
+          type: 'warning',
+        );
+        return;
+      }
+
+      pushNotification(
+        title: 'update_install_failed',
+        message:
+            'Update downloaded but install could not start. Try again from Settings → App Update.',
+        type: 'warning',
+      );
       return;
     }
 
