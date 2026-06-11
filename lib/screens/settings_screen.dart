@@ -10,6 +10,7 @@ import '../app_state.dart';
 import '../theme.dart';
 import '../services/translations.dart';
 import '../services/bio_service.dart';
+import '../services/update_service.dart';
 
 Widget _buildSimpleScreen(BuildContext context, String title, String subtitle,
     List<Widget> children) {
@@ -565,7 +566,9 @@ class _AppUpdateScreenState extends State<AppUpdateScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${Translations.t('downloading_update', lang)} ${(state.updateDownloadProgress * 100).clamp(0, 100).toStringAsFixed(0)}%',
+                    state.updatePhase == UpdatePhase.installing
+                        ? Translations.t('installing_update', lang)
+                        : '${Translations.t('downloading_update', lang)} ${(state.updateDownloadProgress * 100).clamp(0, 100).toStringAsFixed(0)}%',
                     style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
                   ),
                 ],
@@ -573,15 +576,21 @@ class _AppUpdateScreenState extends State<AppUpdateScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: downloading ? null : () => state.launchUpdate(),
+                    onPressed: downloading
+                        ? null
+                        : () => state.launchUpdate(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(downloading
-                        ? Translations.t('downloading_update', lang)
-                        : Translations.t('update_now', lang)),
+                        ? (state.updatePhase == UpdatePhase.installing
+                            ? Translations.t('installing_update', lang)
+                            : Translations.t('downloading_update', lang))
+                        : (state.needsSigningMigration
+                            ? Translations.t('download_from_website', lang)
+                            : Translations.t('update_now', lang))),
                   ),
                 ),
               ],

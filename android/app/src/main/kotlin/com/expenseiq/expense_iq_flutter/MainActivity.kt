@@ -1,6 +1,7 @@
 package com.expenseiq.expense_iq_flutter
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -66,18 +67,41 @@ class MainActivity : FlutterFragmentActivity() {
     private fun launchApkInstaller(path: String): Boolean {
         return try {
             val file = File(path)
-            if (!file.exists()) return false
+            if (!file.exists() || file.length() < 1024L) return false
 
-            val uri: Uri = FileProvider.getUriForFile(
-                this,
-                "${applicationContext.packageName}.fileProvider",
-                file
-            )
+            val authority = "${applicationContext.packageName}.fileProvider"
+            val uri: Uri = FileProvider.getUriForFile(this, authority, file)
 
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "application/vnd.android.package-archive")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            val installers = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.queryIntentActivities(
+                    intent,
+                    PackageManager.ResolveInfoFlags.of(
+                        PackageManager.MATCH_DEFAULT_ONLY.toLong()
+                    )
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.queryIntentActivities(
+                    intent,
+                    PackageManager.MATCH_DEFAULT_ONLY
+                )
+            }
+
+            if (installers.isEmpty()) return false
+
+            for (resolveInfo in installers) {
+                val installerPackage = resolveInfo.activityInfo.packageName
+                grantUriPermission(
+                    installerPackage,
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
             }
 
             startActivity(intent)

@@ -74,6 +74,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   UpdateManifest? _updateManifest;
   bool _isDownloadingUpdate = false;
   double _updateDownloadProgress = 0;
+  UpdatePhase _updatePhase = UpdatePhase.downloading;
   bool _isCheckingForUpdate = false;
   int _currentBuildNumber = 0;
 
@@ -122,6 +123,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   UpdateManifest? get updateManifest => _updateManifest;
   bool get isDownloadingUpdate => _isDownloadingUpdate;
   double get updateDownloadProgress => _updateDownloadProgress;
+  UpdatePhase get updatePhase => _updatePhase;
   bool get isCheckingForUpdate => _isCheckingForUpdate;
   int get currentBuildNumber => _currentBuildNumber;
   bool get needsSigningMigration =>
@@ -1248,8 +1250,20 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     if (_updateManifest == null || _isDownloadingUpdate) return;
 
     final apkUrl = _updateManifest!.apkUrl;
+
+    if (needsSigningMigration) {
+      await _updateService.launchUpdateUrl(apkUrl);
+      pushNotification(
+        title: 'migration_notice_title',
+        message:
+            'Uninstall ExpenseIQ first, then install the APK from the website. In-app install cannot replace older debug-signed builds.',
+        type: 'warning',
+      );
+      return;
+    }
     _isDownloadingUpdate = true;
     _updateDownloadProgress = 0;
+    _updatePhase = UpdatePhase.downloading;
     notifyListeners();
 
     final result = await _updateService.downloadAndInstallApk(
@@ -1258,26 +1272,36 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         _updateDownloadProgress = progress;
         notifyListeners();
       },
+      onPhase: (phase) {
+        _updatePhase = phase;
+        notifyListeners();
+      },
     );
 
     _isDownloadingUpdate = false;
     notifyListeners();
 
+    if (result.needsInstallPermission) {
+      await _updateService.openInstallPermissionSettings();
+      pushNotification(
+        title: 'update_install_permission',
+        message:
+            'Allow ExpenseIQ to install updates, then tap Update Now again.',
+        type: 'warning',
+      );
+      return;
+    }
+
     if (result.downloaded) {
       if (result.installLaunched) {
+        pushNotification(
+          title: 'installing_update',
+          message:
+              'Tap Install on the next screen. If it stays on Installing for more than 3 minutes, cancel, uninstall ExpenseIQ, then install from expenseiqapp.com.',
+          type: 'info',
+        );
         _updateManifest = null;
         notifyListeners();
-        return;
-      }
-
-      if (result.needsInstallPermission) {
-        await _updateService.openInstallPermissionSettings();
-        pushNotification(
-          title: 'update_install_permission',
-          message:
-              'Allow ExpenseIQ to install updates, then tap Update Now again.',
-          type: 'warning',
-        );
         return;
       }
 

@@ -863,7 +863,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              '${Translations.t('downloading_update', lang)} ${(progress * 100).clamp(0, 100).toStringAsFixed(0)}%',
+              state.updatePhase == UpdatePhase.installing
+                  ? Translations.t('installing_update', lang)
+                  : '${Translations.t('downloading_update', lang)} ${(progress * 100).clamp(0, 100).toStringAsFixed(0)}%',
               style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
             ),
           ],
@@ -878,8 +880,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Text(downloading
-                  ? Translations.t('downloading_update', lang)
-                  : Translations.t('update_now', lang)),
+                  ? (state.updatePhase == UpdatePhase.installing
+                      ? Translations.t('installing_update', lang)
+                      : Translations.t('downloading_update', lang))
+                  : (state.needsSigningMigration
+                      ? Translations.t('download_from_website', lang)
+                      : Translations.t('update_now', lang))),
             ),
           ),
         ],

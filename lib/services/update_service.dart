@@ -9,6 +9,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+enum UpdatePhase { downloading, installing }
+
 class UpdateManifest {
   final String version;
   final int buildNumber;
@@ -73,31 +75,14 @@ class UpdateService {
   Future<UpdateDownloadResult> downloadAndInstallApk(
     String url, {
     void Function(double progress)? onProgress,
+    void Function(UpdatePhase phase)? onPhase,
   }) async {
     if (kIsWeb || !Platform.isAndroid) {
       return const UpdateDownloadResult(downloaded: false);
     }
 
     try {
-      final request = http.Request('GET', Uri.parse(url));
-      final streamed = await http.Client().send(request);
-      if (streamed.statusCode != 200) {
-        return const UpdateDownloadResult(downloaded: false);
-      }
-
-      final totalBytes = streamed.contentLength ?? 0;
-      final bytes = <int>[];
-      var received = 0;
-
-      await for (final chunk in streamed.stream) {
-        bytes.addAll(chunk);
-        received += chunk.length;
-        if (totalBytes > 0 && onProgress != null) {
-          onProgress(received / totalBytes);
-        }
-      }
-
-      onProgress?.call(1.0);
+      onPhase?.call(UpdatePhase.downloading);
 
       final canInstall = await _installChannel.invokeMethod<bool>(
             'canInstallPackages',
@@ -105,14 +90,42 @@ class UpdateService {
           true;
       if (!canInstall) {
         return const UpdateDownloadResult(
-          downloaded: true,
+          downloaded: false,
           needsInstallPermission: true,
         );
       }
 
+      final request = http.Request('GET', Uri.parse(url));
+      final streamed = await http.Client().send(request);
+      if (streamed.statusCode != 200) {
+        return const UpdateDownloadResult(downloaded: false);
+      }
+
+      final totalBytes = streamed.contentLength ?? 0;
+      var received = 0;
+
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/ExpenseIQ-update.apk');
-      await file.writeAsBytes(bytes, flush: true);
+      if (await file.exists()) {
+        await file.delete();
+      }
+
+      final sink = file.openWrite();
+      try {
+        await for (final chunk in streamed.stream) {
+          sink.add(chunk);
+          received += chunk.length;
+          if (totalBytes > 0 && onProgress != null) {
+            onProgress(received / totalBytes);
+          }
+        }
+      } finally {
+        await sink.flush();
+        await sink.close();
+      }
+
+      onProgress?.call(1.0);
+      onPhase?.call(UpdatePhase.installing);
 
       final installLaunched = await _launchInstaller(file.path);
       return UpdateDownloadResult(
