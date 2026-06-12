@@ -60,10 +60,19 @@ class UpdateService {
       if (response.statusCode == 200) {
         final manifest = UpdateManifest.fromJson(jsonDecode(response.body));
         final packageInfo = await PackageInfo.fromPlatform();
-        final currentBuildNumber =
-            logicalBuildNumber(packageInfo.buildNumber);
+        final currentRaw = int.tryParse(packageInfo.buildNumber) ?? 0;
+        final currentLogical = logicalBuildNumber(packageInfo.buildNumber);
+        final manifestLogical =
+            logicalBuildNumberFromInt(manifest.buildNumber);
 
-        if (manifest.buildNumber > currentBuildNumber) {
+        // New builds compare logical numbers (19 vs 18).
+        if (manifestLogical > currentLogical) {
+          return manifest;
+        }
+
+        // Builds 14–18 compared the raw encoded versionCode (e.g. 2017) to
+        // the logical manifest number (e.g. 18), so updates never appeared.
+        if (currentRaw >= 1000 && manifest.buildNumber > currentRaw) {
           return manifest;
         }
       }

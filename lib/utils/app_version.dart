@@ -7,3 +7,10 @@ int logicalBuildNumber(String rawBuildNumber) {
   }
   return code;
 }
+
+int logicalBuildNumberFromInt(int code) =>
+    logicalBuildNumber(code.toString());
+
+/// Encoded arm64 versionCode for [logicalBuild] (used in version.json during
+/// transition so older builds still detect updates).
+int arm64VersionCode(int logicalBuild) => 2000 + logicalBuild;
