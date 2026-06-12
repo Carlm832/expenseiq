@@ -47,6 +47,10 @@
 	<string>ExpenseIQ requires FaceID to secure your financial data and unlock the app.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>ExpenseIQ needs gallery access to upload receipt images from your photo library.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

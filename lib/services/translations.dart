@@ -155,6 +155,8 @@ class Translations {
       'language': 'Language',
       'currency': 'Currency',
       'push_notifications': 'Push Notifications',
+      'notification_permission_denied':
+          'Notification permission was denied. Enable it in your phone settings to receive alerts.',
       'backup_data': 'Backup Data',
       'clear_all_data': 'Delete Account',
       'on': 'On',
@@ -316,7 +318,14 @@ class Translations {
       'about_us_nav': 'About Us',
       'about_us_welcome':
           'Welcome to ExpenseIQ - Your Comprehensive Financial Management Solution.',
-      'about_expenseiq': 'About ExpenseIQ',
+      'about_expenseiq': 'About the App',
+      'about_app_summary':
+          'ExpenseIQ helps you track spending, scan receipts, set budgets, and understand your finances across multiple currencies. Your data syncs securely with your account, and you can lock the app with biometrics for extra privacy.',
+      'app_version_label': 'Version',
+      'about_team_on_web_title': 'Team & Vision',
+      'about_team_on_web_body':
+          'Learn about the developers, project vision, and academic mentorship on our official website.',
+      'visit_website': 'Visit expenseiqapp.com',
       'expenseiq_mission':
           'This application is called ExpenseIq. It is designed for students, professionals, and anyone who wants to take full control of their financial journey. We target individuals who value clarity, efficiency, and smart automation in their daily lives.\n\nBy using ExpenseIq, you benefit from real-time spending insights, automated receipt scanning that saves you hours of manual work, and proactive budget alerts that ensure you never overspend. Our goal is to empower you with the tools needed to build long-term wealth and financial peace of mind.',
       'main_features': 'Main Features',
@@ -520,6 +529,8 @@ class Translations {
       'language': 'Dil',
       'currency': 'Para Birimi',
       'push_notifications': 'Anlık Bildirimler',
+      'notification_permission_denied':
+          'Bildirim izni reddedildi. Uyarı almak için telefon ayarlarından etkinleştirin.',
       'backup_data': 'Veri Yedekle',
       'clear_all_data': 'Hesabı Sil',
       'on': 'Açık',
@@ -684,7 +695,14 @@ class Translations {
       'about_us_nav': 'Hakkımızda',
       'about_us_welcome':
           'ExpenseIQ\'ya Hoş Geldiniz - Kapsamlı Finansal Yönetim Çözümünüz.',
-      'about_expenseiq': 'ExpenseIQ Hakkında',
+      'about_expenseiq': 'Uygulama Hakkında',
+      'about_app_summary':
+          'ExpenseIQ harcamalarınızı takip etmenize, fiş taramanıza, bütçe belirlemenize ve finanslarınızı birden fazla para biriminde anlamanıza yardımcı olur. Verileriniz hesabınızla güvenle senkronize edilir ve ek gizlilik için uygulamayı biyometri ile kilitleyebilirsiniz.',
+      'app_version_label': 'Sürüm',
+      'about_team_on_web_title': 'Ekip ve Vizyon',
+      'about_team_on_web_body':
+          'Geliştiriciler, proje vizyonu ve akademik mentorluk hakkında bilgi almak için resmi web sitemizi ziyaret edin.',
+      'visit_website': 'expenseiqapp.com adresini ziyaret edin',
       'expenseiq_mission':
           'Bu uygulamanın adı ExpenseIq\'dur. Öğrenciler, profesyoneller ve finansal yolculuklarının tam kontrolünü eline almak isteyen herkes için tasarlanmıştır. Günlük yaşamlarında netlik, verimlilik ve akıllı otomasyona değer veren bireyleri hedefliyoruz.\n\nExpenseIq\'yu kullanarak, gerçek zamanlı harcama içgörülerinden, size saatlerce manuel çalışma kazandıran otomatik fiş taramasından ve asla aşırı harcama yapmamanızı sağlayan proaktif bütçe uyarılarından yararlanırsınız. Amacımız, sizi uzun vadeli servet ve finansal huzur inşa etmek için gereken araçlarla donatmaktır.',
       'main_features': 'Ana Özellikler',
@@ -879,6 +897,8 @@ class Translations {
       'language': 'اللغة',
       'currency': 'العملة',
       'push_notifications': 'الإشعارات الفورية',
+      'notification_permission_denied':
+          'تم رفض إذن الإشعارات. فعّله من إعدادات الهاتف لتلقي التنبيهات.',
       'backup_data': 'نسخ احتياطي للبيانات',
       'clear_all_data': 'حذف الحساب',
       'on': 'مفعّل',
@@ -1038,7 +1058,14 @@ class Translations {
       'about_us_nav': 'من نحن',
       'about_us_welcome':
           'مرحباً بك في ExpenseIQ - حلك الشامل للإدارة المالية.',
-      'about_expenseiq': 'حول ExpenseIQ',
+      'about_expenseiq': 'حول التطبيق',
+      'about_app_summary':
+          'يساعدك ExpenseIQ على تتبع الإنفاق ومسح الإيصالات وتحديد الميزانيات وفهم أموالك عبر عدة عملات. تتم مزامنة بياناتك بأمان مع حسابك، ويمكنك قفل التطبيق بالبصمة لمزيد من الخصوصية.',
+      'app_version_label': 'الإصدار',
+      'about_team_on_web_title': 'الفريق والرؤية',
+      'about_team_on_web_body':
+          'تعرّف على المطورين ورؤية المشروع والإشراف الأكاديمي على موقعنا الرسمي.',
+      'visit_website': 'زيارة expenseiqapp.com',
       'expenseiq_mission':
           'يدعى هذا التطبيق ExpenseIq. تم تصميمه للطلاب والمهنيين وأي شخص يريد السيطرة الكاملة على رحلته المالية. نحن نستهدف الأفراد الذين يقدرون الوضوح والكفاءة والأتمتة الذكية في حياتهم اليومية.\n\nباستخدام ExpenseIq، ستستفيد من رؤى الإنفاق في الوقت الفعلي، ومسح الإيصالات تلقائيًا الذي يوفر عليك ساعات من العمل اليدوي، وتنبيهات الميزانية الاستباقية التي تضمن لك عدم الإفراط في الإنفاق أبدًا. هدفنا هو تمكينك بالأدوات اللازمة لبناء ثروة طويلة الأجل وراحة بال مالية.',
       'main_features': 'الميزات الرئيسية',
@@ -1232,6 +1259,8 @@ class Translations {
       'language': 'Langue',
       'currency': 'Devise',
       'push_notifications': 'Notifications push',
+      'notification_permission_denied':
+          'Autorisation de notification refusée. Activez-la dans les réglages du téléphone.',
       'backup_data': 'Sauvegarder les données',
       'clear_all_data': 'Supprimer le compte',
       'on': 'Activé',
@@ -1535,6 +1564,8 @@ class Translations {
       'language': '언어',
       'currency': '통화',
       'push_notifications': '푸시 알림',
+      'notification_permission_denied':
+          '알림 권한이 거부되었습니다. 휴대폰 설정에서 활성화하세요.',
       'backup_data': '데이터 백업',
       'clear_all_data': '계정 삭제',
       'on': '켜짐',
@@ -1830,6 +1861,8 @@ class Translations {
       'language': 'Язык',
       'currency': 'Валюта',
       'push_notifications': 'Push-уведомления',
+      'notification_permission_denied':
+          'Разрешение на уведомления отклонено. Включите его в настройках телефона.',
       'backup_data': 'Резервная копия',
       'clear_all_data': 'Удалить аккаунт',
       'on': 'Вкл',

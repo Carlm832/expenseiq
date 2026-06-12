@@ -16,6 +16,7 @@ import 'screens/settings_screen.dart';
 import 'screens/email_verification_screen.dart';
 import 'screens/about_us_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,7 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    await NotificationService.instance.initialize();
   } catch (e) {
     // Optionally log error via a framework here later
   }

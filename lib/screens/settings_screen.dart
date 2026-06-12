@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -207,28 +206,20 @@ class SettingsScreen extends StatelessWidget {
               borderColor: borderColor,
               onTap: () async {
                 if (!state.pushNotificationsEnabled) {
-                  FirebaseMessaging messaging = FirebaseMessaging.instance;
-                  NotificationSettings settings =
-                      await messaging.requestPermission(
-                    alert: true,
-                    badge: true,
-                    sound: true,
-                  );
-                  if (settings.authorizationStatus ==
-                          AuthorizationStatus.authorized ||
-                      settings.authorizationStatus ==
-                          AuthorizationStatus.provisional) {
-                    state.setPushNotificationsEnabled(true);
-                  } else {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Notification permissions denied.')),
-                      );
-                    }
+                  final enabled = await state.setPushNotificationsEnabled(true);
+                  if (!enabled && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          Translations.t(
+                              'notification_permission_denied',
+                              state.language),
+                        ),
+                      ),
+                    );
                   }
                 } else {
-                  state.setPushNotificationsEnabled(false);
+                  await state.setPushNotificationsEnabled(false);
                 }
               }),
           _SettingsTile(

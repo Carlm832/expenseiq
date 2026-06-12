@@ -10,6 +10,7 @@ import 'services/currency_service.dart';
 import 'services/bio_service.dart';
 import 'services/translations.dart';
 import 'services/update_service.dart';
+import 'services/notification_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:async';
@@ -148,6 +149,13 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> _initApp() async {
     await _loadFromPrefs();
+    if (_pushNotificationsEnabled && !kIsWeb) {
+      final hasPermission =
+          await NotificationService.instance.areNotificationsEnabled();
+      if (!hasPermission) {
+        await NotificationService.instance.requestPermission();
+      }
+    }
     _initAuthListener();
     await _currencyService.init();
 
@@ -694,6 +702,17 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _notifications = [n, ..._notifications];
     _saveNotifications();
     notifyListeners();
+
+    if (_pushNotificationsEnabled) {
+      unawaited(
+        NotificationService.instance.show(
+          id: n.id,
+          title: Translations.t(title, _language),
+          body: message,
+          type: type,
+        ),
+      );
+    }
   }
 
   Future<void> _saveNotifications() async {
@@ -880,12 +899,20 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  Future<void> setPushNotificationsEnabled(bool enabled) async {
+  Future<bool> setPushNotificationsEnabled(bool enabled) async {
+    if (enabled) {
+      final granted = await NotificationService.instance.requestPermission();
+      if (!granted) {
+        return false;
+      }
+    }
+
     _pushNotificationsEnabled = enabled;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('pushNotificationsEnabled', enabled);
     await _savePreferences();
     notifyListeners();
+    return true;
   }
 
   Future<void> setOverallBudget(double amount) async {
