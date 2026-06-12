@@ -1,6 +1,6 @@
 {
   "version": "1.1.5",
-  "buildNumber": 17,
-  "releaseNotes": "System notifications in the tray, simplified About Us page, and improved in-app update install flow.",
+  "buildNumber": 18,
+  "releaseNotes": "Fix build number display on App Update (shows Build 18 instead of 2018) and correct in-app update detection for arm64 APKs.",
   "apkUrl": "https://expenseiqapp.com/downloads/ExpenseIQ.apk"
 }

@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../app_state.dart';
 import '../services/translations.dart';
+import '../utils/app_version.dart';
 import '../theme.dart';
 
 class AboutUsScreen extends StatefulWidget {
@@ -32,7 +33,8 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
     if (!mounted) return;
     setState(() {
       _version = info.version;
-      _buildNumber = info.buildNumber;
+      _buildNumber =
+          logicalBuildNumber(info.buildNumber).toString();
     });
   }
 
@@ -127,7 +129,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                 if (_version.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(
-                    '${Translations.t('app_version_label', lang)} $_version (${Translations.t('build', lang)} $_buildNumber)',
+                    '${Translations.t('app_version_label', lang)} $_version · ${Translations.t('build_label', lang)} $_buildNumber',
                     style: GoogleFonts.inter(fontSize: 13, color: mutedColor),
                   ),
                 ],

@@ -10,6 +10,7 @@ import '../theme.dart';
 import '../services/translations.dart';
 import '../services/bio_service.dart';
 import '../services/update_service.dart';
+import '../utils/app_version.dart';
 
 Widget _buildSimpleScreen(BuildContext context, String title, String subtitle,
     List<Widget> children) {
@@ -357,7 +358,8 @@ class _AppUpdateScreenState extends State<AppUpdateScreen> {
     if (!mounted) return;
     setState(() {
       _currentVersion = info.version;
-      _currentBuild = info.buildNumber;
+      _currentBuild =
+          logicalBuildNumber(info.buildNumber).toString();
     });
 
     final state = context.read<AppState>();
@@ -480,7 +482,7 @@ class _AppUpdateScreenState extends State<AppUpdateScreen> {
                         Text(
                           _currentVersion.isEmpty
                               ? '...'
-                              : 'v$_currentVersion (${Translations.t('build', lang)} $_currentBuild)',
+                              : 'v$_currentVersion · ${Translations.t('build_label', lang)} $_currentBuild',
                           style: GoogleFonts.dmSans(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,

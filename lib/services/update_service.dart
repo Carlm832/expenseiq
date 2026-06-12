@@ -9,6 +9,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../utils/app_version.dart';
+
 enum UpdatePhase { downloading, installing }
 
 class UpdateManifest {
@@ -58,7 +60,8 @@ class UpdateService {
       if (response.statusCode == 200) {
         final manifest = UpdateManifest.fromJson(jsonDecode(response.body));
         final packageInfo = await PackageInfo.fromPlatform();
-        final currentBuildNumber = int.tryParse(packageInfo.buildNumber) ?? 0;
+        final currentBuildNumber =
+            logicalBuildNumber(packageInfo.buildNumber);
 
         if (manifest.buildNumber > currentBuildNumber) {
           return manifest;

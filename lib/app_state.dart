@@ -11,6 +11,7 @@ import 'services/bio_service.dart';
 import 'services/translations.dart';
 import 'services/update_service.dart';
 import 'services/notification_service.dart';
+import 'utils/app_version.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:async';
@@ -160,7 +161,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     await _currencyService.init();
 
     final packageInfo = await PackageInfo.fromPlatform();
-    _currentBuildNumber = int.tryParse(packageInfo.buildNumber) ?? 0;
+    _currentBuildNumber = logicalBuildNumber(packageInfo.buildNumber);
 
     // Check for updates in background
     _updateService.checkForUpdate().then((manifest) {
